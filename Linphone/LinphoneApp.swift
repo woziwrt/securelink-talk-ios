@@ -18,6 +18,7 @@
  */
 
 import SwiftUI
+import LocalAuthentication
 import linphonesw
 import UserNotifications
 import Intents
@@ -226,19 +227,41 @@ struct AppView: View {
 	@StateObject private var telecomManager = TelecomManager.shared
 	@StateObject private var sharedMainViewModel = SharedMainViewModel.shared
 
+	@StateObject private var appLock = AppLock.shared
+	
 	var body: some View {
-		RootView(
-			coreContext: coreContext,
-			telecomManager: telecomManager,
-			sharedMainViewModel: sharedMainViewModel,
-			navigationManager: navigationManager,
-			appDelegate: delegate
-		)
-		.environmentObject(coreContext)
-		.environmentObject(navigationManager)
-		.environmentObject(telecomManager)
-		.environmentObject(sharedMainViewModel)
+		ZStack {
+			RootView(
+				coreContext: coreContext,
+				telecomManager: telecomManager,
+				sharedMainViewModel: sharedMainViewModel,
+				navigationManager: navigationManager,
+				appDelegate: delegate
+			)
+			.environmentObject(coreContext)
+			.environmentObject(navigationManager)
+			.environmentObject(telecomManager)
+			.environmentObject(sharedMainViewModel)
+			
+			// SecureLink: the app is locked with Face ID / Touch ID / passcode – on every start and after 30 s in background
+			if appLock.locked && !telecomManager.callInProgress {
+				AppLockView(appLock: appLock)
+					.transition(.opacity)
+					.zIndex(100)
+			}
+		}
+		.onAppear {
+			appLock.lockNow()
+		}
 		.onChange(of: scenePhase) { newPhase in
+			switch newPhase {
+			case .active:
+				appLock.enteredForeground()
+			case .background:
+				appLock.enteredBackground()
+			default:
+				break
+			}
 			if !telecomManager.callInProgress {
 				switch newPhase {
 				case .active:
@@ -249,6 +272,97 @@ struct AppView: View {
 					coreContext.onEnterBackground()
 				default:
 					break
+				}
+			}
+		}
+	}
+}
+
+// MARK: - SecureLink app lock (Face ID / Touch ID / device passcode)
+
+final class AppLock: ObservableObject {
+	static let shared = AppLock()
+	@Published var locked = true
+	@Published var failed = false
+	private var backgroundSince: Date?
+	private var authenticating = false
+	private let graceSeconds: TimeInterval = 30
+	
+	func lockNow() {
+		locked = true
+		failed = false
+		authenticate()
+	}
+	
+	func enteredBackground() {
+		backgroundSince = Date()
+	}
+	
+	func enteredForeground() {
+		if let since = backgroundSince, Date().timeIntervalSince(since) >= graceSeconds {
+			locked = true
+		}
+		backgroundSince = nil
+		if locked {
+			authenticate()
+		}
+	}
+	
+	func authenticate() {
+		guard !authenticating else { return }
+		authenticating = true
+		failed = false
+		let context = LAContext()
+		context.localizedCancelTitle = "Zrušit"
+		var error: NSError?
+		// deviceOwnerAuthentication = biometrics with the device passcode as fallback; no own PIN to forget
+		guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
+			Log.error("[AppLock] no device authentication available: \(error?.localizedDescription ?? "?") – app stays locked")
+			authenticating = false
+			failed = true
+			return
+		}
+		context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Odemknout SecureLink") { ok, err in
+			DispatchQueue.main.async {
+				self.authenticating = false
+				if ok {
+					self.locked = false
+				} else {
+					self.failed = true
+					Log.warn("[AppLock] authentication failed: \(err?.localizedDescription ?? "?")")
+				}
+			}
+		}
+	}
+}
+
+struct AppLockView: View {
+	@ObservedObject var appLock: AppLock
+	
+	var body: some View {
+		ZStack {
+			Color.orangeMain500.ignoresSafeArea()
+			VStack(spacing: 18) {
+				Image("linphone")
+					.resizable()
+					.scaledToFit()
+					.frame(width: 90, height: 90)
+				Text("SecureLink")
+					.default_text_style_white_700(styleSize: 26)
+				Text("Zamčeno")
+					.default_text_style_white_600(styleSize: 16)
+				if appLock.failed {
+					Button(action: { appLock.authenticate() }, label: {
+						Text("Odemknout")
+							.default_text_style_600(styleSize: 18)
+							.frame(height: 35)
+							.frame(maxWidth: 200)
+					})
+					.padding(.horizontal, 20)
+					.padding(.vertical, 8)
+					.background(Color.white)
+					.cornerRadius(60)
+					.padding(.top, 20)
 				}
 			}
 		}

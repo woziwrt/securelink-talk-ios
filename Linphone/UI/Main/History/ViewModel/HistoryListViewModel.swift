@@ -57,7 +57,13 @@ class HistoryListViewModel: ObservableObject {
 			var callLogsBis: [HistoryModel] = []
 			var callLogsTmpBis: [HistoryModel] = []
 			
-			logs.forEach { log in
+			// SecureLink: call history lives 7 days, like messages – older entries are deleted, not just hidden
+			let oldest = time_t(Date().addingTimeInterval(-7 * 24 * 3600).timeIntervalSince1970)
+			let expired = logs.filter { $0.startDate < oldest }
+			expired.forEach { core.removeCallLog(callLog: $0) }
+			if !expired.isEmpty { Log.info("[SecureLink] removed \(expired.count) call log(s) older than 7 days") }
+			
+			logs.filter { $0.startDate >= oldest }.forEach { log in
 				let history = HistoryModel(callLog: log)
 				callLogsBis.append(history)
 				callLogsTmpBis.append(history)

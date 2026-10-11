@@ -129,6 +129,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Odemknutí aplikace SecureLink</string>
 	<key>NSSupportsSuddenTermination</key>
 	<false/>
 	<key>TFInternalTestingOnly</key>
