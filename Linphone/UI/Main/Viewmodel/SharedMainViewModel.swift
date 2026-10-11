@@ -98,7 +98,7 @@ class SharedMainViewModel: ObservableObject {
 		if preferences.object(forKey: displayProfileModeKey) == nil {
 			preferences.set(displayProfileMode, forKey: displayProfileModeKey)
 		} else {
-			displayProfileMode = preferences.bool(forKey: displayProfileModeKey)
+			displayProfileMode = false   // SecureLink: the profile-mode page is never shown (secure mode is fixed)
 		}
 		
 		if preferences.object(forKey: defaultAvatarKey) == nil {
@@ -141,7 +141,7 @@ class SharedMainViewModel: ObservableObject {
 	func changeDisplayProfileMode() {
 		let preferences = UserDefaults.standard
 		
-		displayProfileMode = true
+		displayProfileMode = false   // SecureLink: never
 		preferences.set(displayProfileMode, forKey: displayProfileModeKey)
 	}
 	

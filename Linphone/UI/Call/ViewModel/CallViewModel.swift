@@ -1310,6 +1310,8 @@ class CallViewModel: ObservableObject {
 			let mySubstringSuffix = upperCaseAuthToken.suffix(2)
 			
 			DispatchQueue.main.async {
+				// SecureLink: both sides show the whole token (same on both phones) as one security word
+				self.fullSas = upperCaseAuthToken.count == 4 ? "\(mySubstringPrefix) \(mySubstringSuffix)" : upperCaseAuthToken
 				switch self.currentCall!.dir {
 				case Call.Dir.Incoming:
 					self.upperCaseAuthTokenToRead = String(mySubstringPrefix)

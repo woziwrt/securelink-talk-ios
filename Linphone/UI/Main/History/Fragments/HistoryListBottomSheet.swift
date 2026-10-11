@@ -128,6 +128,7 @@ struct HistoryListBottomSheet: View {
 				.frame(maxWidth: .infinity)
 			}
 			
+			if false {   // SecureLink: no SIP addresses shown to users
 			Button {
 				if historyListViewModel.selectedCall != nil && historyListViewModel.selectedCall!.isOutgoing {
 					UIPasteboard.general.setValue(
@@ -171,6 +172,7 @@ struct HistoryListBottomSheet: View {
 			}
 			.padding(.horizontal, 30)
 			.background(Color.gray100)
+			}
 			
 			VStack {
 				Divider()

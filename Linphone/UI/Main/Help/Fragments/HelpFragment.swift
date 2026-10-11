@@ -101,6 +101,7 @@ struct HelpFragment: View {
 									.default_text_style_800(styleSize: 16)
 									.frame(maxWidth: .infinity, alignment: .leading)
 									.padding(.bottom, 5)
+								if false {   // SecureLink: no Belledonne links
 								Button {
 									if let url = URL(string: NSLocalizedString("website_user_guide_url", comment: "")) {
 										UIApplication.shared.open(url)
@@ -133,7 +134,9 @@ struct HelpFragment: View {
 											.frame(width: 25, height: 25)
 									}
 								}
+								}
 								
+								if false {   // SecureLink: no Belledonne links
 								Button {
 									if let url = URL(string: NSLocalizedString("website_privacy_policy_url", comment: "")) {
 										UIApplication.shared.open(url)
@@ -166,6 +169,7 @@ struct HelpFragment: View {
 											.frame(width: 25, height: 25)
 									}
 								}
+								}
 								
 								HStack {
 									Image("info")
@@ -187,6 +191,7 @@ struct HelpFragment: View {
 									}
 									.padding(.horizontal, 5)
 									
+									if false {   // SecureLink: no update check against Belledonne
 									Button(
 										action: {
 											helpViewModel.checkForUpdate()
@@ -200,6 +205,7 @@ struct HelpFragment: View {
 									.padding(.vertical, 10)
 									.background(Color.orangeMain100)
 									.cornerRadius(60)
+									}
 								}
 								.background(Color.gray100)
 								.onTapGesture {
@@ -258,6 +264,7 @@ struct HelpFragment: View {
 									}
 								}
 								
+								if false {   // SecureLink: no Belledonne links
 								Button {
 									if let url = URL(string: NSLocalizedString("website_translate_weblate_url", comment: "")) {
 										UIApplication.shared.open(url)
@@ -283,7 +290,9 @@ struct HelpFragment: View {
 											.frame(width: 25, height: 25)
 									}
 								}
+								}
 								
+								if false {   // SecureLink: no troubleshooting / log upload to Belledonne
 								Text("help_about_advanced_title")
 									.default_text_style_800(styleSize: 16)
 									.frame(maxWidth: .infinity, alignment: .leading)
@@ -313,6 +322,7 @@ struct HelpFragment: View {
 											.frame(width: 25, height: 25)
 									}
 								})
+								}
 							}
 							.frame(maxWidth: SharedMainViewModel.shared.maxWidth)
 							.padding(.all, 20)

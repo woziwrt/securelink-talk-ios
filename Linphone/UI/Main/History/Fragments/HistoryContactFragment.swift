@@ -106,6 +106,7 @@ struct HistoryContactFragment: View {
 							}
 						}
 						
+						if false {   // SecureLink: no SIP addresses shown to users
 						Button {
 							isMenuOpen = false
 							
@@ -132,6 +133,7 @@ struct HistoryContactFragment: View {
 									.frame(width: 25, height: 25, alignment: .leading)
 									.padding(.all, 10)
 							}
+						}
 						}
 						
 						Button(role: .destructive) {

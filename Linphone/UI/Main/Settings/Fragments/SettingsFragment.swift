@@ -143,6 +143,7 @@ struct SettingsFragment: View {
 							}
 							*/
 							
+							if false {   // SecureLink: no call/conversation settings – encryption and behaviour are fixed by the factory config
 							HStack(alignment: .center) {
 								Text("settings_calls_title")
 									.default_text_style_800(styleSize: 18)
@@ -275,6 +276,7 @@ struct SettingsFragment: View {
 								.background(Color.gray100)
 							}
 							
+							}
 							if false {   // SecureLink: no LDAP/CardDAV contacts, no meetings, no network settings
 							HStack(alignment: .center) {
 								Text("settings_contacts_title")
