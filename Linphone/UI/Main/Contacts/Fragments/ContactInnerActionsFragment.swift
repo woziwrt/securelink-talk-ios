@@ -577,6 +577,7 @@ struct ContactInnerActionsFragment: View {
 				.padding(.horizontal)
 			}
 			
+			if false {   // SecureLink: no sharing of contacts outside the app
 			Button {
 				showShareSheet.toggle()
 			} label: {
@@ -597,6 +598,7 @@ struct ContactInnerActionsFragment: View {
 				}
 				.padding(.vertical, 15)
 				.padding(.horizontal, 20)
+			}
 			}
 			
 			if !contactAvatarModel.isReadOnly && !AppServices.corePreferences.hideContactEdition {

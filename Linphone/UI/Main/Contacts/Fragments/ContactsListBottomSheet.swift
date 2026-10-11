@@ -101,6 +101,7 @@ struct ContactsListBottomSheet: View {
 				.frame(maxWidth: .infinity)
 			}
 			
+			if false {   // SecureLink: no sharing of contacts outside the app
 			Button {
 				if #available(iOS 16.0, *) {
 					if idiom != .pad {
@@ -136,6 +137,7 @@ struct ContactsListBottomSheet: View {
 			}
 			.padding(.horizontal, 30)
 			.background(Color.gray100)
+			}
 			
 			if !contactsListViewModel.selectedFriend!.isReadOnly && !AppServices.corePreferences.hideContactEdition {
 				VStack {
