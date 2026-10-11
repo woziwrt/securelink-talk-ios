@@ -222,7 +222,7 @@ class ContactAvatarModel: ObservableObject, Identifiable {
 					})
 					
 					if avatarModel == nil {
-						avatarModel = ContactAvatarModel(friend: nil, name: addressFriend.name!, address: addressFriend.address!.asStringUriOnly(), withPresence: false)
+						avatarModel = ContactAvatarModel(friend: addressFriend, name: addressFriend.name!   /* SecureLink: keep the friend so its addresses are known */, address: addressFriend.address!.asStringUriOnly(), withPresence: false)
 					}
 					completion(avatarModel!)
 				} else if !addressFriend.phoneNumbers.isEmpty {
@@ -232,7 +232,7 @@ class ContactAvatarModel: ObservableObject, Identifiable {
 					})
 					
 					if avatarModel == nil {
-						avatarModel = ContactAvatarModel(friend: nil, name: addressFriend.name!, address: addressFriend.phoneNumbers.first ?? addressFriend.address?.asStringUriOnly() ?? "", withPresence: false)
+						avatarModel = ContactAvatarModel(friend: addressFriend, name: addressFriend.name!   /* SecureLink: keep the friend so its addresses are known */, address: addressFriend.phoneNumbers.first ?? addressFriend.address?.asStringUriOnly() ?? "", withPresence: false)
 					}
 					
 					completion(avatarModel!)

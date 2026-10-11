@@ -485,7 +485,7 @@ final class ContactsManager: ObservableObject {
 		
 		// CardDAV lists
 		if friend == nil, let core {
-			for list in core.friendsLists where list.type == .CardDAV {
+			for list in core.friendsLists where list.type == .CardDAV || list.type == .VCard4 {   // SecureLink: server directory too
 				friend = list.friends.first(where: matches)
 				if friend != nil {
 					break
