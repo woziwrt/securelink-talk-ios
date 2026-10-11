@@ -625,7 +625,7 @@ struct ContentView: View {
 												}
 												.padding(.trailing, sharedMainViewModel.indexView == 2 ? 10 : 0)
 												
-												if sharedMainViewModel.indexView == 0 {
+												if false && sharedMainViewModel.indexView == 0 {   // SecureLink: no contacts filter (server directory only)
 													Menu {
 														Button {
 															sharedMainViewModel.displayedFriend = nil

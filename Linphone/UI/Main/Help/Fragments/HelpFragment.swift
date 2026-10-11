@@ -208,27 +208,7 @@ struct HelpFragment: View {
 									}
 								}
 								.background(Color.gray100)
-								.onTapGesture {
-									if false {   // SecureLink: no hidden developer mode
-										clickCounter += 1
-										
-										switch clickCounter {
-										case 1:
-											ToastViewModel.shared.show("Success_two_more_clicks_toast")
-											
-										case 2:
-											ToastViewModel.shared.show("Success_one_more_click_toast")
-											
-										case 3:
-											AppServices.corePreferences.showDeveloperSettings = true
-											ToastViewModel.shared.show("Success_developer_enabled_toast")
-											
-										default:
-											ToastViewModel.shared.show("Success_developer_already_enabled_toast")
-										}
-									} else {
-										ToastViewModel.shared.show("Success_developer_already_enabled_toast")
-									}
+								// SecureLink: tapping the version does nothing (no hidden developer mode)
 								}
 								
 								Button {
@@ -254,11 +234,6 @@ struct HelpFragment: View {
 										}
 										.padding(.horizontal, 5)
 										
-										Image("arrow-square-out")
-											.renderingMode(.template)
-											.resizable()
-											.foregroundStyle(Color.grayMain2c600)
-											.frame(width: 25, height: 25)
 									}
 								}
 								
