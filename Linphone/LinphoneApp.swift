@@ -252,6 +252,10 @@ struct AppView: View {
 		}
 		.onAppear {
 			appLock.lockNow()
+			requestPermissionsIfLoggedIn()
+		}
+		.onChange(of: coreContext.loggedIn) { _ in
+			requestPermissionsIfLoggedIn()
 		}
 		.onChange(of: scenePhase) { newPhase in
 			switch newPhase {
@@ -275,6 +279,18 @@ struct AppView: View {
 				}
 			}
 		}
+	}
+}
+
+extension AppView {
+	// SecureLink: the Linphone welcome/permissions pages are gone, so ask for notifications (messages, badge) and the
+	// microphone (calls) ourselves, once the account is in. iOS asks the user only the first time; later calls are silent.
+	func requestPermissionsIfLoggedIn() {
+		guard coreContext.loggedIn else { return }
+		PermissionManager.shared.pushNotificationRequestPermission {
+			Log.info("[SecureLink] notification permission asked")
+		}
+		PermissionManager.shared.microphoneRequestPermission()
 	}
 }
 
