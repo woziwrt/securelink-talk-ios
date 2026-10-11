@@ -258,15 +258,15 @@ struct AppView: View {
 		// SecureLink: the screen may stay awake only during a call. The call view's onDisappear did not always run,
 		// so the phone never auto-locked afterwards and the app lock never kicked in.
 		.onChange(of: telecomManager.callInProgress) { inCall in
-			UIApplication.shared.isIdleTimerDisabled = inCall && coreContext.mCore.callsNb > 0
+			UIApplication.shared.isIdleTimerDisabled = inCall && coreContext.activeCalls > 0
 		}
 		.onChange(of: scenePhase) { newPhase in
 			switch newPhase {
 			case .active:
 				// A stuck "call in progress" flag must not keep the screen awake or the lock away: ask the core too.
-				let inCall = telecomManager.callInProgress && coreContext.mCore.callsNb > 0
+				let inCall = telecomManager.callInProgress && coreContext.activeCalls > 0
 				UIApplication.shared.isIdleTimerDisabled = inCall
-				Log.info("[AppLock] foreground: inCall=\(inCall) flag=\(telecomManager.callInProgress) calls=\(coreContext.mCore.callsNb)")
+				Log.info("[AppLock] foreground: inCall=\(inCall) flag=\(telecomManager.callInProgress) calls=\(coreContext.activeCalls)")
 				appLock.enteredForeground()
 			case .background:
 				appLock.enteredBackground()
@@ -357,7 +357,7 @@ final class AppLock: ObservableObject {
 	
 	private func checkIdle() {
 		guard !locked, !keyboardVisible, UIApplication.shared.applicationState == .active else { return }
-		let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
+		let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.activeCalls > 0
 		if !inCall && Date().timeIntervalSince(lastActivity) >= idleSeconds {
 			Log.info("[AppLock] no touch for \(Int(idleSeconds)) s – locking")
 			lockNow()
@@ -367,7 +367,7 @@ final class AppLock: ObservableObject {
 	// The lock screen is a separate UIWindow above alerts, so nothing the app presents can sit on top of it.
 	func updateWindow() {
 		DispatchQueue.main.async {
-			let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
+			let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.activeCalls > 0
 			Log.info("[AppLock] window update: locked=\(self.locked) inCall=\(inCall)")
 			self.watchTouches()
 			if self.locked && !inCall {

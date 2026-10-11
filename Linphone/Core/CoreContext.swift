@@ -48,6 +48,8 @@ class CoreContext: ObservableObject {
 	@Published var accounts: [AccountModel] = []
 	@Published var shortcuts: [ShortcutModel] = []
 	var mCore: Core!
+	// Safe before the core exists (cold start, launch from a push): the app lock asks this on every foreground.
+	var activeCalls: Int { mCore?.callsNb ?? 0 }
 	
 	var bearerAuthInfoPendingPasswordUpdate: AuthInfo?
 	var imdnToEverybodyThreshold: Bool = true
