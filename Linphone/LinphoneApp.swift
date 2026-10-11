@@ -242,7 +242,8 @@ struct AppView: View {
 			.environmentObject(navigationManager)
 			.environmentObject(telecomManager)
 			.environmentObject(sharedMainViewModel)
-			.simultaneousGesture(DragGesture(minimumDistance: 0).onChanged { _ in appLock.touched() })
+			// SecureLink: touches are counted by TouchSpy (UIKit) – a SwiftUI DragGesture(minimumDistance: 0) here
+			// swallowed every button tap on iOS 15.
 			
 			// SecureLink: the lock screen lives in its own window above everything (see AppLock) – a view in this
 			// ZStack stayed hidden under screens that iOS presents in a higher layer (e.g. an open conversation)
@@ -329,6 +330,31 @@ final class AppLock: ObservableObject {
 	
 	func touched() { lastActivity = Date() }
 	
+	// Sees every touch in the app's main window without taking it from the view underneath.
+	private final class TouchSpy: UIGestureRecognizer, UIGestureRecognizerDelegate {
+		override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+			AppLock.shared.touched()
+			state = .failed
+		}
+		func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool { true }
+	}
+	private var spiedWindows: [ObjectIdentifier] = []
+	
+	func watchTouches() {
+		for scene in UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }) {
+			for window in scene.windows where window !== lockWindow && !spiedWindows.contains(ObjectIdentifier(window)) {
+				let spy = TouchSpy()
+				spy.cancelsTouchesInView = false
+				spy.delaysTouchesBegan = false
+				spy.delaysTouchesEnded = false
+				spy.delegate = spy
+				window.addGestureRecognizer(spy)
+				spiedWindows.append(ObjectIdentifier(window))
+				Log.info("[AppLock] watching touches in window \(window)")
+			}
+		}
+	}
+	
 	private func checkIdle() {
 		guard !locked, !keyboardVisible, UIApplication.shared.applicationState == .active else { return }
 		let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
@@ -343,6 +369,7 @@ final class AppLock: ObservableObject {
 		DispatchQueue.main.async {
 			let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
 			Log.info("[AppLock] window update: locked=\(self.locked) inCall=\(inCall)")
+			self.watchTouches()
 			if self.locked && !inCall {
 				guard self.lockWindow == nil else { return }
 				let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
