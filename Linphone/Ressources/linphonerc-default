@@ -2,18 +2,17 @@
 ## Start of default rc
 
 [sip]
-contact="Linphone iPhone" <sip:linphone.iphone@unknown-host>
+contact="SecureLink" <sip:securelink@unknown-host>
 use_info=0
 use_ipv6=1
 keepalive_period=30000
 sip_port=-1
 sip_tcp_port=-1
 sip_tls_port=-1
-media_encryption=none
+media_encryption=zrtp
 update_presence_model_timestamp_before_publish_expires_refresh=1
 use_rfc2833=1
 use_info=1
-rls_uri=sips:rls@sip.linphone.org
 
 [net]
 #Because dynamic bitrate adaption can increase bitrate, we must allow "no limit"
@@ -36,9 +35,10 @@ host=
 port=443
 
 [misc]
-log_collection_upload_server_url=https://files.linphone.org/http-file-transfer-server/hft.php
-file_transfer_server_url=https://files.linphone.org/http-file-transfer-server/hft.php
-version_check_url_root=https://download.linphone.org/releases
+# SecureLink: no Belledonne servers (logs, files, version check)
+log_collection_upload_server_url=
+file_transfer_server_url=
+version_check_url_root=
 max_calls=10
 history_max_size=100
 conference_layout=1
@@ -54,6 +54,6 @@ return_empty_friends=1
 imdn_to_everybody_threshold=1
 
 [ui]
-contacts_filter=sip.linphone.org
+contacts_filter=
 
 ## End of default rc

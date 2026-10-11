@@ -4,13 +4,15 @@
 <dict>
 	<key>APP_GROUP_NAME</key>
 	<string>$(APP_GROUP_NAME)</string>
+	<key>CFBundleDisplayName</key>
+	<string>SecureLink</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>linphone-mention</string>
@@ -20,7 +22,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>linphone-message</string>
@@ -30,7 +32,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>linphone-config</string>
@@ -40,7 +42,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sip</string>
@@ -50,7 +52,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sips</string>
@@ -60,7 +62,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sip-linphone</string>
@@ -70,7 +72,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>sips-linphone</string>
@@ -80,7 +82,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>linphone-sip</string>
@@ -90,7 +92,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>linphone-sips</string>
@@ -100,7 +102,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>tel</string>
@@ -110,7 +112,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>org.linphone</string>
@@ -120,7 +122,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>org.linphone.phone</string>
+			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>callto</string>

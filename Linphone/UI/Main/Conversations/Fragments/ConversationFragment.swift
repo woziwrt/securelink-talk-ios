@@ -1171,7 +1171,7 @@ struct ConversationFragment: View {
 									}
 									
 									if conversationViewModel.messageToEdit == nil {
-										if messageText.isEmpty && conversationViewModel.mediasToSend.isEmpty {
+										if false && messageText.isEmpty && conversationViewModel.mediasToSend.isEmpty {   // SecureLink: no voice messages
 											Button {
 												voiceRecordingInProgress = true
 											} label: {
@@ -1498,7 +1498,7 @@ struct ConversationFragment: View {
 											Divider()
 										}
 										
-										if !conversationViewModel.selectedMessage!.message.isRetracted {
+										if false && !conversationViewModel.selectedMessage!.message.isRetracted {   // SecureLink: no forwarding
 											Button {
 												withAnimation {
 													isShowConversationForwardMessageFragment = true

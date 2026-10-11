@@ -347,7 +347,7 @@ struct RootView: View {
 	
 	
 	var showWelcome: Bool {
-		!sharedMainViewModel.welcomeViewDisplayed
+		false   // SecureLink: no welcome pages, the first screen is the assistant with the QR scanner
 	}
 
 	var showAssistant: Bool {

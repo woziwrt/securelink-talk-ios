@@ -270,6 +270,7 @@ struct SettingsFragment: View {
 								.background(Color.gray100)
 							}
 							
+							if false {   // SecureLink: no LDAP/CardDAV contacts, no meetings, no network settings
 							HStack(alignment: .center) {
 								Text("settings_contacts_title")
 									.default_text_style_800(styleSize: 18)
@@ -513,6 +514,7 @@ struct SettingsFragment: View {
 								.background(Color.gray100)
 							}
 							
+							}
 							/*
 							// Hide User interface (Dark mode)
 							
@@ -560,6 +562,7 @@ struct SettingsFragment: View {
 							}
 							*/
 							
+							if false {   // SecureLink: no advanced settings
 							NavigationLink(destination: {
 								SettingsAdvancedFragment(settingsViewModel: settingsViewModel)
 							}, label: {
@@ -583,6 +586,7 @@ struct SettingsFragment: View {
 							.padding(.vertical, 10)
 							.padding(.horizontal, 20)
 							.background(Color.gray100)
+							}
 							
 							if AppServices.corePreferences.showDeveloperSettings {
 								NavigationLink(destination: {

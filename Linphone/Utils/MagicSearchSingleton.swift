@@ -83,7 +83,7 @@ final class MagicSearchSingleton: ObservableObject {
 							  !lastSearchFriend.contains(where: { $0.phoneNumber == phoneNumber }) {
 						lastSearchFriend.append(searchResult)
 					}
-				} else if searchResult.friend != nil && (searchResult.hasSourceFlag(source: .RemoteCardDAV) || searchResult.friend?.friendList?.type == .CardDAV || searchResult.hasSourceFlag(source: .LdapServers)) {
+				} else if searchResult.friend != nil && (searchResult.hasSourceFlag(source: .RemoteCardDAV) || searchResult.friend?.friendList?.type == .CardDAV || searchResult.friend?.friendList?.type == .VCard4 || searchResult.hasSourceFlag(source: .LdapServers)) {
 					lastSearchFriend.append(searchResult)
 				} else {
 					lastSearchSuggestions.append(searchResult)
@@ -120,7 +120,7 @@ final class MagicSearchSingleton: ObservableObject {
                                     withPresence: true
                                 )
                             )
-					} else if searchResult.hasSourceFlag(source: .RemoteCardDAV) || searchResult.friend?.friendList?.type == .CardDAV {
+					} else if searchResult.hasSourceFlag(source: .RemoteCardDAV) || searchResult.friend?.friendList?.type == .CardDAV || searchResult.friend?.friendList?.type == .VCard4 {
 						addedAvatarListModel.append(
 							ContactAvatarModel(
 								friend: searchResult.friend!,

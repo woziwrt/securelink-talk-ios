@@ -3,22 +3,22 @@
 <plist version="1.0">
 <dict>
 	<key>aps-environment</key>
-	<string>development</string>
+	<string>production</string>
 	<key>com.apple.developer.aps-environment</key>
-	<string>development</string>
+	<string>production</string>
 	<key>com.apple.security.app-sandbox</key>
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.belledonne-communications.linphone</string>
-		<string>group.org.linphone.phone.linphoneExtension</string>
-		<string>group.org.linphone.phone.msgNotification</string>
+		<string>group.cc.securelink.talk</string>
+		<string>group.cc.securelink.talk.linphoneExtension</string>
+		<string>group.cc.securelink.talk.msgNotification</string>
 	</array>
 	<key>com.apple.security.files.user-selected.read-only</key>
 	<true/>
 	<key>keychain-access-groups</key>
 	<array>
-		<string>$(AppIdentifierPrefix)org.linphone.phone</string>
+		<string>$(AppIdentifierPrefix)cc.securelink.talk</string>
 	</array>
 </dict>
 </plist>

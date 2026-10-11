@@ -28,7 +28,9 @@ import Network
 import SwiftUI
 
 #if USE_CRASHLYTICS
+#if USE_CRASHLYTICS
 import Firebase
+#endif
 #endif
 
 class CoreContext: ObservableObject {
@@ -182,6 +184,13 @@ class CoreContext: ObservableObject {
 			MDMManager.shared.loadXMLConfigFromMdm(config: AppServices.config)
 
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
+			// SecureLink: the only trusted root is our own CA shipped inside the app (no public CA bundle, no exceptions)
+			if let caPath = Bundle.main.path(forResource: "securelink-ca.pem", ofType: nil) {
+				self.mCore.rootCa = caPath
+				Log.info("[SecureLink] root CA set to bundled securelink-ca.pem")
+			} else {
+				Log.error("[SecureLink] securelink-ca.pem missing from the bundle – TLS to the server will fail")
+			}
 
 			MDMManager.shared.applyMdmConfigToCore(core: self.mCore)
 			self.startObservingMDMConfigurationUpdates()

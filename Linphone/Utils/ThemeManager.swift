@@ -34,11 +34,14 @@ final class ThemeManager: ObservableObject {
 	static let shared = ThemeManager()
 	private let themeKey = "selectedTheme"
 	
-	@Published var currentTheme: Theme = ThemeManager.orange
+	// SecureLink: one fixed theme (the admin web blue), the user never picks a colour
+	
+	@Published var currentTheme: Theme = ThemeManager.securelink
 	
 	private init() {
-		let storedName = UserDefaults.standard.string(forKey: themeKey)
-		currentTheme = themes[storedName ?? ""] ?? ThemeManager.orange
+	
+		currentTheme = ThemeManager.securelink
+	
 	}
 	
 	func applyTheme(named name: String) {
@@ -69,6 +72,16 @@ final class ThemeManager: ObservableObject {
 		titanium.name: titanium,
 		mineral_blue.name: mineral_blue
 	]
+	
+	static let securelink = Theme(
+	
+		name: "securelink",
+	
+		main100: Color(hex: "#E8EEF8"),
+	
+		main500: Color(hex: "#1F5FBF")
+	
+	)
 	
 	static let orange = Theme(
 		name: "orange",

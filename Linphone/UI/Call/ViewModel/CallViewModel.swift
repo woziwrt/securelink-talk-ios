@@ -85,6 +85,7 @@ class CallViewModel: ObservableObject {
 	
 	private var callDelegate: CallDelegate?
 	
+	@Published var fullSas: String = ""   // SecureLink: the whole security word (both halves), shown to both sides
 	@Published var letters1: String = "AA"
 	@Published var letters2: String = "BB"
 	@Published var letters3: String = "CC"
@@ -1193,16 +1194,32 @@ class CallViewModel: ObservableObject {
 		}
 	}
 	
+	// SecureLink: the user confirmed the whole security word matches on both phones
+	func confirmZrtpSas() {
+		coreContext.doOnCoreQueue { core in
+			if let call = core.currentCall {
+				call.authenticationTokenVerified = true
+				Log.info("[CallViewModel] SecureLink: security word confirmed by the user")
+			}
+			DispatchQueue.main.async {
+				self.zrtpPopupDisplayed = false
+				self.isRemoteDeviceTrusted = true
+			}
+		}
+	}
+
 	func remoteAuthenticationTokens() {
 		coreContext.doOnCoreQueue { core in
 			if core.currentCall != nil {
 				let tokens = core.currentCall!.remoteAuthenticationTokens
 				if !tokens.isEmpty {
+					let full = core.currentCall!.authenticationToken ?? ""
 					DispatchQueue.main.async {
 						self.letters1 = tokens[0]
 						self.letters2 = tokens[1]
 						self.letters3 = tokens[2]
 						self.letters4 = tokens[3]
+						self.fullSas = full.uppercased()
 					}
 				}
 			}
