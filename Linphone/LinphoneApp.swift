@@ -253,9 +253,15 @@ struct AppView: View {
 		.onChange(of: coreContext.loggedIn) { _ in
 			requestPermissionsIfLoggedIn()
 		}
+		// SecureLink: the screen may stay awake only during a call. The call view's onDisappear did not always run,
+		// so the phone never auto-locked afterwards and the app lock never kicked in.
+		.onChange(of: telecomManager.callInProgress) { inCall in
+			UIApplication.shared.isIdleTimerDisabled = inCall
+		}
 		.onChange(of: scenePhase) { newPhase in
 			switch newPhase {
 			case .active:
+				UIApplication.shared.isIdleTimerDisabled = telecomManager.callInProgress
 				appLock.enteredForeground()
 			case .background:
 				appLock.enteredBackground()
