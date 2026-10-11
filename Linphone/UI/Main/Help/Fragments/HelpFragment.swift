@@ -232,9 +232,7 @@ struct HelpFragment: View {
 								}
 								
 								Button {
-									if let url = URL(string: NSLocalizedString("website_open_source_licences_usage_url", comment: "")) {
-										UIApplication.shared.open(url)
-									}
+									// SecureLink: licence text is shown below, no web page is opened
 								} label: {
 									HStack {
 										Image("check-square-offset")

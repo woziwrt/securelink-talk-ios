@@ -204,20 +204,28 @@ class CoreContext: ObservableObject {
 					Log.info("[SecureLink] rewrote push_parameters team id in [\(section)]")
 				}
 			}
+			// SecureLink: the only trusted root is our own CA. It is copied into the app-group container so that the
+			// notification extension (which starts its own core from the same linphonerc) trusts the server too –
+			// a path inside the app bundle changes with every install and the extension never set it.
+			if let caSrc = Bundle.main.path(forResource: "securelink-ca.pem", ofType: nil),
+			   let groupDir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SharedMainViewModel.appGroupName)?
+				.appendingPathComponent("Library/Application Support/linphone") {
+				let caDst = groupDir.appendingPathComponent("securelink-ca.pem")
+				try? FileManager.default.createDirectory(at: groupDir, withIntermediateDirectories: true)
+				try? FileManager.default.removeItem(at: caDst)
+				try? FileManager.default.copyItem(atPath: caSrc, toPath: caDst.path)
+				cfg.setString(section: "sip", key: "root_ca", value: caDst.path)
+				Log.info("[SecureLink] root CA copied to the app group: \(caDst.path)")
+			} else {
+				Log.error("[SecureLink] securelink-ca.pem missing from the bundle – TLS to the server will fail")
+			}
 			try? cfg.sync()
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
-			// SecureLink: the only trusted root is our own CA shipped inside the app (no public CA bundle, no exceptions)
 			// SecureLink: core-level push config – liblinphone builds the accounts' pn-param from here at registration
 			if let push = self.mCore.pushNotificationConfig {
 				push.teamId = "L8CYEF82P3"
 				push.bundleIdentifier = Bundle.main.bundleIdentifier ?? "cc.securelink.talk"
 				push.param = "L8CYEF82P3.\(Bundle.main.bundleIdentifier ?? "cc.securelink.talk").voip&remote"
-			}
-			if let caPath = Bundle.main.path(forResource: "securelink-ca.pem", ofType: nil) {
-				self.mCore.rootCa = caPath
-				Log.info("[SecureLink] root CA set to bundled securelink-ca.pem")
-			} else {
-				Log.error("[SecureLink] securelink-ca.pem missing from the bundle – TLS to the server will fail")
 			}
 
 			MDMManager.shared.applyMdmConfigToCore(core: self.mCore)

@@ -414,7 +414,7 @@
 "contact_video_call_action" = "Videohovor";
 "conversation_composing_label_multiple" = "%@ píšou…";
 "conversation_composing_label_single" = "%@ píše…";
-"conversation_end_to_end_encrypted_bottom_sheet_link" = "https://linphone.org/en/features/#security";
+"conversation_end_to_end_encrypted_bottom_sheet_link" = "";
 "conversation_end_to_end_encrypted_event_title" = "Koncově šifrovaná konverzace";
 "conversation_end_to_end_encrypted_event_subtitle" = "Zprávy v této konverzaci jsou koncově šifrovány. Dešifrovat je může pouze váš protějšek.";
 "conversation_event_device_added" = "Nové zařízení pro %@";
@@ -496,8 +496,8 @@
 "uri_handler_call_failed_toast" = "Nelze volat";
 "uri_handler_config_failed_toast" = "Nelze načíst konfiguraci";
 "username_error" = "Chybné uživatelské jméno";
-"web_platform_forgotten_password_url" = "https://subscribe.linphone.org/";
-"web_platform_register_email_url" = "https://subscribe.linphone.org/register/email";
+"web_platform_forgotten_password_url" = "";
+"web_platform_register_email_url" = "";
 "sip.linphone.org" = "sip.linphone.org";
 "SRTP" = "SRTP";
 "TCP" = "TCP";
@@ -508,10 +508,10 @@
 "uri_handler_bad_call_address_failed_toast" = "Nelze volat, neplatná adresa";
 "You will change this mode later" = "Tento režim změníte později";
 "ZRTP" = "ZRTP";
-"website_download_url" = "https://linphone.org/linphone-softphone";
-"website_open_source_licences_usage_url" = "https://wiki.linphone.org/xwiki/wiki/public/view/Linphone/Third%20party%20components%20/";
-"website_user_guide_url" = "https://linphone.org/en/docs/";
-"website_privacy_policy_url" = "https://linphone.org/en/privacy-policy";
+"website_download_url" = "";
+"website_open_source_licences_usage_url" = "";
+"website_user_guide_url" = "";
+"website_privacy_policy_url" = "";
 "website_terms_and_conditions_url" = "https://www.linphone.org/en/terms-of-use";
 "website_translate_weblate_url" = "https://weblate.linphone.org/";
 "welcome_carousel_skip" = "Přeskočit";
@@ -621,7 +621,7 @@
 "conversation_info_dialog_delete_chatroom_title" = "Smazat tuto konverzaci?";
 "conversation_info_dialog_leave_chatroom_title" = "Opustit tuto konverzaci?";
 "conversation_info_chatroom_deleted_toast" = "Konverzace smazána";
-"conversation_end_to_end_encrypted_bottom_sheet_message" = "Díky technologii koncového šifrování v aplikaci Linphone je zaručena důvěrnost zpráv, hovorů a schůzek. Vyměňovaná data nedokáže dešifrovat nikdo, ani my sami.";
+"conversation_end_to_end_encrypted_bottom_sheet_message" = "Zprávy, přílohy i hovory jsou šifrovány koncově mezi vašimi telefony. Server SecureLink ani jeho správce je nedokáže přečíst.";
 "conversation_info_dialog_delete_chatroom_message" = "Tato konverzace bude pro vás trvale smazána.";
 "early_push_missed_call_body" = "Zatímco bylo vaše zařízení uzamčené, přišel vám hovor.";
 "early_push_unknown_caller" = "Neznámé";

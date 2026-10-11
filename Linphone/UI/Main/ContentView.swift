@@ -2093,9 +2093,11 @@ struct ContentView: View {
 					
 					Spacer()
 					
+					if false {   // SecureLink: no link to the Linphone website
 					Text("conversation_end_to_end_encrypted_bottom_sheet_link")
 						.default_text_style(styleSize: 14)
 						.underline()
+					}
 				}
 				.padding(.vertical, 20)
 				.padding(.horizontal, 30)
