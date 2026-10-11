@@ -111,6 +111,13 @@ class CoreContext: ObservableObject {
 		if status == .Successful {
 			var accountModels: [AccountModel] = []
 			for account in self.mCore.accountList {
+				// SecureLink: the push parameters must carry our Apple team id (liblinphone's default is "ABCD1234")
+				let teamId = AppServices.corePreferences.teamID
+				if !teamId.isEmpty, let params = account.params?.clone(), let push = params.pushNotificationConfig, push.teamId != teamId {
+					push.teamId = teamId
+					account.params = params
+					Log.info("[SecureLink] push team id set to \(teamId) for \(account.params?.identityAddress?.asStringUriOnly() ?? "?")")
+				}
 				accountModels.append(AccountModel(account: account, core: self.mCore))
 			}
 			DispatchQueue.main.async {

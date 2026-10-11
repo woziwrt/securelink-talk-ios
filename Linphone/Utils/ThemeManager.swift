@@ -45,11 +45,10 @@ final class ThemeManager: ObservableObject {
 	}
 	
 	func applyTheme(named name: String) {
-		guard let theme = themes[name] else { return }
-		withAnimation(.easeInOut(duration: 0.3)) {
-			self.currentTheme = theme
+		// SecureLink: the theme is fixed; provisioning / MDM "theme_main_color" (default "orange") must not switch it back
+		if currentTheme != ThemeManager.securelink {
+			currentTheme = ThemeManager.securelink
 		}
-		UserDefaults.standard.setValue(name, forKey: themeKey)
 	}
 	
 	// MARK: - Theme Presets
