@@ -23,22 +23,23 @@ struct SplashScreen: View {
 	var showSpinner: Bool = false
 
 	var body: some View {
+		// SecureLink: same look as the lock screen, so nothing else flashes at start
 		ZStack {
-			Color.white
+			Color.orangeMain500
 				.ignoresSafeArea()
 
-			Image("linphone")
-				.resizable()
-				.renderingMode(.template)
-				.aspectRatio(contentMode: .fit)
-				.frame(width: 240, height: 128)
-				.foregroundColor(ThemeManager.shared.currentTheme.main500)
-
-			ProgressView()
-				.controlSize(.small)
-				.progressViewStyle(CircularProgressViewStyle(tint: Color.orangeMain500))
-				.offset(y: 96)
-				.opacity(showSpinner ? 1 : 0)
+			VStack(spacing: 18) {
+				Image("linphone")
+					.resizable()
+					.scaledToFit()
+					.frame(width: 90, height: 90)
+				Text("SecureLink")
+					.default_text_style_white_700(styleSize: 26)
+				ProgressView()
+					.controlSize(.small)
+					.progressViewStyle(CircularProgressViewStyle(tint: Color.white))
+					.opacity(showSpinner ? 1 : 0)
+			}
 		}
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.ignoresSafeArea(.all)
