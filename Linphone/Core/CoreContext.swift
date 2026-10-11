@@ -197,6 +197,13 @@ class CoreContext: ObservableObject {
 			// SecureLink: push parameters stored from earlier registrations still carry liblinphone's placeholder team id –
 			// rewrite them before the core loads the accounts, otherwise the server looks up certificates that do not exist
 			let cfg = AppServices.config
+			// SecureLink: settings arrive once, with the QR code. liblinphone prunes every stored auth_info before it applies
+			// remote provisioning and relies on writing them back after start – the notification extension's short-lived
+			// core did not, and the phone lost its password. So never re-fetch provisioning at start.
+			if !cfg.getString(section: "misc", key: "config-uri", defaultString: "").isEmpty {
+				cfg.cleanEntry(section: "misc", key: "config-uri")
+				Log.info("[SecureLink] removed misc/config-uri – no provisioning re-fetch at start")
+			}
 			for section in cfg.sectionsNamesList where section == "push_notification" || section.hasPrefix("proxy_") {
 				let stored = cfg.getString(section: section, key: "push_parameters", defaultString: "")
 				if stored.contains("ABCD1234.") {
