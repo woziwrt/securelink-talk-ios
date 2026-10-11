@@ -243,12 +243,8 @@ struct AppView: View {
 			.environmentObject(telecomManager)
 			.environmentObject(sharedMainViewModel)
 			
-			// SecureLink: the app is locked with Face ID / Touch ID / passcode – on every start and after 30 s in background
-			if appLock.locked && !telecomManager.callInProgress {
-				AppLockView(appLock: appLock)
-					.transition(.opacity)
-					.zIndex(100)
-			}
+			// SecureLink: the lock screen lives in its own window above everything (see AppLock) – a view in this
+			// ZStack stayed hidden under screens that iOS presents in a higher layer (e.g. an open conversation)
 		}
 		.onAppear {
 			appLock.lockNow()
@@ -298,15 +294,38 @@ extension AppView {
 
 final class AppLock: ObservableObject {
 	static let shared = AppLock()
-	@Published var locked = true
+	@Published var locked = true { didSet { updateWindow() } }
 	@Published var failed = false
 	private var backgroundSince: Date?
 	private var authenticating = false
 	private let graceSeconds: TimeInterval = 30
+	private var lockWindow: UIWindow?
+	
+	// The lock screen is a separate UIWindow above alerts, so nothing the app presents can sit on top of it.
+	func updateWindow() {
+		DispatchQueue.main.async {
+			let inCall = TelecomManager.shared.callInProgress
+			if self.locked && !inCall {
+				guard self.lockWindow == nil else { return }
+				let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+				guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first else { return }
+				let window = UIWindow(windowScene: scene)
+				window.windowLevel = .alert + 1
+				window.backgroundColor = .clear
+				window.rootViewController = UIHostingController(rootView: AppLockView(appLock: self))
+				window.isHidden = false
+				self.lockWindow = window
+			} else {
+				self.lockWindow?.isHidden = true
+				self.lockWindow = nil
+			}
+		}
+	}
 	
 	func lockNow() {
 		locked = true
 		failed = false
+		updateWindow()
 		authenticate()
 	}
 	
@@ -320,6 +339,7 @@ final class AppLock: ObservableObject {
 		}
 		backgroundSince = nil
 		if locked {
+			updateWindow()
 			authenticate()
 		}
 	}
