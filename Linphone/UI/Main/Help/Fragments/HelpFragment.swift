@@ -209,7 +209,6 @@ struct HelpFragment: View {
 								}
 								.background(Color.gray100)
 								// SecureLink: tapping the version does nothing (no hidden developer mode)
-								}
 								
 								Button {
 									// SecureLink: licence text is shown below, no web page is opened
