@@ -761,8 +761,8 @@ final class ContactsManager: ObservableObject {
 	func refreshCardDavContacts() {
 		self.coreContext.doOnCoreQueue { core in
 			core.friendsLists.forEach{ friendList in
-				if (friendList.type == .CardDAV) {
-					Log.info("\(ContactsManager.TAG) Found CardDAV friend list \(friendList.displayName), starting update")
+				if (friendList.type == .CardDAV || friendList.type == .VCard4) {   // SecureLink: the server directory (vCard list) too
+					Log.info("\(ContactsManager.TAG) Found CardDAV/vCard friend list \(friendList.displayName), starting update")
 					friendList.synchronizeFriendsFromServer()
 				}
 			}

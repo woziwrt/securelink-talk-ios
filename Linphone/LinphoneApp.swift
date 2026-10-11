@@ -268,6 +268,8 @@ struct AppView: View {
 				UIApplication.shared.isIdleTimerDisabled = inCall
 				Log.info("[AppLock] foreground: inCall=\(inCall) flag=\(telecomManager.callInProgress) calls=\(coreContext.activeCalls)")
 				appLock.enteredForeground()
+				// SecureLink: a new member of the circle shows up at the next foreground, not only after an app restart
+				if coreContext.mCore != nil { ContactsManager.shared.refreshCardDavContacts() }
 			case .background:
 				appLock.enteredBackground()
 			default:
