@@ -52,6 +52,8 @@ publish_presence=0
 read_and_agree_terms_and_privacy=1
 show_confirmation_dialog_zrtp_trust_call=1
 auto_start_call_record=0
+# Apple developer team – goes into the push parameters (pn-param) the phone registers with
+team_id=L8CYEF82P3
 [account_creator]
 # SecureLink: no public account creation
 url=
