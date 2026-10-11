@@ -242,6 +242,7 @@ struct AppView: View {
 			.environmentObject(navigationManager)
 			.environmentObject(telecomManager)
 			.environmentObject(sharedMainViewModel)
+			.simultaneousGesture(DragGesture(minimumDistance: 0).onChanged { _ in appLock.touched() })
 			
 			// SecureLink: the lock screen lives in its own window above everything (see AppLock) – a view in this
 			// ZStack stayed hidden under screens that iOS presents in a higher layer (e.g. an open conversation)
@@ -305,10 +306,37 @@ final class AppLock: ObservableObject {
 	static let shared = AppLock()
 	@Published var locked = true { didSet { updateWindow() } }
 	@Published var failed = false
+	@Published var noPasscode = false          // the phone has no passcode: the app refuses to open and says why
 	private var backgroundSince: Date?
 	private var authenticating = false
 	private let graceSeconds: TimeInterval = 30
+	private let idleSeconds: TimeInterval = 300   // foreground without a touch (or keyboard) → lock
+	private var lastActivity = Date()
+	private var keyboardVisible = false
+	private var idleTimer: Timer?
 	private var lockWindow: UIWindow?
+	
+	private init() {
+		// Lock after 5 min without any touch while the app is on screen – the phone's own auto-lock may be off ("Never")
+		idleTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { [weak self] _ in self?.checkIdle() }
+		NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.keyboardVisible = true; self?.touched()
+		}
+		NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.keyboardVisible = false; self?.touched()
+		}
+	}
+	
+	func touched() { lastActivity = Date() }
+	
+	private func checkIdle() {
+		guard !locked, !keyboardVisible, UIApplication.shared.applicationState == .active else { return }
+		let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
+		if !inCall && Date().timeIntervalSince(lastActivity) >= idleSeconds {
+			Log.info("[AppLock] no touch for \(Int(idleSeconds)) s – locking")
+			lockNow()
+		}
+	}
 	
 	// The lock screen is a separate UIWindow above alerts, so nothing the app presents can sit on top of it.
 	func updateWindow() {
@@ -368,12 +396,15 @@ final class AppLock: ObservableObject {
 			Log.error("[AppLock] no device authentication available: \(error?.localizedDescription ?? "?") – app stays locked")
 			authenticating = false
 			failed = true
+			noPasscode = (error as? LAError)?.code == .passcodeNotSet
 			return
 		}
 		context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Odemknout SecureLink") { ok, err in
 			DispatchQueue.main.async {
 				self.authenticating = false
 				if ok {
+					self.noPasscode = false
+					self.lastActivity = Date()
 					self.locked = false
 				} else {
 					self.failed = true
@@ -399,7 +430,14 @@ struct AppLockView: View {
 					.default_text_style_white_700(styleSize: 26)
 				Text("Zamčeno")
 					.default_text_style_white_600(styleSize: 16)
-				if appLock.failed {
+				if appLock.noPasscode {
+					Text("Tento iPhone nemá nastavený kód zámku. SecureLink jde otevřít jen na telefonu s kódem (Nastavení → Face ID a kód / Touch ID a kód).")
+						.default_text_style_white(styleSize: 15)
+						.multilineTextAlignment(.center)
+						.padding(.horizontal, 30)
+						.padding(.top, 10)
+				}
+				if appLock.failed && !appLock.noPasscode {
 					Button(action: { appLock.authenticate() }, label: {
 						Text("Odemknout")
 							.default_text_style_600(styleSize: 18)
