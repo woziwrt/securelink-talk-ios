@@ -113,8 +113,12 @@ class CoreContext: ObservableObject {
 			for account in self.mCore.accountList {
 				// SecureLink: the push parameters must carry our Apple team id (liblinphone's default is "ABCD1234")
 				let teamId = AppServices.corePreferences.teamID
-				if !teamId.isEmpty, let params = account.params?.clone(), let push = params.pushNotificationConfig, push.teamId != teamId {
+				if !teamId.isEmpty, let params = account.params?.clone(), let push = params.pushNotificationConfig,
+				   push.teamId != teamId || (push.param ?? "").hasPrefix("ABCD1234") {
 					push.teamId = teamId
+					// pn-param is stored verbatim in the account; rebuild it so the server looks up our certificates
+					let bundle = push.bundleIdentifier ?? Bundle.main.bundleIdentifier ?? "cc.securelink.talk"
+					push.param = "\(teamId).\(bundle).voip&remote"
 					account.params = params
 					Log.info("[SecureLink] push team id set to \(teamId) for \(account.params?.identityAddress?.asStringUriOnly() ?? "?")")
 				}
@@ -192,6 +196,12 @@ class CoreContext: ObservableObject {
 
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
 			// SecureLink: the only trusted root is our own CA shipped inside the app (no public CA bundle, no exceptions)
+			// SecureLink: core-level push config – liblinphone builds the accounts' pn-param from here at registration
+			if let push = self.mCore.pushNotificationConfig {
+				push.teamId = "L8CYEF82P3"
+				push.bundleIdentifier = Bundle.main.bundleIdentifier ?? "cc.securelink.talk"
+				push.param = "L8CYEF82P3.\(Bundle.main.bundleIdentifier ?? "cc.securelink.talk").voip&remote"
+			}
 			if let caPath = Bundle.main.path(forResource: "securelink-ca.pem", ofType: nil) {
 				self.mCore.rootCa = caPath
 				Log.info("[SecureLink] root CA set to bundled securelink-ca.pem")
