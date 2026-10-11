@@ -256,12 +256,15 @@ struct AppView: View {
 		// SecureLink: the screen may stay awake only during a call. The call view's onDisappear did not always run,
 		// so the phone never auto-locked afterwards and the app lock never kicked in.
 		.onChange(of: telecomManager.callInProgress) { inCall in
-			UIApplication.shared.isIdleTimerDisabled = inCall
+			UIApplication.shared.isIdleTimerDisabled = inCall && coreContext.mCore.callsNb > 0
 		}
 		.onChange(of: scenePhase) { newPhase in
 			switch newPhase {
 			case .active:
-				UIApplication.shared.isIdleTimerDisabled = telecomManager.callInProgress
+				// A stuck "call in progress" flag must not keep the screen awake or the lock away: ask the core too.
+				let inCall = telecomManager.callInProgress && coreContext.mCore.callsNb > 0
+				UIApplication.shared.isIdleTimerDisabled = inCall
+				Log.info("[AppLock] foreground: inCall=\(inCall) flag=\(telecomManager.callInProgress) calls=\(coreContext.mCore.callsNb)")
 				appLock.enteredForeground()
 			case .background:
 				appLock.enteredBackground()
@@ -310,7 +313,8 @@ final class AppLock: ObservableObject {
 	// The lock screen is a separate UIWindow above alerts, so nothing the app presents can sit on top of it.
 	func updateWindow() {
 		DispatchQueue.main.async {
-			let inCall = TelecomManager.shared.callInProgress
+			let inCall = TelecomManager.shared.callInProgress && CoreContext.shared.mCore.callsNb > 0
+			Log.info("[AppLock] window update: locked=\(self.locked) inCall=\(inCall)")
 			if self.locked && !inCall {
 				guard self.lockWindow == nil else { return }
 				let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
@@ -340,7 +344,9 @@ final class AppLock: ObservableObject {
 	}
 	
 	func enteredForeground() {
-		if let since = backgroundSince, Date().timeIntervalSince(since) >= graceSeconds {
+		let away = backgroundSince.map { Date().timeIntervalSince($0) } ?? -1
+		Log.info("[AppLock] entered foreground after \(Int(away)) s in background, locked=\(locked)")
+		if away >= graceSeconds {
 			locked = true
 		}
 		backgroundSince = nil
