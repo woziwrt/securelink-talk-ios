@@ -355,11 +355,11 @@
 "help_about_advanced_title" = "Advanced";
 "help_about_check_for_update" = "Check update";
 "help_about_contribute_translations_title" = "Contribute on Linphone translation";
-"help_about_open_source_licenses_subtitle" = "© Belledonne Communications 2010-2024";
-"help_about_open_source_licenses_title" = "GNU General Public License v3.0";
+"help_about_open_source_licenses_subtitle" = "SecureLink © 2026 Petr Wozniak, distributed under the GNU GPL v3. Using Linphone © Belledonne Communications (GPL v3). Source code is available from your administrator.";
+"help_about_open_source_licenses_title" = "Licence";
 "help_about_privacy_policy_subtitle" = "What information Linphone collects and uses";
 "help_about_privacy_policy_title" = "Privacy policy";
-"help_about_title" = "About Linphone";
+"help_about_title" = "About SecureLink";
 "help_about_user_guide_title" = "Linphone user guide";
 "help_about_user_guide_subtitle" = "Learn how to master all app features, step by step.";
 "help_about_version_title" = "Version";

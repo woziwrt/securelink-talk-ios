@@ -209,7 +209,7 @@ struct HelpFragment: View {
 								}
 								.background(Color.gray100)
 								.onTapGesture {
-									if !AppServices.corePreferences.showDeveloperSettings {
+									if false {   // SecureLink: no hidden developer mode
 										clickCounter += 1
 										
 										switch clickCounter {

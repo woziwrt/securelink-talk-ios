@@ -60,6 +60,8 @@ final class ContactsManager: ObservableObject {
 	private init() {}
 	
 	func fetchContacts() {
+		// SecureLink: the iPhone address book is never read – contacts come only from the server directory
+		return
 		self.coreContext.doOnCoreQueue { core in
 			if core.globalState == GlobalState.Shutdown || core.globalState == GlobalState.Off {
 				print("\(#function) - Core is being stopped or already destroyed, abort")

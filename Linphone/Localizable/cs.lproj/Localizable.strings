@@ -427,7 +427,7 @@
 "conversation_one_to_one_hidden_subject" = "Skrytý předmět";
 "conversation_reply_to_message_title" = "Odpovídá na: ";
 "help_about_contribute_translations_title" = "Přispět do překladu Linphone";
-"help_about_title" = "O aplikaci Linphone";
+"help_about_title" = "O aplikaci SecureLink";
 "debug_logs_copied_to_clipboard_toast" = "Ladící protokoly zkopírovány do schránky";
 "Default" = "Výchozí";
 "Default mode" = "Výchozí režim";
@@ -453,11 +453,11 @@
 "welcome_page_subtitle" = "v %@";
 "conversation_message_meeting_cancelled_label" = "Schůzka byla zrušena!";
 "failed_meeting_ics_invitation_not_sent_toast" = "Pozvánky ICS na schůzku nelze odeslat žádnému účastníkovi";
-"help_about_open_source_licenses_title" = "GNU General Public License v3.0";
+"help_about_open_source_licenses_title" = "Licence";
 "help_about_privacy_policy_subtitle" = "Jaké informace Linphone shromažďuje a používá";
 "help_dialog_update_available_message" = "Je k dispozici nová verze %@. Chcete provést aktualizaci?";
 "GC_MSG" = "Byli jste přidáni do chatovací místnosti";
-"help_about_open_source_licenses_subtitle" = "© Belledonne Communications 2010-2024";
+"help_about_open_source_licenses_subtitle" = "SecureLink © 2026 Petr Wozniak, šířeno pod licencí GNU GPL v3. S využitím Linphone © Belledonne Communications (GPL v3). Zdrojový kód poskytne správce.";
 "history_list_empty_with_filter_history" = "Vašemu hledání neodpovídají žádné záznamy";
 "history_title" = "Historie hovorů";
 "IM_MSG" = "Obdrželi jste zprávu";

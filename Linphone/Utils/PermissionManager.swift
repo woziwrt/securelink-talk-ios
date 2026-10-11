@@ -92,6 +92,12 @@ class PermissionManager: ObservableObject {
 	}
 	
 	func contactsRequestPermission(group: DispatchGroup) {
+		// SecureLink: never ask for the iPhone address book – contacts come only from the server directory
+		DispatchQueue.main.async {
+			self.contactsPermissionGranted = false
+		}
+		group.leave()
+		return
 		let store = CNContactStore()
 		store.requestAccess(for: .contacts) { success, _ in
 			DispatchQueue.main.async {

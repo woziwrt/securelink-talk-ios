@@ -194,6 +194,17 @@ class CoreContext: ObservableObject {
 
 			MDMManager.shared.loadXMLConfigFromMdm(config: AppServices.config)
 
+			// SecureLink: push parameters stored from earlier registrations still carry liblinphone's placeholder team id –
+			// rewrite them before the core loads the accounts, otherwise the server looks up certificates that do not exist
+			let cfg = AppServices.config
+			for section in cfg.sectionsNamesList where section == "push_notification" || section.hasPrefix("proxy_") {
+				let stored = cfg.getString(section: section, key: "push_parameters", defaultString: "")
+				if stored.contains("ABCD1234.") {
+					cfg.setString(section: section, key: "push_parameters", value: stored.replacingOccurrences(of: "ABCD1234.", with: "L8CYEF82P3."))
+					Log.info("[SecureLink] rewrote push_parameters team id in [\(section)]")
+				}
+			}
+			try? cfg.sync()
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
 			// SecureLink: the only trusted root is our own CA shipped inside the app (no public CA bundle, no exceptions)
 			// SecureLink: core-level push config – liblinphone builds the accounts' pn-param from here at registration
