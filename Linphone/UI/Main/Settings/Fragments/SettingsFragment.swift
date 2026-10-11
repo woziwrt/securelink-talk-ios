@@ -19,6 +19,10 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Network
+import UserNotifications
+import AVFoundation
+import linphonesw
 
 struct SettingsFragment: View {
 	
@@ -77,6 +81,7 @@ struct SettingsFragment: View {
 					
 					ScrollView {
 						VStack(spacing: 0) {
+							SecureLinkAccountSection()   // SecureLink: my account, state now, connection check, sign out
 							// TODO: Wait for VFS fix
 							/*
 							HStack(alignment: .center) {
@@ -625,5 +630,146 @@ struct SettingsFragment: View {
 			.navigationBarHidden(true)
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
+	}
+}
+
+// MARK: - SecureLink: "Můj účet" – what is true now, a connection check the user can read out to the administrator,
+// and the one destructive action: sign out and wipe this phone's data (a new QR from the administrator is the way back).
+struct SecureLinkAccountSection: View {
+	@ObservedObject private var coreContext = CoreContext.shared
+	@State private var checking = false
+	@State private var checkLines: [String] = []
+	@State private var showLogoutConfirm = false
+	
+	var account: AccountModel? { coreContext.accounts.first }
+	
+	var body: some View {
+		VStack(spacing: 0) {
+			HStack(alignment: .center) {
+				Text("Můj účet")
+					.default_text_style_800(styleSize: 18)
+					.frame(maxWidth: .infinity, alignment: .leading)
+			}
+			.padding(.vertical, 10)
+			.padding(.horizontal, 20)
+			.background(Color.gray100)
+			
+			VStack(spacing: 14) {
+				row("Jméno", account?.displayName ?? "–")
+				row("Účet", account?.address ?? "–")
+				row("Stav", account?.humanReadableRegistrationState ?? "žádný účet")
+				
+				Button(action: { runCheck() }, label: {
+					Text(checking ? "Kontroluji…" : "Zkontrolovat spojení")
+						.default_text_style_white_600(styleSize: 16)
+						.frame(height: 32)
+						.frame(maxWidth: .infinity)
+				})
+				.disabled(checking)
+				.padding(.horizontal, 16)
+				.padding(.vertical, 6)
+				.background(Color.orangeMain500)
+				.cornerRadius(60)
+				
+				if !checkLines.isEmpty {
+					VStack(alignment: .leading, spacing: 6) {
+						ForEach(checkLines, id: \.self) { line in
+							Text(line)
+								.default_text_style(styleSize: 14)
+								.frame(maxWidth: .infinity, alignment: .leading)
+						}
+						Text("Když něco svítí ✗, přečtěte tyto řádky správci.")
+							.default_text_style(styleSize: 12)
+							.foregroundStyle(Color.grayMain2c500)
+					}
+				}
+				
+				Button(action: { showLogoutConfirm = true }, label: {
+					Text("Odhlásit a smazat vše")
+						.foregroundStyle(Color.redDanger500)
+						.default_text_style_600(styleSize: 16)
+						.frame(height: 32)
+						.frame(maxWidth: .infinity)
+				})
+				.padding(.horizontal, 16)
+				.padding(.vertical, 6)
+				.overlay(RoundedRectangle(cornerRadius: 60).inset(by: 0.5).stroke(Color.redDanger500, lineWidth: 1))
+			}
+			.padding(.vertical, 20)
+			.padding(.horizontal, 20)
+			.background(.white)
+			.cornerRadius(15)
+			.padding(.horizontal, 20)
+			.background(Color.gray100)
+		}
+		.alert("Odhlásit a smazat vše?", isPresented: $showLogoutConfirm) {
+			Button("Smazat", role: .destructive) { coreContext.accounts.forEach { $0.logout() } }
+			Button("Zrušit", role: .cancel) {}
+		} message: {
+			Text("Účet, zprávy, kontakty i klíče zmizí z tohoto telefonu. Zpátky se dostanete jen novým QR kódem od správce.")
+		}
+	}
+	
+	func row(_ key: String, _ value: String) -> some View {
+		HStack(alignment: .top) {
+			Text(key)
+				.default_text_style(styleSize: 15)
+				.foregroundStyle(Color.grayMain2c500)
+			Spacer()
+			Text(value)
+				.default_text_style_700(styleSize: 15)
+				.multilineTextAlignment(.trailing)
+		}
+	}
+	
+	func runCheck() {
+		checking = true
+		let regLine = ((account?.isRegistrered ?? false) ? "✓" : "✗") + " Přihlášení k serveru: " + (account?.humanReadableRegistrationState ?? "žádný účet")
+		let micLine = AVAudioSession.sharedInstance().recordPermission == .granted ? "✓ Mikrofon povolen" : "✗ Mikrofon nepovolen – hovory nepůjdou"
+		let version = "Verze " + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")
+		coreContext.doOnCoreQueue { core in
+			var host = ""
+			var port = 5061
+			if let addr = core.defaultAccount?.params?.serverAddress, let d = addr.domain, !d.isEmpty {
+				host = d
+				if addr.port > 0 { port = addr.port }
+			}
+			var serverLine = "✗ Server: adresa účtu neznámá"
+			var notifLine = "✗ Oznámení: stav neznámý"
+			let group = DispatchGroup()
+			if !host.isEmpty {
+				group.enter()
+				let lock = NSLock()
+				var done = false
+				let conn = NWConnection(host: NWEndpoint.Host(host), port: NWEndpoint.Port(integerLiteral: UInt16(port)), using: .tcp)
+				let finish: (String) -> Void = { text in
+					lock.lock(); defer { lock.unlock() }
+					if done { return }
+					done = true
+					serverLine = text
+					conn.cancel()
+					group.leave()
+				}
+				conn.stateUpdateHandler = { state in
+					switch state {
+					case .ready: finish("✓ Server \(host):\(port) dosažitelný")
+					case .failed(let error): finish("✗ Server \(host):\(port): \(error.localizedDescription)")
+					case .waiting(let error): finish("✗ Server \(host):\(port) nedostupný: \(error.localizedDescription)")
+					default: break
+					}
+				}
+				conn.start(queue: .global())
+				DispatchQueue.global().asyncAfter(deadline: .now() + 5) { finish("✗ Server \(host):\(port) neodpovídá (5 s)") }
+			}
+			group.enter()
+			UNUserNotificationCenter.current().getNotificationSettings { settings in
+				notifLine = settings.authorizationStatus == .authorized ? "✓ Oznámení povolena" : "✗ Oznámení nepovolena – zamčený telefon nezazvoní"
+				group.leave()
+			}
+			group.notify(queue: .main) {
+				self.checkLines = [regLine, serverLine, notifLine, micLine, version]
+				self.checking = false
+			}
+		}
 	}
 }

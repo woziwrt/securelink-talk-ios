@@ -355,6 +355,58 @@ struct ContentView: View {
 										
 										Spacer()
 										
+                                        if !sharedMainViewModel.disableChatFeature {
+                                            ZStack {
+                                                if SharedMainViewModel.shared.unreadMessages > 0 {
+                                                    VStack {
+                                                        HStack {
+                                                            Text(
+                                                                SharedMainViewModel.shared.unreadMessages < 99
+                                                                ? String(SharedMainViewModel.shared.unreadMessages)
+                                                                : "99+"
+                                                            )
+                                                            .foregroundStyle(.white)
+                                                            .default_text_style(styleSize: 10)
+                                                            .lineLimit(1)
+                                                        }
+                                                        .frame(width: 18, height: 18)
+                                                        .background(Color.redDanger500)
+                                                        .cornerRadius(50)
+                                                    }
+                                                    .padding(.bottom, 30)
+                                                    .padding(.leading, 30)
+                                                }
+                                                
+                                                Button(action: {
+													resetFilter()
+													
+                                                    sharedMainViewModel.changeIndexView(indexViewInt: 2)
+                                                    sharedMainViewModel.displayedFriend = nil
+                                                    sharedMainViewModel.displayedCall = nil
+                                                    sharedMainViewModel.displayedMeeting = nil
+                                                }, label: {
+                                                    VStack {
+                                                        Image("chat-teardrop-text")
+                                                            .renderingMode(.template)
+                                                            .resizable()
+                                                            .foregroundStyle(sharedMainViewModel.indexView == 2 ? Color.orangeMain500 : Color.grayMain2c600)
+                                                            .frame(width: 25, height: 25)
+
+                                                        if sharedMainViewModel.indexView == 2 {
+                                                            Text("bottom_navigation_conversations_label")
+                                                                .default_text_style_700(styleSize: 10)
+                                                        } else {
+                                                            Text("bottom_navigation_conversations_label")
+                                                                .default_text_style(styleSize: 10)
+                                                        }
+                                                    }
+                                                })
+                                                .padding(.top)
+                                                .accessibilityIdentifier("bottom_bar_chat_button")
+                                            }
+											
+											Spacer()
+                                        }
 										ZStack {
 											if SharedMainViewModel.shared.missedCallsCount > 0 {
 												VStack {
@@ -408,58 +460,6 @@ struct ContentView: View {
 										
 										Spacer()
 										
-                                        if !sharedMainViewModel.disableChatFeature {
-                                            ZStack {
-                                                if SharedMainViewModel.shared.unreadMessages > 0 {
-                                                    VStack {
-                                                        HStack {
-                                                            Text(
-                                                                SharedMainViewModel.shared.unreadMessages < 99
-                                                                ? String(SharedMainViewModel.shared.unreadMessages)
-                                                                : "99+"
-                                                            )
-                                                            .foregroundStyle(.white)
-                                                            .default_text_style(styleSize: 10)
-                                                            .lineLimit(1)
-                                                        }
-                                                        .frame(width: 18, height: 18)
-                                                        .background(Color.redDanger500)
-                                                        .cornerRadius(50)
-                                                    }
-                                                    .padding(.bottom, 30)
-                                                    .padding(.leading, 30)
-                                                }
-                                                
-                                                Button(action: {
-													resetFilter()
-													
-                                                    sharedMainViewModel.changeIndexView(indexViewInt: 2)
-                                                    sharedMainViewModel.displayedFriend = nil
-                                                    sharedMainViewModel.displayedCall = nil
-                                                    sharedMainViewModel.displayedMeeting = nil
-                                                }, label: {
-                                                    VStack {
-                                                        Image("chat-teardrop-text")
-                                                            .renderingMode(.template)
-                                                            .resizable()
-                                                            .foregroundStyle(sharedMainViewModel.indexView == 2 ? Color.orangeMain500 : Color.grayMain2c600)
-                                                            .frame(width: 25, height: 25)
-
-                                                        if sharedMainViewModel.indexView == 2 {
-                                                            Text("bottom_navigation_conversations_label")
-                                                                .default_text_style_700(styleSize: 10)
-                                                        } else {
-                                                            Text("bottom_navigation_conversations_label")
-                                                                .default_text_style(styleSize: 10)
-                                                        }
-                                                    }
-                                                })
-                                                .padding(.top)
-                                                .accessibilityIdentifier("bottom_bar_chat_button")
-                                            }
-											
-											Spacer()
-                                        }
 										
 										if !sharedMainViewModel.disableMeetingFeature {
 											Button(action: {
