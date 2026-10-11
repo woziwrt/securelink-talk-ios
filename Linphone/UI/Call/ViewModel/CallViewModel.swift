@@ -1304,6 +1304,9 @@ class CallViewModel: ObservableObject {
 	private func showZrtpSasDialog(authToken: String) {
 		if self.currentCall != nil {
 			let upperCaseAuthToken = authToken.localizedUppercase
+			// SecureLink: callers pass the LOCAL half (2 letters, different on each phone); the word both sides compare
+			// is the whole token – 11 showed "E7" and 6s "QW" of the same "E7QW".
+			let wholeToken = (self.currentCall!.authenticationToken ?? authToken).localizedUppercase
 			
 			let mySubstringPrefix = upperCaseAuthToken.prefix(2)
 			
@@ -1311,7 +1314,7 @@ class CallViewModel: ObservableObject {
 			
 			DispatchQueue.main.async {
 				// SecureLink: both sides show the whole token (same on both phones) as one security word
-				self.fullSas = upperCaseAuthToken.count == 4 ? "\(mySubstringPrefix) \(mySubstringSuffix)" : upperCaseAuthToken
+				self.fullSas = wholeToken.count == 4 ? "\(wholeToken.prefix(2)) \(wholeToken.suffix(2))" : wholeToken
 				switch self.currentCall!.dir {
 				case Call.Dir.Incoming:
 					self.upperCaseAuthTokenToRead = String(mySubstringPrefix)

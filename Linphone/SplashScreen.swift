@@ -29,7 +29,7 @@ struct SplashScreen: View {
 				.ignoresSafeArea()
 
 			VStack(spacing: 18) {
-				Image("linphone")
+				Image("securelink-white")
 					.resizable()
 					.scaledToFit()
 					.frame(width: 90, height: 90)
