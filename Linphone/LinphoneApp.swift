@@ -58,7 +58,15 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 			NotificationCenter.default.post(name: accountTokenNotification, object: nil, userInfo: ["token": creationToken])
 		}
 		
-		completionHandler(UIBackgroundFetchResult.newData)
+		// SecureLink: the server sends this silent push to phones past half of their registration lifetime
+		// (Flexisip register-wakeup). Being woken is not enough – refresh the registration now, while iOS lets us run.
+		CoreContext.shared.doOnCoreQueue { core in
+			Log.info("[Push] wake-up push: refreshing registration")
+			core.refreshRegisters()
+		}
+		DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+			completionHandler(UIBackgroundFetchResult.newData)
+		}
 	}
 					 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
