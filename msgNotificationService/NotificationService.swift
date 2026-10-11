@@ -117,7 +117,14 @@ class NotificationService: UNNotificationServiceExtension {
             }
             
 			if !createCore() {
+				// SecureLink: no core (the app is in the foreground and owns the shared core) – never show the server's
+				// raw text; a chat room invite is silent, a message shows the generic text (content stays hidden)
+				if let roomAddr = bestAttemptContent.userInfo["chat-room-addr"] as? String, !roomAddr.isEmpty {
+					contentHandler(UNNotificationContent())
+					return
+				}
 				bestAttemptContent.title = String(localized: "notification_chat_message_received_title")
+				bestAttemptContent.body = NSLocalizedString("IM_MSG", comment: "")
 				contentHandler(bestAttemptContent)
 				return
 			}
