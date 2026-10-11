@@ -595,7 +595,7 @@ struct SettingsFragment: View {
 							.background(Color.gray100)
 							}
 							
-							if AppServices.corePreferences.showDeveloperSettings {
+							if false {   // SecureLink: no developer settings, whatever an older build stored
 								NavigationLink(destination: {
 									SettingsDeveloperFragment(settingsViewModel: settingsViewModel)
 								}, label: {
