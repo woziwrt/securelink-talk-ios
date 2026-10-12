@@ -120,7 +120,10 @@ final class ContactsManager: ObservableObject {
 			}
 			
 			let store = CNContactStore()
-			store.requestAccess(for: .contacts) { (granted, error) in
+			// SecureLink: never ask for the iPhone address book (contacts come only from the server directory) – run the
+			// "access denied" path directly instead of store.requestAccess(for: .contacts)
+			_ = store
+			let handleAccess: (Bool, Error?) -> Void = { (granted, error) in
 				if let error = error {
 					print("\(#function) - failed to request access", error)
 					self.addFriendListDelegate()
@@ -195,6 +198,7 @@ final class ContactsManager: ObservableObject {
 					MagicSearchSingleton.shared.searchForContacts()
 				}
 			}
+			handleAccess(false, nil)
 		}
 	}
 	
