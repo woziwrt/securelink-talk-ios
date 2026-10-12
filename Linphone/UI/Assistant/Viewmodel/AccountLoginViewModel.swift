@@ -131,11 +131,7 @@ class AccountLoginViewModel: ObservableObject {
 					accountParams.pushNotificationAllowed = true
 					accountParams.remotePushNotificationAllowed = true
 				}
-#if DEBUG
-				let pushEnvironment = ".dev"
-#else
-				let pushEnvironment = ""
-#endif
+				let pushEnvironment = CoreContext.pushEnvironment   // SecureLink: from the signing profile, not the build type
 				accountParams.pushNotificationConfig?.provider = "apns" + pushEnvironment
 				
 				self.mCoreDelegate = CoreDelegateStub(onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in

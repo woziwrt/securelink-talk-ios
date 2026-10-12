@@ -34,6 +34,18 @@ import Firebase
 #endif
 
 class CoreContext: ObservableObject {
+	// SecureLink: Apple push environment from the signing profile (aps-environment), not from #if DEBUG – the app that the
+	// server re-signs for Ad Hoc is a Debug build with production push; a sandbox provider there means no calls on a locked phone.
+	static var pushEnvironment: String {
+		guard let url = Bundle.main.url(forResource: "embedded", withExtension: "mobileprovision"),
+			  let data = try? Data(contentsOf: url),
+			  let text = String(data: data, encoding: .isoLatin1),
+			  let key = text.range(of: "<key>aps-environment</key>") else {
+			return ""   // no profile = App Store build = production
+		}
+		return text[key.upperBound...].prefix(120).contains("development") ? ".dev" : ""
+	}
+
     
     static let shared = CoreContext()
     
@@ -336,11 +348,7 @@ class CoreContext: ObservableObject {
 			
 			self.mCoreDelegate = CoreDelegateStub(onGlobalStateChanged: { (core: Core, state: GlobalState, _: String) in
 				if state == GlobalState.On {
-#if DEBUG
-					let pushEnvironment = ".dev"
-#else
-					let pushEnvironment = ""
-#endif
+					let pushEnvironment = CoreContext.pushEnvironment   // SecureLink: from the signing profile, not the build type
 
 					if MagicSearchSingleton.shared.magicSearch == nil {
 						MagicSearchSingleton.shared.recreateMagicSearch(core: core)

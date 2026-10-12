@@ -339,11 +339,7 @@ class RegisterViewModel: ObservableObject {
 		
 		let pushConfig = core.pushNotificationConfig
 		if pushConfig != nil && self.accountManagerServices != nil {
-#if DEBUG
-					let pushEnvironment = ".dev"
-#else
-					let pushEnvironment = ""
-#endif
+					let pushEnvironment = CoreContext.pushEnvironment   // SecureLink: from the signing profile, not the build type
 			pushConfig!.provider = "apns\(pushEnvironment)"
 			var formatedPnParam = pushConfig!.param
 			formatedPnParam = formatedPnParam?.replacingOccurrences(of: "voip&remote", with: "remote")
