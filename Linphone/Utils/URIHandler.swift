@@ -95,7 +95,24 @@ class URIHandler {
 		}
 	}
 	
+	// SecureLink: configuration only from our own servers (https, host under securelink.cc) – a foreign web page or a
+	// planted QR code must not point the app elsewhere. Used by the linphone-config: link and by the QR scanner.
+	static func isAllowedProvisioning(_ urlString: String) -> Bool {
+		guard let comps = URLComponents(string: urlString), comps.scheme == "https", let host = comps.host?.lowercased() else {
+			return false
+		}
+		return host == "securelink.cc" || host.hasSuffix(".securelink.cc")
+	}
+
 	private static func initiateConfiguration(url: URL) {
+		var target = url.resourceSpecifier
+		if target.starts(with: "//") { target = String(target.dropFirst(2)) }
+		if !target.starts(with: "https://") { target = "https://" + target }
+		guard isAllowedProvisioning(target) else {
+			Log.error("[URIHandler] SecureLink: refusing configuration from \(target)")
+			toast("Failed_uri_handler_bad_config_address")
+			return
+		}
 		if autoRemoteProvisioningOnConfigUriHandler() {
 			CoreContext.shared.doOnCoreQueue { core in
 				Log.info("[URIHandler] provisioning app with URI: \(url.resourceSpecifier)")

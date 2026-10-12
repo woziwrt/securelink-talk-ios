@@ -171,6 +171,31 @@ struct HelpFragment: View {
 								}
 								}
 								
+								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile
+								let supportEmail = CoreContext.shared.mCore?.config?.getString(section: "app", key: "support_email", defaultString: "") ?? ""
+								if !supportEmail.isEmpty, let mail = URL(string: "mailto:\(supportEmail)?subject=SecureLink") {
+									Button {
+										UIApplication.shared.open(mail)
+									} label: {
+										HStack {
+											Image("envelope-simple")
+												.renderingMode(.template)
+												.resizable()
+												.foregroundStyle(Color.orangeMain500)
+												.frame(width: 30, height: 30)
+											VStack {
+												Text("Napsat podpoře")
+													.default_text_style_700(styleSize: 14)
+													.frame(maxWidth: .infinity, alignment: .leading)
+												Text(supportEmail)
+													.default_text_style(styleSize: 14)
+													.frame(maxWidth: .infinity, alignment: .leading)
+											}
+											.padding(.horizontal, 5)
+										}
+									}
+								}
+
 								HStack {
 									Image("info")
 										.renderingMode(.template)

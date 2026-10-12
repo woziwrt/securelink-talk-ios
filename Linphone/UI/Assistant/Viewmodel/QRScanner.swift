@@ -74,7 +74,7 @@ class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		   let result = metadataObj.stringValue {
 			if !result.isEmpty && result != lastResult {
 				if let url = NSURL(string: result) {
-					if UIApplication.shared.canOpenURL(url as URL) {
+					if UIApplication.shared.canOpenURL(url as URL) && URIHandler.isAllowedProvisioning(result) {   // SecureLink: our servers only
 						lastResult = result
 						coreContext.doOnCoreQueue { core in
 							try? core.setProvisioninguri(newValue: result)
