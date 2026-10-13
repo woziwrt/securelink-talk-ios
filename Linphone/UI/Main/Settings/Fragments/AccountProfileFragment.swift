@@ -546,7 +546,9 @@ struct AccountProfileFragment: View {
 									
 									VStack(spacing: 0) {
 										VStack(spacing: 18) {
-											if accountProfileViewModel.accountModelIndex != nil && CoreContext.shared.accounts.count > accountProfileViewModel.accountModelIndex! {
+											// SecureLink: no advanced account settings for users (transport, TURN, encryption…) – everything comes
+											// from the server profile; a user must not be able to switch encryption off (13. 10.)
+											if false && accountProfileViewModel.accountModelIndex != nil && CoreContext.shared.accounts.count > accountProfileViewModel.accountModelIndex! {
 												NavigationLink(
 													destination:
 														AccountSettingsFragment(
@@ -568,8 +570,6 @@ struct AccountProfileFragment: View {
 													}
 												)
 											}
-											
-											Divider()
 											
 											Button(action: {
 												isShowLogoutPopup = true
