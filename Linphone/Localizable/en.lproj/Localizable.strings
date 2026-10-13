@@ -651,3 +651,22 @@
 "securelink_contact_security_word_title" = "Security word";
 "securelink_contact_security_word_verified" = "Verified ✓";
 "securelink_contact_security_word_unverified" = "Not verified yet";
+
+"securelink_report_contact" = "Report to administrator";
+"securelink_report_contact_draft" = "I am reporting the user %@ (%@): ";
+"securelink_report_message" = "Report to administrator";
+"securelink_report_message_draft" = "I am reporting a message from %@: \"%@\" ";
+"securelink_block_contact" = "Block";
+"securelink_unblock_contact" = "Unblock";
+"securelink_contact_blocked_toast" = "Contact blocked: they cannot call you and their messages will not notify you. If this is abuse, report them to the administrator.";
+"securelink_contact_unblocked_toast" = "Contact unblocked";
+"securelink_deletion_requested_toast" = "Request ready – send it to the administrator";
+"securelink_request_deletion" = "Request account deletion";
+"securelink_request_deletion_message" = "Send the deletion request to the administrator as a message. The administrator deletes the account within 7 days and confirms it to you. Your keys and messages stored on the server are deleted too.";
+"securelink_request_deletion_draft" = "Please delete my SecureLink account.";
+"securelink_privacy_policy" = "Privacy policy";
+"securelink_terms" = "Terms of use";
+"securelink_terms_title" = "Terms of use";
+"securelink_terms_text" = "SecureLink is for invited users only. By using it you agree not to send unlawful, offensive or harassing content and not to harass anyone. The administrator blocks accounts for such behaviour. You can report an inappropriate message or user to the administrator at any time (long-press the message or open the contact); the administrator responds to reports within 24 hours.";
+"securelink_terms_accept" = "I agree";
+"securelink_terms_read_full" = "Full terms";

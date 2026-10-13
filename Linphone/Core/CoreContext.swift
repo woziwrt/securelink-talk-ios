@@ -398,6 +398,11 @@ class CoreContext: ObservableObject {
 				}
 				
 			}, onCallStateChanged: { (core: Core, call: Call, cstate: Call.State, message: String) in
+				// SecureLink: a contact blocked on this phone never rings (CallKit sees the call end at once)
+				if cstate == .IncomingReceived && SecureLinkAdmin.isBlocked(core, call.remoteAddress) {
+					Log.info("[SecureLink] declining a call from a blocked contact")
+					try? call.decline(reason: .Declined)
+				}
 				TelecomManager.shared.onCallStateChanged(core: core, call: call, state: cstate, message: message)
 				
 				if core.calls.isEmpty {

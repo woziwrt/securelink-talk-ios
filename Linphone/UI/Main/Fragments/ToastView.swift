@@ -461,6 +461,27 @@ struct ToastView: View {
 							.default_text_style(styleSize: 15)
 							.padding(8)
 					
+					case "Success_securelink_contact_blocked":
+						Text("securelink_contact_blocked_toast")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.greenSuccess500)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
+					case "Success_securelink_contact_unblocked":
+						Text("securelink_contact_unblocked_toast")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.greenSuccess500)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
+					case "Success_securelink_deletion_requested":
+						Text("securelink_deletion_requested_toast")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.greenSuccess500)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
 					default:
 						Text("Error")
 							.multilineTextAlignment(.center)

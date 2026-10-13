@@ -289,6 +289,11 @@ struct ConversationFragment: View {
 			if let conv = SharedMainViewModel.shared.displayedConversation {
 				cachedConversation = conv
 			}
+			// SecureLink: report / account deletion request opened the administrator's conversation with a draft
+			if let draft = SecureLinkAdmin.pendingDraft {
+				messageText = draft
+				SecureLinkAdmin.pendingDraft = nil
+			}
 			
 			if !SharedMainViewModel.shared.fileUrlsToShare.isEmpty {
 				var urlList: [URL] = []
@@ -1489,6 +1494,33 @@ struct ConversationFragment: View {
 													Spacer()
 													Image("copy")
 														.resizable()
+														.frame(width: 20, height: 20, alignment: .leading)
+												}
+												.padding(.vertical, 5)
+												.padding(.horizontal, 20)
+											}
+											
+											Divider()
+										}
+										
+										// SecureLink: report a received message to the administrator (App Review guideline 1.2) – the text is
+										// decrypted only on this phone, the user sees the draft before sending it
+										if !conversationViewModel.selectedMessage!.message.isOutgoing {
+											Button {
+												let msg = conversationViewModel.selectedMessage!.message
+												let content = msg.text.isEmpty ? msg.attachmentsNames : msg.text
+												conversationViewModel.selectedMessage = nil
+												SecureLinkAdmin.openConversation(draft: String(format: NSLocalizedString("securelink_report_message_draft", comment: ""), msg.address, content))
+											} label: {
+												HStack {
+													Text("securelink_report_message")
+														.foregroundStyle(Color.orangeMain500)
+														.default_text_style(styleSize: 15)
+													Spacer()
+													Image("warning-circle")
+														.renderingMode(.template)
+														.resizable()
+														.foregroundStyle(Color.orangeMain500)
 														.frame(width: 20, height: 20, alignment: .leading)
 												}
 												.padding(.vertical, 5)

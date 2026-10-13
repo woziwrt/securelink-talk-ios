@@ -584,6 +584,26 @@ struct AccountProfileFragment: View {
 														.frame(maxWidth: .infinity, alignment: .leading)
 												}
 											})
+											
+											Divider()
+											
+											// SecureLink: account deletion is initiated in the app (App Review 5.1.1(v))
+											Button(action: {
+												isShowLogoutPopup = true
+											}, label: {
+												HStack {
+													Image("trash-simple")
+														.renderingMode(.template)
+														.resizable()
+														.foregroundStyle(Color.redDanger500)
+														.frame(width: 25, height: 25)
+													
+													Text("securelink_request_deletion")
+														.foregroundStyle(Color.redDanger500)
+														.default_text_style(styleSize: 16)
+														.frame(maxWidth: .infinity, alignment: .leading)
+												}
+											})
 										}
 										.padding(.vertical, 20)
 										.padding(.horizontal, 20)
@@ -623,20 +643,19 @@ struct AccountProfileFragment: View {
 				}
 				
 				if self.isShowLogoutPopup {
-					let localizedString = NSLocalizedString("manage_account_dialog_remove_account_message", comment: "")
-					
-					let components = localizedString.components(separatedBy: " ")
-					let textPart = components.dropLast().joined(separator: " ")
-					
-					let contentPopup1 = Text(textPart + " ")
-					let contentPopup2 = Text("[https://sip.linphone.org](https://sip.linphone.org)").underline()
-					
+					// SecureLink: deleting the account on the server is requested from the administrator in the app
+					// (App Review 5.1.1(v)) – the upstream text sent people to sip.linphone.org
 					PopupView(
 						isShowPopup: $isShowLogoutPopup,
 						title: Text("manage_account_dialog_remove_account_title"),
-						content: contentPopup1 + contentPopup2,
-						titleFirstButton: nil,
-						actionFirstButton: {},
+						content: Text("securelink_request_deletion_message"),
+						titleFirstButton: Text("securelink_request_deletion"),
+						actionFirstButton: {
+							isShowLogoutPopup = false
+							isShowAccountProfileFragment = false
+							ToastViewModel.shared.show("Success_securelink_deletion_requested")
+							SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_request_deletion_draft", comment: ""))
+						},
 						titleSecondButton: Text("manage_account_delete"),
 						actionSecondButton: {
 							if accountProfileViewModel.accountModelIndex != nil {

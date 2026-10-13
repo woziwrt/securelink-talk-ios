@@ -183,3 +183,95 @@ class LinphoneUtils: NSObject {
 		return core.defaultAccount?.params?.conferenceFactoryUri != nil
 	}
 }
+
+// SecureLink: reports, account deletion requests and blocking (App Review 1.2 and 5.1.1(v)).
+// Reports and requests go to the administrator as an end-to-end encrypted message – the server never sees them.
+// The administrator's address and the web pages come from the server profile ([app] admin_uri, privacy_url, terms_url).
+enum SecureLinkAdmin {
+	/// text put into the message field when the administrator's conversation opens (the user sees it and sends it)
+	static var pendingDraft: String?
+	private static var creationDelegate: ChatRoomDelegateStub?
+
+	static func setting(_ core: Core?, _ key: String) -> String {
+		return core?.config?.getString(section: "app", key: key, defaultString: "") ?? ""
+	}
+
+	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled
+	static func openConversation(draft: String) {
+		CoreContext.shared.doOnCoreQueue { core in
+			let uri = setting(core, "admin_uri")
+			guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri),
+				  let account = core.defaultAccount, let params = try? core.createConferenceParams(conference: nil),
+				  let chatParams = params.chatParams else {
+				Log.error("[SecureLink] no administrator address in the profile – cannot open the conversation")
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+				return
+			}
+			params.chatEnabled = true
+			params.groupEnabled = false
+			params.subject = NSLocalizedString("conversation_one_to_one_hidden_subject", comment: "")
+			params.account = account
+			chatParams.ephemeralLifetime = 0
+			chatParams.backend = ChatRoom.Backend.FlexisipChat
+			params.securityLevel = Conference.SecurityLevel.EndToEnd
+			pendingDraft = draft
+			if let room = core.searchChatRoom(params: params, localAddr: account.params?.identityAddress, remoteAddr: nil, participants: [admin]) {
+				show(room)
+				return
+			}
+			do {
+				let room = try core.createChatRoom(params: params, participants: [admin])
+				if room.state == ChatRoom.State.Created {
+					show(room)
+					return
+				}
+				let stub = ChatRoomDelegateStub(onStateChanged: { (room: ChatRoom, state: ChatRoom.State) in
+					if state == ChatRoom.State.Created || state == ChatRoom.State.CreationFailed {
+						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
+						if state == ChatRoom.State.Created {
+							show(room)
+						} else {
+							DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+						}
+					}
+				})
+				creationDelegate = stub
+				room.addDelegate(delegate: stub)
+			} catch {
+				Log.error("[SecureLink] cannot create the administrator conversation: \(error)")
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+			}
+		}
+	}
+
+	private static func show(_ room: ChatRoom) {
+		let model = ConversationModel(chatRoom: room)
+		DispatchQueue.main.async {
+			SharedMainViewModel.shared.displayedConversation = model
+		}
+	}
+
+	// --- blocking on this phone: no calls ring, the conversation is muted; the administrator gets a report
+	private static let blockedKey = "blocked_uris"
+
+	static func blockedList(_ core: Core) -> [String] {
+		return (core.config?.getString(section: "securelink", key: blockedKey, defaultString: "") ?? "")
+			.split(separator: ",").map(String.init)
+	}
+
+	static func isBlocked(_ core: Core, _ address: Address?) -> Bool {
+		guard let uri = address?.asStringUriOnly() else { return false }
+		return blockedList(core).contains(uri)
+	}
+
+	static func setBlocked(_ core: Core, _ address: Address, _ blocked: Bool) {
+		let uri = address.asStringUriOnly()
+		var list = blockedList(core).filter { $0 != uri }
+		if blocked { list.append(uri) }
+		core.config?.setString(section: "securelink", key: blockedKey, value: list.joined(separator: ","))
+		for room in core.chatRooms where room.participants.count == 1 && room.participants.first?.address?.weakEqual(address2: address) == true {
+			room.muted = blocked
+		}
+		Log.info("[SecureLink] \(uri) \(blocked ? "blocked" : "unblocked") on this phone")
+	}
+}

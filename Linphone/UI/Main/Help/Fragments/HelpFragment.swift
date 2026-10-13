@@ -136,39 +136,32 @@ struct HelpFragment: View {
 								}
 								}
 								
-								if false {   // SecureLink: no Belledonne links
-								Button {
-									if let url = URL(string: NSLocalizedString("website_privacy_policy_url", comment: "")) {
-										UIApplication.shared.open(url)
-									}
-								} label: {
-									HStack {
-										Image("detective")
-											.renderingMode(.template)
-											.resizable()
-											.foregroundStyle(Color.orangeMain500)
-											.frame(width: 30, height: 30)
-										
-										VStack {
-											Text("help_about_privacy_policy_title")
-												.default_text_style_700(styleSize: 14)
-												.frame(maxWidth: .infinity, alignment: .leading)
-												.multilineTextAlignment(.leading)
-											
-											Text("help_about_privacy_policy_subtitle")
-												.default_text_style(styleSize: 14)
-												.frame(maxWidth: .infinity, alignment: .leading)
-												.multilineTextAlignment(.leading)
+								// SecureLink: our privacy policy and terms, addresses from the server profile (App Review 5.1.1(i), 1.2)
+								ForEach([("privacy_url", "securelink_privacy_policy", "detective"), ("terms_url", "securelink_terms", "file-text")], id: \.0) { key, title, icon in
+									let link = SecureLinkAdmin.setting(CoreContext.shared.mCore, key)
+									if let url = URL(string: link), !link.isEmpty {
+										Button {
+											UIApplication.shared.open(url)
+										} label: {
+											HStack {
+												Image(icon)
+													.renderingMode(.template)
+													.resizable()
+													.foregroundStyle(Color.orangeMain500)
+													.frame(width: 30, height: 30)
+												Text(LocalizedStringKey(title))
+													.default_text_style_700(styleSize: 14)
+													.frame(maxWidth: .infinity, alignment: .leading)
+													.multilineTextAlignment(.leading)
+													.padding(.horizontal, 5)
+												Image("arrow-square-out")
+													.renderingMode(.template)
+													.resizable()
+													.foregroundStyle(Color.grayMain2c600)
+													.frame(width: 25, height: 25)
+											}
 										}
-										.padding(.horizontal, 5)
-										
-										Image("arrow-square-out")
-											.renderingMode(.template)
-											.resizable()
-											.foregroundStyle(Color.grayMain2c600)
-											.frame(width: 25, height: 25)
 									}
-								}
 								}
 								
 								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile

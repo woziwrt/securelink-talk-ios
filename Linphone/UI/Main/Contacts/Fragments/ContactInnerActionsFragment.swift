@@ -32,6 +32,7 @@ struct ContactInnerActionsFragment: View {
 	
 	@State private var trustIsOpen = true
 	@State private var securityWordVerified = false
+	@State private var contactBlocked = false
 	@State private var informationIsOpen = true
 	
 	@Binding var showingSheet: Bool
@@ -247,9 +248,74 @@ struct ContactInnerActionsFragment: View {
 			let address = contactAvatarModel.address
 			CoreContext.shared.doOnCoreQueue { core in
 				let verified = !address.isEmpty && core.getZrtpStatus(addr: address) == .Valid
-				DispatchQueue.main.async { securityWordVerified = verified }
+				let blocked = SecureLinkAdmin.isBlocked(core, try? Factory.Instance.createAddress(addr: address))
+				DispatchQueue.main.async {
+					securityWordVerified = verified
+					contactBlocked = blocked
+				}
 			}
 		}
+		
+		// SecureLink: report to the administrator and block on this phone (App Review guideline 1.2)
+		VStack(spacing: 0) {
+			Button {
+				let name = contactAvatarModel.name
+				let address = contactAvatarModel.address
+				SecureLinkAdmin.openConversation(draft: String(format: NSLocalizedString("securelink_report_contact_draft", comment: ""), name, address))
+			} label: {
+				HStack {
+					Image("warning-circle")
+						.renderingMode(.template)
+						.resizable()
+						.foregroundStyle(Color.orangeMain500)
+						.frame(width: 25, height: 25)
+						.padding(.all, 6)
+					Text("securelink_report_contact")
+						.default_text_style(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+				}
+				.padding(.vertical, 10)
+				.padding(.horizontal, 20)
+			}
+			
+			VStack {
+				Divider()
+			}
+			.padding(.horizontal)
+			
+			Button {
+				let address = contactAvatarModel.address
+				let block = !contactBlocked
+				CoreContext.shared.doOnCoreQueue { core in
+					if let addr = try? Factory.Instance.createAddress(addr: address) {
+						SecureLinkAdmin.setBlocked(core, addr, block)
+					}
+					DispatchQueue.main.async {
+						contactBlocked = block
+						ToastViewModel.shared.show(block ? "Success_securelink_contact_blocked" : "Success_securelink_contact_unblocked")
+					}
+				}
+			} label: {
+				HStack {
+					Image("x-circle")
+						.renderingMode(.template)
+						.resizable()
+						.foregroundStyle(Color.redDanger500)
+						.frame(width: 25, height: 25)
+						.padding(.all, 6)
+					Text(contactBlocked ? "securelink_unblock_contact" : "securelink_block_contact")
+						.foregroundStyle(Color.redDanger500)
+						.default_text_style(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+				}
+				.padding(.vertical, 10)
+				.padding(.horizontal, 20)
+			}
+		}
+		.background(.white)
+		.cornerRadius(15)
+		.padding(.horizontal)
+		.padding(.top, 10)
 		
 		if sharedMainViewModel.displayedFriendExistingChatRoom != nil {
 			HStack(alignment: .center) {

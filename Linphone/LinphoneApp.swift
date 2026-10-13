@@ -500,6 +500,7 @@ struct RootView: View {
 	@ObservedObject var sharedMainViewModel: SharedMainViewModel
 	@ObservedObject var navigationManager: NavigationManager
 	@State private var pendingURL: URL?
+	@AppStorage("securelink_terms_accepted") private var termsAccepted = false
 	let appDelegate: AppDelegate
 
 	var body: some View {
@@ -540,6 +541,11 @@ struct RootView: View {
 							pendingURL: $pendingURL,
 							appDelegate: appDelegate
 						)
+						
+						// SecureLink: terms (no objectionable content, reports answered within 24 h) accepted once after login
+						if !termsAccepted {
+							SecureLinkTermsView(accepted: $termsAccepted).zIndex(5)
+						}
 						
 						if coreContext.coreIsStarted {
 							VStack {} // Force trigger .onAppear
@@ -622,5 +628,46 @@ struct MainViewSwitcher: View {
 				}
 			}
 			.id(colors.theme.name)
+	}
+}
+
+// SecureLink: terms of use shown once after the first login (App Review guideline 1.2)
+struct SecureLinkTermsView: View {
+	@Binding var accepted: Bool
+
+	var body: some View {
+		VStack(spacing: 20) {
+			Text("securelink_terms_title")
+				.default_text_style_800(styleSize: 20)
+				.frame(maxWidth: .infinity, alignment: .leading)
+			ScrollView {
+				Text("securelink_terms_text")
+					.default_text_style(styleSize: 16)
+					.frame(maxWidth: .infinity, alignment: .leading)
+			}
+			let link = SecureLinkAdmin.setting(CoreContext.shared.mCore, "terms_url")
+			if let url = URL(string: link), !link.isEmpty {
+				Button {
+					UIApplication.shared.open(url)
+				} label: {
+					Text("securelink_terms_read_full")
+						.underline()
+						.default_text_style(styleSize: 15)
+				}
+			}
+			Button {
+				accepted = true
+			} label: {
+				Text("securelink_terms_accept")
+					.default_text_style_white_600(styleSize: 18)
+					.frame(maxWidth: .infinity)
+					.padding(.vertical, 14)
+			}
+			.background(Color.orangeMain500)
+			.cornerRadius(15)
+		}
+		.padding(24)
+		.frame(maxWidth: .infinity, maxHeight: .infinity)
+		.background(Color.white)
 	}
 }
