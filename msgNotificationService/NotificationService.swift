@@ -163,6 +163,25 @@ class NotificationService: UNNotificationServiceExtension {
                     
                     if let message = message {
                         
+                        // SecureLink: a contact blocked in the app (list shared through the app-group linphonerc) –
+                        // without Apple's filtering entitlement iOS still shows an alert, so show nothing about the sender
+                        let blocked = (lc!.config?.getString(section: "securelink", key: "blocked_uris", defaultString: "") ?? "")
+                            .split(separator: ",").map(String.init)
+                        // compare user@domain only – the sender arrives with its device (;gr=…) or another scheme
+                        let fromKey = message.fromAddr.map { "sip:\($0.username ?? "")@\($0.domain ?? "")" } ?? ""
+                        Log.info("SecureLink: message from \(fromKey), blocked list has \(blocked.count)")
+                        if !fromKey.isEmpty, blocked.contains(fromKey) {
+                            Log.info("message from a blocked contact, no sender or content in the notification")
+                            stopCore()
+                            bestAttemptContent.title = "SecureLink"
+                            bestAttemptContent.subtitle = ""
+                            bestAttemptContent.body = ""
+                            bestAttemptContent.sound = nil
+                            bestAttemptContent.badge = nil
+                            contentHandler(bestAttemptContent)
+                            return
+                        }
+                        
                         let nilParams: ConferenceParams? = nil
                         if let peerAddr = message.peerAddr
                             , let chatroom = lc!.searchChatRoom(params: nilParams, localAddr: nil, remoteAddr: peerAddr, participants: nil), chatroom.muted {

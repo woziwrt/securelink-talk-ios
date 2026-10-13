@@ -360,13 +360,19 @@ enum SecureLinkAdmin {
 			.split(separator: ",").map(String.init)
 	}
 
+	/// "sip:user@domain" – the same key in the app and in the notification extension, whatever the device (;gr=) or scheme
+	static func blockKey(_ address: Address?) -> String? {
+		guard let a = address, let user = a.username, let domain = a.domain else { return nil }
+		return "sip:\(user)@\(domain)"
+	}
+
 	static func isBlocked(_ core: Core, _ address: Address?) -> Bool {
-		guard let uri = address?.asStringUriOnly() else { return false }
+		guard let uri = blockKey(address) else { return false }
 		return blockedList(core).contains(uri)
 	}
 
 	static func setBlocked(_ core: Core, _ address: Address, _ blocked: Bool) {
-		let uri = address.asStringUriOnly()
+		guard let uri = blockKey(address) else { return }
 		var list = blockedList(core).filter { $0 != uri }
 		if blocked { list.append(uri) }
 		core.config?.setString(section: "securelink", key: blockedKey, value: list.joined(separator: ","))
