@@ -57,8 +57,8 @@ struct ZRTPPopup: View {
 
 			VStack(alignment: .center, spacing: 10) {
 				Text(callViewModel.cacheMismatch
-					 ? "Druhá strana má nové zařízení. Řekněte si navzájem bezpečnostní slovo a potvrďte, že souhlasí."
-					 : "Řekněte si navzájem bezpečnostní slovo. Musí být na obou telefonech stejné.")
+					 ? LocalizedStringKey("Druhá strana má nové zařízení. Řekněte si navzájem bezpečnostní slovo a potvrďte, že souhlasí.")
+					 : LocalizedStringKey("Řekněte si navzájem bezpečnostní slovo. Musí být na obou telefonech stejné."))
 					.default_text_style(styleSize: 16)
 					.multilineTextAlignment(.center)
 					.padding(.top, 20)

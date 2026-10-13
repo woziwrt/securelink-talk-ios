@@ -322,6 +322,7 @@ struct AccountProfileFragment: View {
 														.focused($isDisplayNameFocused)
 													}
 													
+													if false {   // SecureLink: no international prefix – calls go to accounts, never to phone numbers
 													VStack(alignment: .leading) {
 														HStack {
 															Text("manage_account_international_prefix")
@@ -370,6 +371,7 @@ struct AccountProfileFragment: View {
 																	.stroke(Color.gray200, lineWidth: 1)
 															)
 														}
+													}
 													}
 												}
 												.padding(.vertical, 30)
@@ -656,6 +658,10 @@ struct AccountProfileFragment: View {
 							isShowDeletionPopup = false
 							SecureLinkAdmin.requestDeletion { sent in
 								ToastViewModel.shared.show(sent ? "Success_securelink_deletion_requested" : "Failed_securelink_deletion_request")
+								// the request itself is on the server; the administrator also learns about it on the phone
+								if sent {
+									SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true)
+								}
 							}
 						},
 						titleThirdButton: nil,

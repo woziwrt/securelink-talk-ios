@@ -197,8 +197,9 @@ enum SecureLinkAdmin {
 		return core?.config?.getString(section: "app", key: key, defaultString: "") ?? ""
 	}
 
-	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled
-	static func openConversation(draft: String) {
+	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled;
+	/// with sendNow the text is sent at once and the user stays where they are (e.g. after an account deletion request)
+	static func openConversation(draft: String, sendNow: Bool = false) {
 		CoreContext.shared.doOnCoreQueue { core in
 			let uri = setting(core, "admin_uri")
 			guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri),
@@ -220,15 +221,25 @@ enum SecureLinkAdmin {
 			chatParams.ephemeralLifetime = 0
 			chatParams.backend = ChatRoom.Backend.FlexisipChat
 			params.securityLevel = Conference.SecurityLevel.EndToEnd
-			pendingDraft = draft
+			let ready: (ChatRoom) -> Void = { room in
+				if sendNow {
+					if let message = try? room.createMessageFromUtf8(message: draft) {
+						message.send()
+						Log.info("[SecureLink] message sent to the administrator")
+					}
+				} else {
+					pendingDraft = draft
+					show(room)
+				}
+			}
 			if let room = core.searchChatRoom(params: params, localAddr: account.params?.identityAddress, remoteAddr: nil, participants: [admin]) {
-				show(room)
+				ready(room)
 				return
 			}
 			do {
 				let room = try core.createChatRoom(params: params, participants: [admin])
 				if room.state == ChatRoom.State.Created {
-					show(room)
+					ready(room)
 					return
 				}
 				// an encrypted conversation is ready when the server lets us join it (as in ContactsListViewModel)
@@ -240,7 +251,7 @@ enum SecureLinkAdmin {
 				}, onConferenceJoined: { (room: ChatRoom, _: EventLog) in
 					if room.state == ChatRoom.State.Created {
 						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
-						show(room)
+						ready(room)
 					}
 				})
 				creationDelegate = stub

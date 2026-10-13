@@ -663,3 +663,4 @@
 "securelink_request_deletion_confirm" = "Požádat o smazání";
 "securelink_deletion_request_failed_toast" = "Žádost se nepodařilo odeslat, zkuste to prosím znovu";
 "securelink_signout_message" = "Účet se odebere z tohoto telefonu. Na serveru zůstane – smazat ho můžete přes „Požádat o smazání účtu“.";
+"securelink_deletion_notice_to_admin" = "🗑️ Požádal(a) jsem v aplikaci o smazání svého účtu. Žádost je zapsaná na serveru (securelink-check).";

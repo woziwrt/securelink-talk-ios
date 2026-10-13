@@ -659,10 +659,10 @@ struct SecureLinkAccountSection: View {
 			VStack(spacing: 14) {
 				row("Jméno", account?.displayName ?? "–")
 				row("Účet", account?.address ?? "–")
-				row("Stav", account?.humanReadableRegistrationState ?? "žádný účet")
+				row("Stav", account?.humanReadableRegistrationState ?? NSLocalizedString("žádný účet", comment: ""))
 				
 				Button(action: { runCheck() }, label: {
-					Text(checking ? "Kontroluji…" : "Zkontrolovat spojení")
+					Text(checking ? LocalizedStringKey("Kontroluji…") : LocalizedStringKey("Zkontrolovat spojení"))
 						.default_text_style_white_600(styleSize: 16)
 						.frame(height: 32)
 						.frame(maxWidth: .infinity)
@@ -714,7 +714,7 @@ struct SecureLinkAccountSection: View {
 	
 	func row(_ key: String, _ value: String) -> some View {
 		HStack(alignment: .top) {
-			Text(key)
+			Text(LocalizedStringKey(key))
 				.default_text_style(styleSize: 15)
 				.foregroundStyle(Color.grayMain2c500)
 			Spacer()
@@ -726,9 +726,9 @@ struct SecureLinkAccountSection: View {
 	
 	func runCheck() {
 		checking = true
-		let regLine = ((account?.isRegistrered ?? false) ? "✓" : "✗") + " Přihlášení k serveru: " + (account?.humanReadableRegistrationState ?? "žádný účet")
-		let micLine = AVAudioSession.sharedInstance().recordPermission == .granted ? "✓ Mikrofon povolen" : "✗ Mikrofon nepovolen – hovory nepůjdou"
-		let version = "Verze " + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")
+		let regLine = ((account?.isRegistrered ?? false) ? "✓" : "✗") + " " + NSLocalizedString("Přihlášení k serveru:", comment: "") + " " + (account?.humanReadableRegistrationState ?? NSLocalizedString("žádný účet", comment: ""))
+		let micLine = NSLocalizedString(AVAudioSession.sharedInstance().recordPermission == .granted ? "✓ Mikrofon povolen" : "✗ Mikrofon nepovolen – hovory nepůjdou", comment: "")
+		let version = NSLocalizedString("Verze", comment: "") + " " + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")
 		coreContext.doOnCoreQueue { core in
 			var host = ""
 			var port = 5061
@@ -736,8 +736,8 @@ struct SecureLinkAccountSection: View {
 				host = d
 				if addr.port > 0 { port = addr.port }
 			}
-			var serverLine = "✗ Server: adresa účtu neznámá"
-			var notifLine = "✗ Oznámení: stav neznámý"
+			var serverLine = NSLocalizedString("✗ Server: adresa účtu neznámá", comment: "")
+			var notifLine = NSLocalizedString("✗ Oznámení: stav neznámý", comment: "")
 			let group = DispatchGroup()
 			if !host.isEmpty {
 				group.enter()
@@ -754,18 +754,18 @@ struct SecureLinkAccountSection: View {
 				}
 				conn.stateUpdateHandler = { state in
 					switch state {
-					case .ready: finish("✓ Server \(host):\(port) dosažitelný")
+					case .ready: finish(String(format: NSLocalizedString("✓ Server %@ dosažitelný", comment: ""), "\(host):\(port)"))
 					case .failed(let error): finish("✗ Server \(host):\(port): \(error.localizedDescription)")
-					case .waiting(let error): finish("✗ Server \(host):\(port) nedostupný: \(error.localizedDescription)")
+					case .waiting(let error): finish(String(format: NSLocalizedString("✗ Server %@ nedostupný: %@", comment: ""), "\(host):\(port)", error.localizedDescription))
 					default: break
 					}
 				}
 				conn.start(queue: .global())
-				DispatchQueue.global().asyncAfter(deadline: .now() + 5) { finish("✗ Server \(host):\(port) neodpovídá (5 s)") }
+				DispatchQueue.global().asyncAfter(deadline: .now() + 5) { finish(String(format: NSLocalizedString("✗ Server %@ neodpovídá (5 s)", comment: ""), "\(host):\(port)")) }
 			}
 			group.enter()
 			UNUserNotificationCenter.current().getNotificationSettings { settings in
-				notifLine = settings.authorizationStatus == .authorized ? "✓ Oznámení povolena" : "✗ Oznámení nepovolena – zamčený telefon nezazvoní"
+				notifLine = NSLocalizedString(settings.authorizationStatus == .authorized ? "✓ Oznámení povolena" : "✗ Oznámení nepovolena – zamčený telefon nezazvoní", comment: "")
 				group.leave()
 			}
 			group.notify(queue: .main) {

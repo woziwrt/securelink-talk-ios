@@ -80,7 +80,7 @@
 		</dict>
 	</array>
 	<key>NSFaceIDUsageDescription</key>
-	<string>Odemknutí aplikace SecureLink</string>
+	<string>SecureLink uses Face ID to unlock the app.</string>
 	<key>NSSupportsSuddenTermination</key>
 	<false/>
 	<key>TFInternalTestingOnly</key>

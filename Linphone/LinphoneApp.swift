@@ -428,7 +428,7 @@ final class AppLock: ObservableObject {
 		authenticating = true
 		failed = false
 		let context = LAContext()
-		context.localizedCancelTitle = "Zrušit"
+		context.localizedCancelTitle = NSLocalizedString("Zrušit", comment: "")
 		var error: NSError?
 		// deviceOwnerAuthentication = biometrics with the device passcode as fallback; no own PIN to forget
 		guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
@@ -438,7 +438,7 @@ final class AppLock: ObservableObject {
 			noPasscode = (error as? LAError)?.code == .passcodeNotSet
 			return
 		}
-		context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Odemknout SecureLink") { ok, err in
+		context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: NSLocalizedString("Odemknout SecureLink", comment: "")) { ok, err in
 			DispatchQueue.main.async {
 				self.authenticating = false
 				if ok {
