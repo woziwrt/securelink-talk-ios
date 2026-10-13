@@ -647,3 +647,7 @@
 "early_push_unknown_caller" = "Unknown";
 "early_push_missed_call_title" = "Missed call";
 "early_push_missed_call_body" = "You received a call while your device was locked.";
+
+"securelink_contact_security_word_title" = "Security word";
+"securelink_contact_security_word_verified" = "Verified ✓";
+"securelink_contact_security_word_unverified" = "Not verified yet";

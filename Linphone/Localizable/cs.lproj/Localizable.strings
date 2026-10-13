@@ -637,3 +637,7 @@
 "assistant_recover_phone_number_account_unavailable_no_push_warning" = "Push notifikace se na vašem zařízení nezdají být dostupné, ale jsou nezbytné pro obnovení účtu s telefonním číslem v mobilní aplikaci.";
 "assistant_forgotten_password_title" = "Zapomenuté heslo";
 "assistant_forgotten_password_subtitle" = "Zvolte způsob obnovy svého účtu.";
+
+"securelink_contact_security_word_title" = "Bezpečnostní slovo";
+"securelink_contact_security_word_verified" = "Ověřeno ✓";
+"securelink_contact_security_word_unverified" = "Zatím neověřeno";
