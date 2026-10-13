@@ -307,41 +307,43 @@ struct ConversationInfoFragment: View {
 											
 											Spacer()
 											
-											Button(action: {
-												if let displayedConversation = SharedMainViewModel.shared.displayedConversation {
-													if displayedConversation.isGroup {
-														isShowScheduleMeetingFragmentSubject = displayedConversation.subject
-													}
-													isShowScheduleMeetingFragmentParticipants = conversationViewModel.participants
+											if !SharedMainViewModel.shared.disableMeetingFeature {
+												Button(action: {
+													if let displayedConversation = SharedMainViewModel.shared.displayedConversation {
+														if displayedConversation.isGroup {
+															isShowScheduleMeetingFragmentSubject = displayedConversation.subject
+														}
+														isShowScheduleMeetingFragmentParticipants = conversationViewModel.participants
 													
-													SharedMainViewModel.shared.displayedConversation = nil
-													SharedMainViewModel.shared.changeIndexView(indexViewInt: 3)
-													withAnimation {
-														isShowScheduleMeetingFragment = true
+														SharedMainViewModel.shared.displayedConversation = nil
+														SharedMainViewModel.shared.changeIndexView(indexViewInt: 3)
+														withAnimation {
+															isShowScheduleMeetingFragment = true
+														}
 													}
-												}
-											}, label: {
-												VStack {
-													HStack(alignment: .center) {
-														Image("video-conference")
-															.renderingMode(.template)
-															.resizable()
-															.foregroundStyle(Color.grayMain2c600)
-															.frame(width: 25, height: 25)
-													}
-													.padding(16)
-													.background(Color.grayMain2c200)
-													.cornerRadius(40)
+												}, label: {
+													VStack {
+														HStack(alignment: .center) {
+															Image("video-conference")
+																.renderingMode(.template)
+																.resizable()
+																.foregroundStyle(Color.grayMain2c600)
+																.frame(width: 25, height: 25)
+														}
+														.padding(16)
+														.background(Color.grayMain2c200)
+														.cornerRadius(40)
 													
-													Text("meeting_schedule_meeting_label")
-														.default_text_style(styleSize: 14)
-														.frame(minWidth: 80)
-														.lineLimit(1)
-												}
-											})
-											.frame(width: geometry.size.width / 4)
+														Text("meeting_schedule_meeting_label")
+															.default_text_style(styleSize: 14)
+															.frame(minWidth: 80)
+															.lineLimit(1)
+													}
+												})
+												.frame(width: geometry.size.width / 4)
 											
-											Spacer()
+												Spacer()
+											}
 										}
 										.padding(.top, 20)
 										.padding(.bottom, 10)
