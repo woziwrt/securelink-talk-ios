@@ -202,13 +202,18 @@ enum SecureLinkAdmin {
 		CoreContext.shared.doOnCoreQueue { core in
 			let uri = setting(core, "admin_uri")
 			guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri),
-				  let account = core.defaultAccount, let params = try? core.createConferenceParams(conference: nil),
-				  let chatParams = params.chatParams else {
+				  let account = core.defaultAccount, let params = try? core.createConferenceParams(conference: nil) else {
 				Log.error("[SecureLink] no administrator address in the profile – cannot open the conversation")
 				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
 				return
 			}
+			// chat parameters exist only once chat is enabled on the conference parameters
 			params.chatEnabled = true
+			guard let chatParams = params.chatParams else {
+				Log.error("[SecureLink] no chat parameters – cannot open the administrator conversation")
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+				return
+			}
 			params.groupEnabled = false
 			params.subject = NSLocalizedString("conversation_one_to_one_hidden_subject", comment: "")
 			params.account = account
@@ -226,14 +231,16 @@ enum SecureLinkAdmin {
 					show(room)
 					return
 				}
+				// an encrypted conversation is ready when the server lets us join it (as in ContactsListViewModel)
 				let stub = ChatRoomDelegateStub(onStateChanged: { (room: ChatRoom, state: ChatRoom.State) in
-					if state == ChatRoom.State.Created || state == ChatRoom.State.CreationFailed {
+					if state == ChatRoom.State.CreationFailed {
 						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
-						if state == ChatRoom.State.Created {
-							show(room)
-						} else {
-							DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
-						}
+						DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+					}
+				}, onConferenceJoined: { (room: ChatRoom, _: EventLog) in
+					if room.state == ChatRoom.State.Created {
+						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
+						show(room)
 					}
 				})
 				creationDelegate = stub
@@ -248,6 +255,10 @@ enum SecureLinkAdmin {
 	private static func show(_ room: ChatRoom) {
 		let model = ConversationModel(chatRoom: room)
 		DispatchQueue.main.async {
+			// the conversation is shown on the Messages tab (index 2), also when the report starts from a contact card
+			SharedMainViewModel.shared.changeIndexView(indexViewInt: 2)
+			SharedMainViewModel.shared.displayedFriend = nil
+			SharedMainViewModel.shared.displayedCall = nil
 			SharedMainViewModel.shared.displayedConversation = model
 		}
 	}
