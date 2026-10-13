@@ -119,8 +119,12 @@ class NotificationService: UNNotificationServiceExtension {
 			if !createCore() {
 				// SecureLink: no core (the app is in the foreground and owns the shared core) – never show the server's
 				// raw text; a chat room invite is silent, a message shows the generic text (content stays hidden)
+				// a chat room invite cannot be hidden without Apple's filtering entitlement (iOS then shows the server's
+				// text), so say what it is
 				if let roomAddr = bestAttemptContent.userInfo["chat-room-addr"] as? String, !roomAddr.isEmpty {
-					contentHandler(UNNotificationContent())
+					bestAttemptContent.title = "SecureLink"
+					bestAttemptContent.body = String(localized: "GC_MSG")
+					contentHandler(bestAttemptContent)
 					return
 				}
 				bestAttemptContent.title = String(localized: "notification_chat_message_received_title")
@@ -143,8 +147,14 @@ class NotificationService: UNNotificationServiceExtension {
                     Log.info("fetch chat room for invite, addr: \(chatRoomInviteAddr)")
                     let chatRoom = lc?.getNewChatRoomFromConfAddr(chatRoomAddr: chatRoomInviteAddr)
                     Log.info("chat room invite received from: \(chatRoom?.subject ?? "unknown")")
+                    // SecureLink: opening a chat creates the encrypted room – the invite cannot be hidden without Apple's
+                    // filtering entitlement (an empty content made iOS show the raw text), so name who opened it
+                    let other = chatRoom?.participants.first?.address
+                    let name = other?.displayName ?? other?.username ?? ""
+                    bestAttemptContent.title = "SecureLink"
+                    bestAttemptContent.body = name.isEmpty ? String(localized: "GC_MSG") : String(localized: "GC_MSG") + ": " + name
                     stopCore()
-                    contentHandler(UNNotificationContent())
+                    contentHandler(bestAttemptContent)
                     return
 
                 } else if let callId = bestAttemptContent.userInfo["call-id"] as? String {

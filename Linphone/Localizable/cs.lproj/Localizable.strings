@@ -456,7 +456,7 @@
 "help_about_open_source_licenses_title" = "Licence";
 "help_about_privacy_policy_subtitle" = "Jaké informace Linphone shromažďuje a používá";
 "help_dialog_update_available_message" = "Je k dispozici nová verze %@. Chcete provést aktualizaci?";
-"GC_MSG" = "Byli jste přidáni do chatovací místnosti";
+"GC_MSG" = "Nová zabezpečená konverzace";
 "help_about_open_source_licenses_subtitle" = "SecureLink © 2026 Petr Wozniak, šířeno pod licencí GNU GPL v3. S využitím Linphone © Belledonne Communications (GPL v3). Zdrojový kód poskytne správce.";
 "history_list_empty_with_filter_history" = "Vašemu hledání neodpovídají žádné záznamy";
 "history_title" = "Historie hovorů";

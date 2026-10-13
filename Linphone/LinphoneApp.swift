@@ -278,6 +278,8 @@ struct AppView: View {
 				appLock.enteredForeground()
 				// SecureLink: a new member of the circle shows up at the next foreground, not only after an app restart
 				if coreContext.mCore != nil { ContactsManager.shared.refreshCardDavContacts() }
+				// SecureLink: badge and Messages tab from the real count – after an account was removed they kept the old number
+				if coreContext.mCore != nil { SharedMainViewModel.shared.updateUnreadMessagesCount() }
 			case .background:
 				appLock.enteredBackground()
 			default:

@@ -307,6 +307,9 @@ class AccountModel: ObservableObject {
 			if let authInfo = self.account.findAuthInfo() {
 				core.removeAuthInfo(info: authInfo)
 			}
+			// SecureLink: the removed account's unread messages must not stay on the icon and the Messages tab
+			SharedMainViewModel.shared.updateUnreadMessagesCount()
+			SharedMainViewModel.shared.updateMissedCallsCount()
 		}
 	}
 	

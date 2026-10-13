@@ -123,6 +123,15 @@ class CoreContext: ObservableObject {
 		let themeMainColor = AppServices.corePreferences.themeMainColor
 		SharedMainViewModel.shared.updateConfigChanges()
 		if status == .Successful {
+			// SecureLink: the invitation link is single-use – forget it as soon as it worked. Kept, the core fetched it again
+			// on its next start (also after background/foreground), got 404 and showed "Nelze načíst konfiguraci".
+			if let cfg = self.mCore.config, !cfg.getString(section: "misc", key: "config-uri", defaultString: "").isEmpty {
+				cfg.cleanEntry(section: "misc", key: "config-uri")
+				try? cfg.sync()
+				Log.info("[SecureLink] provisioning done – removed misc/config-uri")
+			}
+			// SecureLink: the server directory arrives with the provisioning – load it now, not at the next foreground
+			ContactsManager.shared.refreshCardDavContacts()
 			var accountModels: [AccountModel] = []
 			for account in self.mCore.accountList {
 				// SecureLink: the push parameters must carry our Apple team id (liblinphone's default is "ABCD1234")

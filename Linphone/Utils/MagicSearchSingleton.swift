@@ -225,7 +225,9 @@ final class MagicSearchSingleton: ObservableObject {
 			magicSearch.getContactsListAsync(
 				filter: self.currentFilter,
 				domain: self.allContact ? "" : self.domainDefaultAccount,
-				sourceFlags: MagicSearch.Source.All.rawValue, //MagicSearch.Source.Friends.rawValue | MagicSearch.Source.LdapServers.rawValue | MagicSearch.Source.RemoteCardDAV.rawValue,
+				// SecureLink: only the server directory – call logs and chat rooms added the same person a second time
+				// as a bare sip: address next to the directory name (everyone in the circle is in the directory)
+				sourceFlags: MagicSearch.Source.Friends.rawValue | MagicSearch.Source.RemoteCardDAV.rawValue,
 				aggregation: MagicSearch.Aggregation.Friend
 			)
 		}

@@ -350,7 +350,7 @@
 "DTLS" = "DTLS";
 "Error" = "Error";
 "failed_meeting_ics_invitation_not_sent_toast" = "Could not send ICS invitations to meeting to any participant";
-"GC_MSG" = "You have been added to a chat room";
+"GC_MSG" = "New secure conversation";
 "generic_address_picker_suggestions_list_title" = "Suggestions";
 "help_about_advanced_title" = "Advanced";
 "help_about_check_for_update" = "Check update";
