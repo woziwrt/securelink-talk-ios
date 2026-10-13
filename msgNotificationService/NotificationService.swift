@@ -39,30 +39,31 @@ let appGroupName: String = {
 extension String {
     func getDisplayNameFromSipAddress(lc: Core) -> String? {
         Log.info("looking for display name for \(self)")
-        
-        let defaults = UserDefaults.init(suiteName: appGroupName)
-        let addressBook = defaults?.dictionary(forKey: "addressBook")
-        
-        if addressBook == nil {
-            Log.info("address book not found in userDefaults")
-            return nil
-        }
-        
+
         var usePrefix = true
         if let account = lc.defaultAccount, let params = account.params {
             usePrefix = params.useInternationalPrefixForCallsAndChats
         }
-        
-        if let simpleAddr = lc.interpretUrl(url: self, applyInternationalPrefix: usePrefix) {
-            simpleAddr.clean()
-            let nomalSipaddr = simpleAddr.asString()
-            if let displayName = addressBook?[nomalSipaddr] as? String {
-                Log.info("display name for \(self): \(displayName)")
-                return displayName
+
+        guard let simpleAddr = lc.interpretUrl(url: self, applyInternationalPrefix: usePrefix) else {
+            return nil
+        }
+        simpleAddr.clean()
+
+        // SecureLink: the app no longer writes the "addressBook" user default, so names come from the contact lists
+        // the extension's core shares with the app (server directory included). A nameless duplicate
+        // (name = "sip:eva@…") is never used as a name.
+        let sipUri = simpleAddr.asStringUriOnly()
+        for list in lc.friendsLists {
+            for friend in list.friends where friend.addresses.contains(where: { $0.asStringUriOnly() == sipUri }) {
+                if let name = friend.name, !name.isEmpty, !name.lowercased().hasPrefix("sip") {
+                    Log.info("display name for \(self): \(name)")
+                    return name
+                }
             }
         }
-        
-        Log.info("display name for \(self) not found in userDefaults")
+
+        Log.info("display name for \(self) not found in contact lists")
         return nil
     }
 }
@@ -287,6 +288,8 @@ class NotificationService: UNNotificationServiceExtension {
         let from: String
         if let fromDisplayName = message.fromAddr?.asStringUriOnly().getDisplayNameFromSipAddress(lc: lc!) {
             from = fromDisplayName
+        } else if let sipDisplayName = message.fromAddr?.displayName, !sipDisplayName.isEmpty {
+            from = sipDisplayName   // SecureLink: the name the sender's account carries, before the bare username
         } else {
             from = fromAddr!
         }

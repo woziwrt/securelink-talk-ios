@@ -325,7 +325,7 @@ final class ContactsManager: ObservableObject {
 				friend.edit()
 				
 				friend.nativeUri = contact.identifier
-				try friend.setName(newValue: contact.firstName + " " + contact.lastName)
+				try friend.setName(newValue: (contact.firstName + " " + contact.lastName).trimmingCharacters(in: .whitespaces))
 				
 				// Safely update vCard
 				if let vcard = friend.vcard {
@@ -542,16 +542,22 @@ final class ContactsManager: ObservableObject {
                                 }
                             }
                         }
+
+						// SecureLink: a call that woke the app rang before the directory loaded – give it the name now
+						TelecomManager.shared.refreshIncomingCallNames()
                         
                         let dispatchGroup = DispatchGroup()
 						friendList.friends.forEach { friend in
                             dispatchGroup.enter()
 							let addressTmp = friend.address?.clone()?.asStringUriOnly() ?? ""
-							
+
+							// SecureLink: the server directory sends only the full name (FN), no given/family name – without
+							// this the copy made here was named "sip:eva@…", the nameless duplicate behind the addresses shown
+							// instead of names (cold-start calls, notifications)
 							let newContact = Contact(
 								identifier: UUID().uuidString,
-								firstName: friend.firstName ?? addressTmp,
-								lastName: friend.lastName ?? "",
+								firstName: friend.firstName ?? friend.name ?? addressTmp,
+								lastName: friend.firstName != nil ? (friend.lastName ?? "") : "",
 								organizationName: friend.organization ?? "",
 								jobTitle: friend.jobTitle ?? "",
 								displayName: friend.address?.displayName ?? "",

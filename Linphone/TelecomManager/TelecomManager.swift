@@ -380,8 +380,10 @@ class TelecomManager: ObservableObject {
 			ContactsManager.shared.getFriendWithAddressInCoreQueue(address: call.remoteAddress!) { friendResult in
 				if call.remoteAddress != nil {
 					if call.callLog?.wasConference() != true {
-						if let addressFriend = friendResult {
-							completion(addressFriend.name!)
+						// SecureLink: a nameless duplicate (name = "sip:eva@…") is never shown as the caller's name
+						if let addressFriend = friendResult, let name = addressFriend.name, !name.isEmpty,
+						   !name.lowercased().hasPrefix("sip") {
+							completion(name)
 						} else if let remoteAddress = call.remoteAddress {
 							if remoteAddress.displayName != nil {
 								completion(remoteAddress.displayName!)
@@ -401,6 +403,21 @@ class TelecomManager: ObservableObject {
 		}
 	}
 	
+	// SecureLink: a push wakes the app and CallKit rings before the server directory is loaded, so the caller first
+	// shows as a bare username. Once the directory syncs, rename the calls still ringing.
+	func refreshIncomingCallNames() {
+		CoreContext.shared.doOnCoreQueue { core in
+			for call in core.calls where call.state == .IncomingReceived || call.state == .PushIncomingReceived {
+				guard let callId = call.callLog?.callId, let addr = call.remoteAddress,
+					  let uuid = self.providerDelegate.uuids[callId] else { continue }
+				self.incomingDisplayName(call: call) { displayName in
+					Log.info("[SecureLink] incoming call \(callId) renamed after the directory loaded")
+					self.providerDelegate.updateCall(uuid: uuid, handle: addr.asStringUriOnly(), hasVideo: call.remoteParams?.videoEnabled ?? false, displayName: displayName)
+				}
+			}
+		}
+	}
+
 	static func isAudioRouteAllowedForCall() -> Bool {
 		guard AppServices.corePreferences.onlyAllowEarpieceDuringCall else { return true }
 		let output = AVAudioSession.sharedInstance().currentRoute.outputs.first
