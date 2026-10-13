@@ -320,6 +320,9 @@ struct AccountProfileFragment: View {
 																.stroke(isDisplayNameFocused ? Color.orangeMain500 : Color.gray200, lineWidth: 1)
 														)
 														.focused($isDisplayNameFocused)
+														// SecureLink: the name others see comes from the administrator's directory; a local edit
+														// would make calls show a different name than Contacts
+														.disabled(true)
 													}
 													
 													if false {   // SecureLink: no international prefix – calls go to accounts, never to phone numbers
@@ -388,6 +391,7 @@ struct AccountProfileFragment: View {
 									VStack(spacing: 0) {
 										VStack(spacing: 15) {
 											HStack(spacing: 20) {
+												if false {   // SecureLink: a user must not switch the account off – the phone would stop ringing
 												Toggle("", isOn: Binding(
 													get: { accountModel.isRegistrered },
 													set: { _ in
@@ -395,6 +399,7 @@ struct AccountProfileFragment: View {
 													}
 												))
 												.labelsHidden()
+												}
 												
 												Text(accountModel.humanReadableRegistrationState)
 													.default_text_style_700(styleSize: 15)
@@ -416,6 +421,7 @@ struct AccountProfileFragment: View {
 									.padding(.all)
 									.background(Color.gray100)
 									
+									if false {   // SecureLink: the device list needs Linphone's account manager, which we do not run ("Zařízení nenalezeno")
 									HStack(alignment: .center) {
 										Text("manage_account_devices_title")
 											.default_text_style_800(styleSize: 18)
@@ -532,6 +538,8 @@ struct AccountProfileFragment: View {
 										.padding(.horizontal)
 										.zIndex(-2)
 										.transition(.move(edge: .top))
+									}
+									
 									}
 									
 									HStack(alignment: .center) {
