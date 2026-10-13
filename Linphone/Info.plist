@@ -15,7 +15,7 @@
 			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>linphone-mention</string>
+				<string>securelink-mention</string>
 			</array>
 		</dict>
 		<dict>
@@ -25,7 +25,7 @@
 			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>linphone-message</string>
+				<string>securelink-message</string>
 			</array>
 		</dict>
 		<dict>
@@ -35,7 +35,7 @@
 			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>linphone-config</string>
+				<string>securelink-config</string>
 			</array>
 		</dict>
 		<dict>
@@ -65,57 +65,7 @@
 			<string>cc.securelink.talk</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>sip-linphone</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>sips-linphone</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>linphone-sip</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>linphone-sips</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
 				<string>tel</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>org.linphone</string>
 			</array>
 		</dict>
 		<dict>

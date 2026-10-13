@@ -25,11 +25,12 @@ import SwiftUI
 class URIHandler {
 	
 	// Need to cover all Info.plist URL schemes.
-	private static let callSchemes = ["sip", "sip-linphone", "linphone-sip", "tel", "callto"]
-	private static let secureCallSchemes = ["sips", "sips-linphone", "linphone-sips"]
-	private static let configurationSchemes = ["linphone-config"]
-	private static let sharedExtensionSchemes = ["linphone-message"]
-	private static let mentionSchemes = ["linphone-mention"]
+	private static let callSchemes = ["sip", "tel", "callto"]
+	private static let secureCallSchemes = ["sips"]
+	// SecureLink: own schemes – linphone-* is also claimed by the original Linphone app
+	private static let configurationSchemes = ["securelink-config"]
+	private static let sharedExtensionSchemes = ["securelink-message"]
+	private static let mentionSchemes = ["securelink-mention"]
 
 	private static var uriHandlerCoreDelegate: CoreDelegateStub?
 	
@@ -96,7 +97,7 @@ class URIHandler {
 	}
 	
 	// SecureLink: configuration only from our own servers (https, host under securelink.cc) – a foreign web page or a
-	// planted QR code must not point the app elsewhere. Used by the linphone-config: link and by the QR scanner.
+	// planted QR code must not point the app elsewhere. Used by the securelink-config: link and by the QR scanner.
 	static func isAllowedProvisioning(_ urlString: String) -> Bool {
 		guard let comps = URLComponents(string: urlString), comps.scheme == "https", let host = comps.host?.lowercased() else {
 			return false
