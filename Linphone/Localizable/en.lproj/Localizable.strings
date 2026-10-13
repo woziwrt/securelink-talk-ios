@@ -658,7 +658,7 @@
 "securelink_report_message_draft" = "⚠️ Report of a message from: %@ (%@), %@\nMessage: “%@”\nWhat happened: ";
 "securelink_block_contact" = "Block";
 "securelink_unblock_contact" = "Unblock";
-"securelink_contact_blocked_toast" = "Contact blocked: they cannot call you and their messages will not notify you. If this is abuse, report them to the administrator.";
+"securelink_contact_blocked_toast" = "Contact blocked: they cannot call you. If this is abuse, report them to the administrator, who removes them from the service.";
 "securelink_contact_unblocked_toast" = "Contact unblocked";
 "securelink_deletion_requested_toast" = "Request sent – the account will be deleted within 7 days";
 "securelink_request_deletion" = "Request account deletion";
