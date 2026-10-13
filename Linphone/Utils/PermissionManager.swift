@@ -43,8 +43,7 @@ class PermissionManager: ObservableObject {
 			
 			dispatchGroup.enter()
 			self.microphoneRequestPermission()
-			self.photoLibraryRequestPermission()
-			self.cameraRequestPermission()
+			// SecureLink: camera and photos are asked for when first used (QR scan, video, photo picker), not at login
 			self.contactsRequestPermission(group: dispatchGroup)
 			
 			dispatchGroup.notify(queue: .main) {

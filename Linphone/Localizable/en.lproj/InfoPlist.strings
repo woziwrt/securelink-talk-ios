@@ -1,0 +1,8 @@
+"NSCameraUsageDescription" = "SecureLink uses the camera to scan your invitation QR code and, only when you turn it on, for video calls.";
+"NSMicrophoneUsageDescription" = "SecureLink uses the microphone for your encrypted calls.";
+"NSPhotoLibraryUsageDescription" = "SecureLink opens your photos only when you choose a photo to send in an encrypted conversation.";
+"NSContactsUsageDescription" = "SecureLink does not use your iPhone contacts. Your contacts come from your administrator's directory.";
+"NSCalendarsUsageDescription" = "SecureLink does not use your calendar.";
+"NSLocalNetworkUsageDescription" = "SecureLink uses the local network to connect your calls.";
+"NSFaceIDUsageDescription" = "SecureLink uses Face ID to unlock the app.";
+"NSCalendarsWriteOnlyAccessUsageDescription" = "SecureLink does not use your calendar.";

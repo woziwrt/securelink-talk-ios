@@ -1,0 +1,8 @@
+"NSCameraUsageDescription" = "SecureLink používá kameru k načtení QR kódu z pozvánky a jen když ji sami zapnete, k videohovoru.";
+"NSMicrophoneUsageDescription" = "SecureLink používá mikrofon pro vaše šifrované hovory.";
+"NSPhotoLibraryUsageDescription" = "SecureLink otevře vaše fotky jen tehdy, když sami vyberete fotku k odeslání do šifrované konverzace.";
+"NSContactsUsageDescription" = "SecureLink nepoužívá kontakty z iPhonu. Kontakty dostáváte z adresáře správce.";
+"NSCalendarsUsageDescription" = "SecureLink nepoužívá váš kalendář.";
+"NSLocalNetworkUsageDescription" = "SecureLink používá místní síť ke spojení vašich hovorů.";
+"NSFaceIDUsageDescription" = "Odemknutí aplikace SecureLink";
+"NSCalendarsWriteOnlyAccessUsageDescription" = "SecureLink nepoužívá váš kalendář.";

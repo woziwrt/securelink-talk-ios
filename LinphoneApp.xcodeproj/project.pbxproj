@@ -115,6 +115,7 @@
 		D7343FEF2D3FE16C0059D784 /* HelpViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7343FEE2D3FE16B0059D784 /* HelpViewModel.swift */; };
 		D73449992BC6932A00778C56 /* MeetingWaitingRoomFragment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73449982BC6932A00778C56 /* MeetingWaitingRoomFragment.swift */; };
 		D734499B2BC694C900778C56 /* MeetingWaitingRoomViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D734499A2BC694C900778C56 /* MeetingWaitingRoomViewModel.swift */; };
+		5EC0A1012F9C000100A1B2C3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5EC0A1022F9C000100A1B2C3 /* InfoPlist.strings */; };
 		D737AEEF2DA011F2005C1280 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = D737AEED2DA011F2005C1280 /* Localizable.strings */; };
 		D738ACEE2E857BF10039F7D1 /* KeyboardResponder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D738ACED2E857BEF0039F7D1 /* KeyboardResponder.swift */; };
 		D73DD7D02EE184B200654313 /* RecordingsListBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73DD7CF2EE184A500654313 /* RecordingsListBottomSheet.swift */; };
@@ -338,6 +339,8 @@
 		D70A26ED2B7CF60B006CC8FC /* ConversationsListBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationsListBottomSheet.swift; sourceTree = "<group>"; };
 		D70A26EF2B7D02E6006CC8FC /* ConversationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewModel.swift; sourceTree = "<group>"; };
 		D70A26F12B7F5D95006CC8FC /* ConversationFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationFragment.swift; sourceTree = "<group>"; };
+		5EC0A1032F9C000100A1B2C3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = Localizable/en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		5EC0A1042F9C000100A1B2C3 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = Localizable/cs.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D70C3B5D2E0ABAB600F3F938 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = Localizable/cs.lproj/Localizable.strings; sourceTree = "<group>"; };
 		D70C3B5E2E0ABAB900F3F938 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = Localizable/uk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		D70C82A42C85EDC90087F43F /* ConversationForwardMessageFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationForwardMessageFragment.swift; sourceTree = "<group>"; };
@@ -798,6 +801,7 @@
 				D719ABBC2ABC67BF00B41C10 /* Linphone.entitlements */,
 				D7A2EDDA2AC19EEC005D90FC /* Info.plist */,
 				D737AEED2DA011F2005C1280 /* Localizable.strings */,
+				5EC0A1022F9C000100A1B2C3 /* InfoPlist.strings */,
 				D719ABBD2ABC67BF00B41C10 /* Preview Content */,
 				D7D24D0C2AC1B4C700C6F35B /* Fonts */,
 				D7ADF6012AFE5C7C00212231 /* Ressources */,
@@ -1524,6 +1528,7 @@
 				D7D24D152AC1B4E800C6F35B /* NotoSans-Light.ttf in Resources */,
 				D7FC8E4A2EBA12F90080C09D /* Launch Screen.storyboard in Resources */,
 				D737AEEF2DA011F2005C1280 /* Localizable.strings in Resources */,
+				5EC0A1012F9C000100A1B2C3 /* InfoPlist.strings in Resources */,
 				D7AEB9472F29128500298546 /* Shared.xcconfig in Resources */,
 				D783C77D2B1089B200622CC2 /* assistant_third_party_default_values in Resources */,
 				D7D24D162AC1B4E800C6F35B /* NotoSans-SemiBold.ttf in Resources */,
@@ -1860,6 +1865,15 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		5EC0A1022F9C000100A1B2C3 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5EC0A1032F9C000100A1B2C3 /* en */,
+				5EC0A1042F9C000100A1B2C3 /* cs */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		D737AEED2DA011F2005C1280 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -1953,7 +1967,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1991,7 +2005,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -2019,7 +2033,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = LinphoneApp;
 			};
 			name = Debug;
@@ -2046,7 +2060,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = LinphoneApp;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -2076,7 +2090,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LinphoneApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LinphoneApp";
 			};
 			name = Debug;
@@ -2104,7 +2118,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LinphoneApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/LinphoneApp";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -2252,15 +2266,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Linphone/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SecureLink;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_ITSEncryptionExportComplianceCode = "b5cb085f-772a-4a4f-8c77-5d1332b1f93f";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "Deprecated - Prior to iOS 17 full calendar access is required";
-				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera usage is required for video VOIP calls";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Make calls with your friends";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "App requires access to the local network to establish VoIP connections";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone usage is required for VOIP calls";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Share photos with your friends and customize avatars";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "SecureLink does not use your calendar.";
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "SecureLink does not use your calendar.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SecureLink uses the camera to scan your invitation QR code and, only when you turn it on, for video calls.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "SecureLink does not use your iPhone contacts. Your contacts come from your administrator's directory.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SecureLink uses the local network to connect your calls.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SecureLink uses the microphone for your encrypted calls.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SecureLink opens your photos only when you choose a photo to send in an encrypted conversation.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -2288,7 +2302,7 @@
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -2311,15 +2325,15 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Linphone/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SecureLink;
-				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = YES;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_ITSEncryptionExportComplianceCode = "b5cb085f-772a-4a4f-8c77-5d1332b1f93f";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "Deprecated - Prior to iOS 17 full calendar access is required";
-				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Camera usage is required for video VOIP calls";
-				INFOPLIST_KEY_NSContactsUsageDescription = "Make calls with your friends";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "App requires access to the local network to establish VoIP connections";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone usage is required for VOIP calls";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Share photos with your friends and customize avatars";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "SecureLink does not use your calendar.";
+				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "SecureLink does not use your calendar.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SecureLink uses the camera to scan your invitation QR code and, only when you turn it on, for video calls.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "SecureLink does not use your iPhone contacts. Your contacts come from your administrator's directory.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "SecureLink uses the local network to connect your calls.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "SecureLink uses the microphone for your encrypted calls.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SecureLink opens your photos only when you choose a photo to send in an encrypted conversation.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -2347,7 +2361,7 @@
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -2381,7 +2395,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -2414,7 +2428,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -2451,7 +2465,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -2486,7 +2500,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
