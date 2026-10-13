@@ -513,7 +513,7 @@ struct BottomSheetContent: View {
 							}
 							.frame(width: basePortraitSize, height: buttonPortraitDimension)
 							
-							if callViewModel.isOneOneCall {
+							if false {   // SecureLink: no call recording (security app; App Review 2.5.14)
 								ZStack {
 									VStack {
 										Button {
@@ -545,7 +545,7 @@ struct BottomSheetContent: View {
 									}
 								}
 								.frame(width: basePortraitSize, height: buttonPortraitDimension)
-							} else {
+							} else if false {
 								ZStack {
 									VStack {
 										Button {
@@ -934,7 +934,7 @@ struct BottomSheetContent: View {
 							}
 							.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
 							
-							if callViewModel.isOneOneCall {
+							if false {   // SecureLink: no call recording (security app; App Review 2.5.14)
 								ZStack {
 									VStack {
 										Button {
@@ -966,7 +966,7 @@ struct BottomSheetContent: View {
 									}
 								}
 								.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
-							} else {
+							} else if false {
 								ZStack {
 									VStack {
 										Button {
