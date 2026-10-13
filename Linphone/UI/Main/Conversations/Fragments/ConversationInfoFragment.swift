@@ -747,6 +747,7 @@ struct ConversationInfoFragment: View {
 												Divider()
 											}
 											
+											if false {   // SecureLink: messages always disappear after 7 days (v1 agreement), not configurable
 											Button(
 												action: {
 													withAnimation {
@@ -770,6 +771,7 @@ struct ConversationInfoFragment: View {
 												}
 											)
 											.frame(height: 60)
+											}
 											
 											Divider()
 											

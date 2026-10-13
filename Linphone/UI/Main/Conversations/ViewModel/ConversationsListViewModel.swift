@@ -506,7 +506,7 @@ class ConversationsListViewModel: ObservableObject {
 				params.account = account
 				
 				guard let chatParams = params.chatParams else { return }
-				chatParams.ephemeralLifetime = 0 // Make sure ephemeral is disabled by default
+				chatParams.ephemeralLifetime = SecureLinkAdmin.disappearAfterSeconds // SecureLink: messages disappear 7 days after they are read
 				
 				let sameDomain = remote.domain == AppServices.corePreferences.defaultDomain && remote.domain == account!.params?.domain
 				if account!.params != nil && (account!.params!.instantMessagingEncryptionMandatory && sameDomain) {

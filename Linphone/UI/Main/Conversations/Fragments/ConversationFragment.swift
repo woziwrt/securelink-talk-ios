@@ -493,6 +493,7 @@ struct ConversationFragment: View {
 										}
 									}
 									
+									if false {   // SecureLink: messages always disappear after 7 days (v1 agreement), not configurable
 									Button {
 										isMenuOpen = false
 										withAnimation {
@@ -509,6 +510,7 @@ struct ConversationFragment: View {
 												.frame(width: 25, height: 25, alignment: .leading)
 												.padding(.all, 10)
 										}
+									}
 									}
 								}
 								

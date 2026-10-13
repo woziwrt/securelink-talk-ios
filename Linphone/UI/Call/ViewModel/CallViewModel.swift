@@ -1605,7 +1605,7 @@ class CallViewModel: ObservableObject {
 				params.account = account
 				
 				if let chatParams = params.chatParams {
-					chatParams.ephemeralLifetime = 0 // Make sure ephemeral is disabled by default
+					chatParams.ephemeralLifetime = SecureLinkAdmin.disappearAfterSeconds // SecureLink: messages disappear 7 days after they are read
 					
 					let sameDomain = remoteAddress?.domain == AppServices.corePreferences.defaultDomain && remoteAddress?.domain == account.params?.domain
 					if account.params != nil && (account.params!.instantMessagingEncryptionMandatory && sameDomain) {
