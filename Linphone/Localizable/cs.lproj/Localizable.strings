@@ -151,8 +151,8 @@
 "conversation_ephemeral_messages_title" = "Mizející zprávy";
 "conversation_event_conference_created" = "Přidal(a) jste se ke skupině";
 "conversation_event_conference_destroyed" = "Opustil(a) jste skupinu";
-"conversation_event_ephemeral_messages_disabled" = "Mizející zprávy byly zakázány";
-"conversation_event_ephemeral_messages_enabled" = "Mizející zprávy byly povoleny";
+"conversation_event_ephemeral_messages_disabled" = "Mizející zprávy jsou vypnuté";
+"conversation_event_ephemeral_messages_enabled" = "Mizející zprávy jsou zapnuté: zprávy zmizí 7 dní po přečtení";
 "conversation_failed_to_create_toast" = "Vytvoření konverzace se nezdařilo!";
 "conversation_forward_message_title" = "Přeposlat zprávu…";
 "conversation_info_add_participants_label" = "Přidat účastníky";
@@ -422,7 +422,7 @@
 "conversation_event_subject_changed" = "Nový předmět: %@";
 "conversation_info_participants_list_title" = "Členové skupiny (%d)";
 "conversation_event_admin_set" = "%@ je administrátor";
-"conversation_event_ephemeral_messages_lifetime_changed" = "Doba platnosti mizejících zpráv je nyní %@";
+"conversation_event_ephemeral_messages_lifetime_changed" = "Zprávy zmizí %@ po přečtení";
 "conversation_event_participant_removed" = "%@ se odpojil";
 "conversation_one_to_one_hidden_subject" = "Skrytý předmět";
 "conversation_reply_to_message_title" = "Odpovídá na: ";
