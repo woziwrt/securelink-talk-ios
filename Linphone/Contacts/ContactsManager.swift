@@ -470,34 +470,32 @@ final class ContactsManager: ObservableObject {
 			return sipMatch || phoneMatch
 		}
 		
-		var friend: Friend?
-		
-		// Friend list
-		if let friendList = self.friendList {
-			friend = friendList.friends.first(where: matches)
+		// SecureLink: a nameless duplicate of a directory entry (name = "sip:eva@…") sits in a list searched before
+		// the server directory, so calls, history and chats showed the address instead of the name. Search every list
+		// and prefer the entry with a real name; the nameless one is only a fallback.
+		var lists: [FriendList] = [self.friendList, self.linphoneFriendList, self.tempRemoteFriendList].compactMap { $0 }
+		if let core {
+			lists += core.friendsLists.filter { $0.type == .CardDAV || $0.type == .VCard4 }   // server directory too
 		}
-		
-		// Linphone friend list
-		if friend == nil, let linphoneFriendList = self.linphoneFriendList {
-			friend = linphoneFriendList.friends.first(where: matches)
+
+		func hasRealName(_ friend: Friend) -> Bool {
+			guard let name = friend.name, !name.isEmpty else { return false }
+			return !name.lowercased().hasPrefix("sip")
 		}
-		
-		// Temp remote friend list
-		if friend == nil, let tempRemoteFriendList = self.tempRemoteFriendList {
-			friend = tempRemoteFriendList.friends.first(where: matches)
-		}
-		
-		// CardDAV lists
-		if friend == nil, let core {
-			for list in core.friendsLists where list.type == .CardDAV || list.type == .VCard4 {   // SecureLink: server directory too
-				friend = list.friends.first(where: matches)
-				if friend != nil {
-					break
+
+		var fallback: Friend?
+		for list in lists {
+			for friend in list.friends where matches(friend) {
+				if hasRealName(friend) {
+					return friend
+				}
+				if fallback == nil {
+					fallback = friend
 				}
 			}
 		}
-		
-		return friend
+
+		return fallback
 	}
 	
 	func getFriendWithAddressInCoreQueue(address: Address?, completion: @escaping (Friend?) -> Void) {
