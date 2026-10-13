@@ -548,7 +548,17 @@ struct ChatBubbleView: View {
 			}
 			UIApplication.shared.endEditing()
 		}
-		.quickLookPreview($selectedURLAttachment, in: conversationViewModel.attachments.map { $0.full })
+		.quickLookPreview($selectedURLAttachment, in: previewItems)
+	}
+	
+	// SecureLink: Quick Look only opens a URL that is among its items – a photo received while the app was closed
+	// was missing from the conversation's attachment list, so tapping it did nothing (the Media list opened it)
+	private var previewItems: [URL] {
+		var items = conversationViewModel.attachments.map { $0.full }
+		if let selected = selectedURLAttachment, !items.contains(selected) {
+			items.append(selected)
+		}
+		return items
 	}
 	
 	func containsDuplicates(strings: [String]) -> Bool {

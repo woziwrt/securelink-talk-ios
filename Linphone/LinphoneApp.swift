@@ -100,6 +100,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 		let userInfo = notification.request.content.userInfo
 		Log.info("Received push notification in foreground, payload= \(userInfo)")
 		
+		// SecureLink: a chat room invite while the app is open needs no banner – the app joins the room itself.
+		// The conference server re-invites a device into rooms it already has (new registration, app start).
+		if let inviteAddr = userInfo["chat-room-addr"] as? String, !inviteAddr.isEmpty {
+			completionHandler([])
+			return
+		}
+
 		let strPeerAddr = userInfo["peer_addr"] as? String
 		if strPeerAddr == nil {
 			completionHandler([.banner, .sound])
@@ -112,11 +119,14 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 						if 	let peerAddr = try? Factory.Instance.createAddress(addr: strPeerAddr!)
 								, let chatroom = core.searchChatRoom(params: nilParams, localAddr: nil, remoteAddr: peerAddr, participants: nil), chatroom.muted {
 							Log.info("message comes from a muted chatroom, ignore it")
+							completionHandler([])
 							return
 						}
 						completionHandler([.banner, .sound])
 					}
 				}
+			} else {
+				completionHandler([])
 			}
 		}
 	}
