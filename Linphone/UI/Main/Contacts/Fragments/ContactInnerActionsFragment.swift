@@ -261,7 +261,7 @@ struct ContactInnerActionsFragment: View {
 			Button {
 				let name = contactAvatarModel.name
 				let address = contactAvatarModel.address
-				SecureLinkAdmin.openConversation(draft: String(format: NSLocalizedString("securelink_report_contact_draft", comment: ""), name, address))
+				SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportContactDraft(name: name, address: address))
 			} label: {
 				HStack {
 					Image("warning-circle")

@@ -252,6 +252,30 @@ enum SecureLinkAdmin {
 		}
 	}
 
+	/// "karel@securelink.cc" instead of "sip:karel@securelink.cc;gr=…"
+	static func plainAddress(_ uri: String) -> String {
+		var a = uri
+		for prefix in ["sips:", "sip:"] where a.lowercased().hasPrefix(prefix) { a = String(a.dropFirst(prefix.count)) }
+		if let cut = a.firstIndex(where: { $0 == ";" || $0 == ">" }) { a = String(a[..<cut]) }
+		return a
+	}
+
+	/// report of a person: who, then the reason the user writes after "Co se stalo:"
+	static func reportContactDraft(name: String, address: String) -> String {
+		return String(format: NSLocalizedString("securelink_report_contact_draft", comment: ""), name, plainAddress(address))
+	}
+
+	/// report of one received message: sender, time, the text as the reporter sees it, then the reason
+	static func reportMessageDraft(senderAddress: String, sent: Date, text: String) -> String {
+		var name = plainAddress(senderAddress)
+		if let addr = try? Factory.Instance.createAddress(addr: senderAddress),
+		   let friendName = ContactsManager.shared.getFriendWithAddress(address: addr)?.name, !friendName.isEmpty {
+			name = friendName
+		}
+		let when = DateFormatter.localizedString(from: sent, dateStyle: .short, timeStyle: .short)
+		return String(format: NSLocalizedString("securelink_report_message_draft", comment: ""), name, plainAddress(senderAddress), when, text)
+	}
+
 	private static func show(_ room: ChatRoom) {
 		let model = ConversationModel(chatRoom: room)
 		DispatchQueue.main.async {

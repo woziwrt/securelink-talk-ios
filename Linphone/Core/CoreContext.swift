@@ -398,12 +398,15 @@ class CoreContext: ObservableObject {
 				}
 				
 			}, onCallStateChanged: { (core: Core, call: Call, cstate: Call.State, message: String) in
-				// SecureLink: a contact blocked on this phone never rings (CallKit sees the call end at once)
+				TelecomManager.shared.onCallStateChanged(core: core, call: call, state: cstate, message: message)
+				// SecureLink: a contact blocked on this phone is declined at once. Only after TelecomManager has seen the
+				// incoming call – declined before, CallKit never learnt that the call ended and kept ringing (13. 10.)
 				if cstate == .IncomingReceived && SecureLinkAdmin.isBlocked(core, call.remoteAddress) {
 					Log.info("[SecureLink] declining a call from a blocked contact")
-					try? call.decline(reason: .Declined)
+					self.doOnCoreQueue { _ in
+						try? call.decline(reason: .Declined)
+					}
 				}
-				TelecomManager.shared.onCallStateChanged(core: core, call: call, state: cstate, message: message)
 				
 				if core.calls.isEmpty {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 2) {

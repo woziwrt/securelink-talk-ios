@@ -1510,7 +1510,7 @@ struct ConversationFragment: View {
 												let msg = conversationViewModel.selectedMessage!.message
 												let content = msg.text.isEmpty ? msg.attachmentsNames : msg.text
 												conversationViewModel.selectedMessage = nil
-												SecureLinkAdmin.openConversation(draft: String(format: NSLocalizedString("securelink_report_message_draft", comment: ""), msg.address, content))
+												SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportMessageDraft(senderAddress: msg.address, sent: msg.createdAt, text: content))
 											} label: {
 												HStack {
 													Text("securelink_report_message")

@@ -643,9 +643,9 @@
 "securelink_contact_security_word_unverified" = "Zatím neověřeno";
 
 "securelink_report_contact" = "Nahlásit správci";
-"securelink_report_contact_draft" = "Nahlašuji uživatele %@ (%@): ";
+"securelink_report_contact_draft" = "⚠️ Nahlášení uživatele: %@ (%@)\nCo se stalo: ";
 "securelink_report_message" = "Nahlásit správci";
-"securelink_report_message_draft" = "Nahlašuji zprávu od %@: „%@“ ";
+"securelink_report_message_draft" = "⚠️ Nahlášení zprávy od: %@ (%@), %@\nZpráva: „%@“\nCo se stalo: ";
 "securelink_block_contact" = "Zablokovat";
 "securelink_unblock_contact" = "Odblokovat";
 "securelink_contact_blocked_toast" = "Kontakt je zablokovaný: nebude vám volat a jeho zprávy vás nebudou upozorňovat. Pokud jde o zneužití, nahlaste ho správci.";

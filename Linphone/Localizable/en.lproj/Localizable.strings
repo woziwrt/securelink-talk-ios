@@ -653,9 +653,9 @@
 "securelink_contact_security_word_unverified" = "Not verified yet";
 
 "securelink_report_contact" = "Report to administrator";
-"securelink_report_contact_draft" = "I am reporting the user %@ (%@): ";
+"securelink_report_contact_draft" = "⚠️ Report of user: %@ (%@)\nWhat happened: ";
 "securelink_report_message" = "Report to administrator";
-"securelink_report_message_draft" = "I am reporting a message from %@: \"%@\" ";
+"securelink_report_message_draft" = "⚠️ Report of a message from: %@ (%@), %@\nMessage: “%@”\nWhat happened: ";
 "securelink_block_contact" = "Block";
 "securelink_unblock_contact" = "Unblock";
 "securelink_contact_blocked_toast" = "Contact blocked: they cannot call you and their messages will not notify you. If this is abuse, report them to the administrator.";
