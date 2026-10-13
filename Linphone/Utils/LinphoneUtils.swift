@@ -192,7 +192,7 @@ enum SecureLinkAdmin {
 	/// text put into the message field when the administrator's conversation opens (the user sees it and sends it)
 	static var pendingDraft: String?
 
-	/// v1 agreement: messages disappear 7 days after they are read, users cannot switch it off.
+	/// v1 agreement: messages disappear 7 days after they are read by default; users can shorten it, not switch it off.
 	/// Not in the administrator's conversation – reports and requests stay there as a record.
 	static let disappearAfterSeconds = 7 * 24 * 3600
 
@@ -202,10 +202,11 @@ enum SecureLinkAdmin {
 		return room.participants.contains { $0.address?.weakEqual(address2: admin) == true }
 	}
 
-	/// every conversation of this phone (also ones others started) disappears after 7 days; run at start and foreground
+	/// every conversation of this phone (also ones others started) disappears after at most 7 days; a shorter time
+	/// chosen in the conversation stays; run at start and foreground
 	static func enforceDisappearing(_ core: Core) {
 		for room in core.chatRooms where !isAdminRoom(core, room) {
-			if !room.ephemeralEnabled || room.ephemeralLifetime != disappearAfterSeconds {
+			if !room.ephemeralEnabled || room.ephemeralLifetime <= 0 || room.ephemeralLifetime > disappearAfterSeconds {
 				room.ephemeralLifetime = disappearAfterSeconds
 				room.ephemeralEnabled = true
 				Log.info("[SecureLink] disappearing messages (7 days) switched on in a conversation")

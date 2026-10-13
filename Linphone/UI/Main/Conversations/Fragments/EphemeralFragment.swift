@@ -29,8 +29,7 @@ struct EphemeralFragment: View {
 		NSLocalizedString("conversation_ephemeral_messages_duration_one_hour", comment: ""),
 		NSLocalizedString("conversation_ephemeral_messages_duration_one_day", comment: ""),
 		NSLocalizedString("conversation_ephemeral_messages_duration_three_days", comment: ""),
-		NSLocalizedString("conversation_ephemeral_messages_duration_one_week", comment: ""),
-		NSLocalizedString("conversation_ephemeral_messages_duration_disabled", comment: "")
+		NSLocalizedString("conversation_ephemeral_messages_duration_one_week", comment: "")   // SecureLink: no "Disabled"
 	]
 	
 	@Binding var isShowEphemeralFragment: Bool
@@ -102,7 +101,7 @@ struct EphemeralFragment: View {
 													}
 													.padding(.top, 2)
 													
-													if option != NSLocalizedString("conversation_ephemeral_messages_duration_disabled", comment: "") {
+													if option != options.last {
 														Divider()
 													}
 												}

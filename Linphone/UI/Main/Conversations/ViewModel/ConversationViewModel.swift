@@ -2886,7 +2886,7 @@ class ConversationViewModel: ObservableObject {
 				case NSLocalizedString("conversation_ephemeral_messages_duration_one_week", comment: ""):
 					lifetime = 604800
 				default:
-					lifetime = 0
+					lifetime = SecureLinkAdmin.disappearAfterSeconds   // SecureLink: never switched off
 				}
 				
 				if lifetime == 0 {

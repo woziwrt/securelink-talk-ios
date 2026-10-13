@@ -747,7 +747,7 @@ struct ConversationInfoFragment: View {
 												Divider()
 											}
 											
-											if false {   // SecureLink: messages always disappear after 7 days (v1 agreement), not configurable
+											if !(SharedMainViewModel.shared.displayedConversation?.isAdminConversation ?? true) {   // SecureLink: 7 days by default, can be shortened, not switched off; not in the admin conversation
 											Button(
 												action: {
 													withAnimation {

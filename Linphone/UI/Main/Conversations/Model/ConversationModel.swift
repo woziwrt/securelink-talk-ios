@@ -38,6 +38,7 @@ class ConversationModel: ObservableObject, Identifiable {
 	let localSipUri: String
 	let remoteSipUri: String
 	let isGroup: Bool
+	let isAdminConversation: Bool   // SecureLink: messages there never disappear, no disappearing-messages setting
 	@Published var isReadOnly: Bool
 	@Published var subject: String
 	@Published var participantsAddress: [String] = []
@@ -79,6 +80,8 @@ class ConversationModel: ObservableObject, Identifiable {
 		self.localSipUri = chatRoom.localAddress?.asStringUriOnly() ?? ""
 		
 		self.remoteSipUri = chatRoom.peerAddress?.asStringUriOnly() ?? ""
+		
+		self.isAdminConversation = CoreContext.shared.mCore.map { SecureLinkAdmin.isAdminRoom($0, chatRoom) } ?? false
 		
 		self.isGroup = !chatRoom.hasCapability(mask: ChatRoom.Capabilities.OneToOne.rawValue) && chatRoom.hasCapability(mask: ChatRoom.Capabilities.Conference.rawValue)
 		
