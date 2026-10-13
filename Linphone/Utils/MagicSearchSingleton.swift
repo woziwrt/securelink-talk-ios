@@ -142,6 +142,27 @@ final class MagicSearchSingleton: ObservableObject {
 				}
 			}
 			
+			// SecureLink: one row per person. A second friend with the same SIP address but no name ("sip:vera@…") appeared
+			// next to the directory entry after a phone of that person logged in again (12. 10.); keep the named one
+			func sipKey(_ uri: String) -> String {
+				var key = uri.lowercased()
+				if key.hasPrefix("sips:") { key = "sip:" + key.dropFirst(5) }
+				if let cut = key.firstIndex(where: { $0 == ";" || $0 == ">" }) { key = String(key[..<cut]) }
+				return key
+			}
+			func hasRealName(_ model: ContactAvatarModel) -> Bool {
+				return !model.name.isEmpty && !model.name.lowercased().hasPrefix("sip")
+			}
+			var bestByAddress: [String: ContactAvatarModel] = [:]
+			for model in addedAvatarListModel where !model.address.isEmpty {
+				let key = sipKey(model.address)
+				if let kept = bestByAddress[key], hasRealName(kept) || !hasRealName(model) { continue }
+				bestByAddress[key] = model
+			}
+			addedAvatarListModel = addedAvatarListModel.filter { model in
+				model.address.isEmpty || bestByAddress[sipKey(model.address)] === model
+			}
+			
 			self.contactsManager.avatarListModel.forEach { contactAvatarModel in
 				contactAvatarModel.removeFriendDelegate()
 			}
