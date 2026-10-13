@@ -280,6 +280,8 @@ struct AppView: View {
 				if coreContext.mCore != nil { ContactsManager.shared.refreshCardDavContacts() }
 				// SecureLink: badge and Messages tab from the real count – after an account was removed they kept the old number
 				if coreContext.mCore != nil { SharedMainViewModel.shared.updateUnreadMessagesCount() }
+				// SecureLink: messages and attachments stay out of iCloud backups (also folders created since the last start)
+				DispatchQueue.global(qos: .utility).async { SecureLinkPrivacy.excludeFromBackup() }
 				// SecureLink: conversations others started get the 7-day disappearing messages too
 				if coreContext.mCore != nil { CoreContext.shared.doOnCoreQueue { core in SecureLinkAdmin.enforceDisappearing(core) } }
 			case .background:

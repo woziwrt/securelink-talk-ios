@@ -20,6 +20,9 @@
 import Foundation
 import linphonesw
 import CryptoKit
+import ImageIO
+import AVFoundation
+import UniformTypeIdentifiers
 
 class LinphoneUtils: NSObject {
 	static let RECORDING_FILE_NAME_HEADER = "call_recording_sip_"
@@ -413,5 +416,129 @@ enum SecureLinkAdmin {
 			room.muted = blocked
 		}
 		Log.info("[SecureLink] \(uri) \(blocked ? "blocked" : "unblocked") on this phone")
+	}
+}
+
+/// v1 agreement: location and camera data never leave the phone with a photo or video, app data stays out of iCloud backups
+enum SecureLinkPrivacy {
+
+	/// removes location, time and device data from a photo or video before it is sent; other files are left alone.
+	/// false = it could not be cleaned and must not be sent
+	static func cleanAttachment(at url: URL) -> Bool {
+		guard let type = UTType(filenameExtension: url.pathExtension.lowercased()) else { return true }
+		if type.conforms(to: .gif) {
+			return true   // GIF has no EXIF or location block
+		}
+		if type.conforms(to: .image) {
+			guard let data = try? Data(contentsOf: url), let clean = cleanImageData(data) else { return false }
+			return clean == data || (try? clean.write(to: url)) != nil
+		}
+		if type.conforms(to: .movie) {
+			return cleanVideo(at: url)
+		}
+		return true
+	}
+
+	/// true when no location, time or device data is left in the picture
+	private static func isClean(_ data: Data) -> Bool {
+		guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+			  let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else { return false }
+		if props[kCGImagePropertyGPSDictionary] != nil || props[kCGImagePropertyMakerAppleDictionary] != nil {
+			return false
+		}
+		let exif = (props[kCGImagePropertyExifDictionary] as? [CFString: Any]) ?? [:]
+		let tiff = (props[kCGImagePropertyTIFFDictionary] as? [CFString: Any]) ?? [:]
+		let exifKeys: [CFString] = [kCGImagePropertyExifDateTimeOriginal, kCGImagePropertyExifDateTimeDigitized, kCGImagePropertyExifLensModel,
+									kCGImagePropertyExifLensMake, kCGImagePropertyExifBodySerialNumber, kCGImagePropertyExifCameraOwnerName,
+									kCGImagePropertyExifUserComment]
+		let tiffKeys: [CFString] = [kCGImagePropertyTIFFModel, kCGImagePropertyTIFFMake, kCGImagePropertyTIFFDateTime, kCGImagePropertyTIFFSoftware,
+									kCGImagePropertyTIFFArtist, kCGImagePropertyTIFFHostComputer]
+		return !exifKeys.contains { exif[$0] != nil } && !tiffKeys.contains { tiff[$0] != nil }
+	}
+
+	/// first a lossless copy with empty metadata (only the orientation, so the photo is not rotated); ImageIO keeps
+	/// some fields for HEIC and PNG, then the pixels are re-encoded. Checked on JPEG, HEIC and PNG (13. 10.)
+	private static func cleanImageData(_ data: Data) -> Data? {
+		if isClean(data) {
+			return data
+		}
+		guard let source = CGImageSourceCreateWithData(data as CFData, nil), let type = CGImageSourceGetType(source) else { return nil }
+		let orientation = (CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])?[kCGImagePropertyOrientation]
+		
+		let metadata = CGImageMetadataCreateMutable()
+		if let orientation {
+			_ = CGImageMetadataSetValueMatchingImageProperty(metadata, kCGImagePropertyTIFFDictionary, kCGImagePropertyTIFFOrientation, orientation as CFTypeRef)
+		}
+		let copyOptions: [CFString: Any] = [kCGImageDestinationMetadata: metadata, kCGImageDestinationMergeMetadata: false,
+											kCGImageMetadataShouldExcludeGPS: true, kCGImageMetadataShouldExcludeXMP: true]
+		let copied = NSMutableData()
+		if let dest = CGImageDestinationCreateWithData(copied, type, 1, nil),
+		   CGImageDestinationCopyImageSource(dest, source, copyOptions as CFDictionary, nil), isClean(copied as Data) {
+			return copied as Data
+		}
+		
+		let encoded = NSMutableData()
+		guard let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+			  let encoder = CGImageDestinationCreateWithData(encoded, type, 1, nil) else { return nil }
+		var props: [CFString: Any] = [kCGImageDestinationLossyCompressionQuality: 0.9]
+		if let orientation {
+			props[kCGImagePropertyOrientation] = orientation
+		}
+		CGImageDestinationAddImage(encoder, image, props as CFDictionary)
+		guard CGImageDestinationFinalize(encoder), isClean(encoded as Data) else { return nil }
+		return encoded as Data
+	}
+
+	/// picture and sound copied as they are (no re-encoding) into a new movie without metadata; the camera's timed
+	/// metadata tracks stay behind. Checked on an iPhone 16 video (location, date, model gone, plays rotated right)
+	private static func cleanVideo(at url: URL) -> Bool {
+		let out = url.deletingLastPathComponent().appendingPathComponent("clean-" + UUID().uuidString + ".mov")
+		do {
+			let source = AVMovie(url: url, options: nil)
+			let movie = try AVMutableMovie(settingsFrom: source, options: nil)
+			movie.metadata = []
+			movie.defaultMediaDataStorage = AVMediaDataStorage(url: out, options: nil)
+			for track in source.tracks where track.mediaType == .video || track.mediaType == .audio {
+				guard let copy = movie.addMutableTrack(withMediaType: track.mediaType, copySettingsFrom: track, options: nil) else {
+					throw CocoaError(.fileWriteUnknown)
+				}
+				try copy.insertTimeRange(track.timeRange, of: track, at: track.timeRange.start, copySampleData: true)
+				copy.metadata = []
+			}
+			guard !movie.tracks.isEmpty else { throw CocoaError(.fileWriteUnknown) }
+			movie.metadata = []
+			try movie.writeHeader(to: out, fileType: .mov, options: .addMovieHeaderToDestination)
+			_ = try FileManager.default.replaceItemAt(url, withItemAt: out)
+			return true
+		} catch {
+			Log.error("[SecureLink] video \(url.lastPathComponent) could not be cleaned of metadata: \(error)")
+			try? FileManager.default.removeItem(at: out)
+			return false
+		}
+	}
+
+	/// messages, attachments and keys are not copied into the iPhone's iCloud/computer backup; a flag on a folder covers
+	/// everything in it, also files created later. Run at every start
+	static func excludeFromBackup() {
+		var folders = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+			+ FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)
+		for group in ["group.cc.securelink.talk", "group.cc.securelink.talk.msgNotification", "group.cc.securelink.talk.linphoneExtension"] {
+			if let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group) {
+				folders.append(container)
+				folders += (try? FileManager.default.contentsOfDirectory(at: container, includingPropertiesForKeys: nil)) ?? []
+			}
+		}
+		for var folder in folders {
+			if (try? folder.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup) == true {
+				continue
+			}
+			var values = URLResourceValues()
+			values.isExcludedFromBackup = true
+			do {
+				try folder.setResourceValues(values)
+			} catch {
+				Log.warn("[SecureLink] could not exclude \(folder.lastPathComponent) from backup: \(error)")
+			}
+		}
 	}
 }

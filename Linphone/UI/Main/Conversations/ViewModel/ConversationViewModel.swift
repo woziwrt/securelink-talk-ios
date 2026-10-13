@@ -2211,6 +2211,13 @@ class ConversationViewModel: ObservableObject {
 										
 										try FileManager.default.moveItem(atPath: tempPath.path, toPath: newPath.path)
 										
+										// SecureLink: no location, time or device data leaves the phone with a photo or video
+										if !SecureLinkPrivacy.cleanAttachment(at: newPath) {
+											Log.error("[SecureLink] \(newPath.lastPathComponent) could not be cleaned of metadata, not sent")
+											try? FileManager.default.removeItem(at: newPath)
+											return
+										}
+										
 										content.filePath = newPath.path
 										message?.addFileContent(content: content)
 										
