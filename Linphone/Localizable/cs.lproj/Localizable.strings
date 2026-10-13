@@ -650,9 +650,9 @@
 "securelink_unblock_contact" = "Odblokovat";
 "securelink_contact_blocked_toast" = "Kontakt je zablokovaný: nebude vám volat a jeho zprávy vás nebudou upozorňovat. Pokud jde o zneužití, nahlaste ho správci.";
 "securelink_contact_unblocked_toast" = "Kontakt je odblokovaný";
-"securelink_deletion_requested_toast" = "Žádost připravena – odešlete ji správci";
+"securelink_deletion_requested_toast" = "Žádost odeslána – účet bude smazán do 7 dnů";
 "securelink_request_deletion" = "Požádat o smazání účtu";
-"securelink_request_deletion_message" = "Žádost o smazání účtu odešlete správci zprávou. Správce účet smaže do 7 dnů a potvrdí vám to. Smažou se i vaše klíče a zprávy uložené na serveru.";
+"securelink_request_deletion_message" = "Žádost o smazání účtu odejde správci. Do 7 dnů smaže váš účet, vaše klíče a zprávy uložené na serveru a dá vám vědět.";
 "securelink_request_deletion_draft" = "Prosím o smazání mého účtu SecureLink.";
 "securelink_privacy_policy" = "Zásady ochrany osobních údajů";
 "securelink_terms" = "Podmínky používání";
@@ -660,3 +660,6 @@
 "securelink_terms_text" = "SecureLink je určený jen pro pozvané uživatele. Používáním souhlasíte, že nebudete posílat nezákonný, urážlivý ani obtěžující obsah a nebudete nikoho obtěžovat. Za takové chování správce účet zablokuje. Nevhodnou zprávu nebo uživatele můžete kdykoli nahlásit správci (podržte zprávu nebo otevřete kontakt); správce na hlášení reaguje do 24 hodin.";
 "securelink_terms_accept" = "Souhlasím";
 "securelink_terms_read_full" = "Celé podmínky";
+"securelink_request_deletion_confirm" = "Požádat o smazání";
+"securelink_deletion_request_failed_toast" = "Žádost se nepodařilo odeslat, zkuste to prosím znovu";
+"securelink_signout_message" = "Účet se odebere z tohoto telefonu. Na serveru zůstane – smazat ho můžete přes „Požádat o smazání účtu“.";

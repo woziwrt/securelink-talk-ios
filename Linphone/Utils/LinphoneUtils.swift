@@ -19,6 +19,7 @@
 
 import Foundation
 import linphonesw
+import CryptoKit
 
 class LinphoneUtils: NSObject {
 	static let RECORDING_FILE_NAME_HEADER = "call_recording_sip_"
@@ -249,6 +250,71 @@ enum SecureLinkAdmin {
 		DispatchQueue.main.async {
 			SharedMainViewModel.shared.displayedConversation = model
 		}
+	}
+
+	// --- account deletion (App Review 5.1.1(v)): one tap sends a signed request to the server ([app] request_url,
+	// HTTP digest SHA-256 with the SIP account – the same check as attachments); the administrator deletes within 7 days
+	static func requestDeletion(done: @escaping (Bool) -> Void) {
+		CoreContext.shared.doOnCoreQueue { core in
+			let link = setting(core, "request_url")
+			guard let url = URL(string: link), !link.isEmpty, let auth = core.defaultAccount?.findAuthInfo(),
+				  let user = auth.username, !user.isEmpty else {
+				Log.error("[SecureLink] deletion request: no request_url or no credentials")
+				DispatchQueue.main.async { done(false) }
+				return
+			}
+			let storedHa1 = (auth.algorithm ?? "").uppercased() == "SHA-256" ? (auth.ha1 ?? "") : ""
+			postDeletion(url: url, user: user, password: auth.password ?? "", storedHa1: storedHa1, authorization: nil, done: done)
+		}
+	}
+
+	private static func sha256(_ text: String) -> String {
+		return SHA256.hash(data: Data(text.utf8)).map { String(format: "%02x", $0) }.joined()
+	}
+
+	private static func postDeletion(url: URL, user: String, password: String, storedHa1: String, authorization: String?,
+									 done: @escaping (Bool) -> Void) {
+		var request = URLRequest(url: url, timeoutInterval: 30)
+		request.httpMethod = "POST"
+		request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+		request.httpBody = Data("type=delete".utf8)
+		if let authorization = authorization {
+			request.setValue(authorization, forHTTPHeaderField: "Authorization")
+		}
+		URLSession.shared.dataTask(with: request) { _, response, error in
+			let http = response as? HTTPURLResponse
+			if http?.statusCode == 200 {
+				Log.info("[SecureLink] account deletion requested")
+				DispatchQueue.main.async { done(true) }
+				return
+			}
+			guard authorization == nil, http?.statusCode == 401,
+				  let challenge = http?.value(forHTTPHeaderField: "WWW-Authenticate") else {
+				Log.error("[SecureLink] deletion request failed: \(http?.statusCode ?? 0) \(error?.localizedDescription ?? "")")
+				DispatchQueue.main.async { done(false) }
+				return
+			}
+			var fields: [String: String] = [:]
+			let pattern = try? NSRegularExpression(pattern: "(\\w+)=\"?([^\",]*)\"?")
+			for m in pattern?.matches(in: challenge, range: NSRange(challenge.startIndex..., in: challenge)) ?? [] {
+				if let k = Swift.Range(m.range(at: 1), in: challenge), let v = Swift.Range(m.range(at: 2), in: challenge) {
+					fields[String(challenge[k])] = String(challenge[v])
+				}
+			}
+			let realm = fields["realm"] ?? "", nonce = fields["nonce"] ?? "", opaque = fields["opaque"] ?? ""
+			let ha1 = !storedHa1.isEmpty ? storedHa1 : (password.isEmpty ? "" : sha256("\(user):\(realm):\(password)"))
+			guard !ha1.isEmpty, !nonce.isEmpty else {
+				Log.error("[SecureLink] deletion request: no SHA-256 credentials for the digest")
+				DispatchQueue.main.async { done(false) }
+				return
+			}
+			let cnonce = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
+			let nc = "00000001", uri = url.path
+			let response = sha256("\(ha1):\(nonce):\(nc):\(cnonce):auth:" + sha256("POST:\(uri)"))
+			let header = "Digest username=\"\(user)\", realm=\"\(realm)\", nonce=\"\(nonce)\", uri=\"\(uri)\", "
+				+ "algorithm=SHA-256, qop=auth, nc=\(nc), cnonce=\"\(cnonce)\", response=\"\(response)\", opaque=\"\(opaque)\""
+			postDeletion(url: url, user: user, password: password, storedHa1: storedHa1, authorization: header, done: done)
+		}.resume()
 	}
 
 	// --- blocking on this phone: no calls ring, the conversation is muted; the administrator gets a report

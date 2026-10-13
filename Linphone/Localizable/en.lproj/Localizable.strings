@@ -660,9 +660,9 @@
 "securelink_unblock_contact" = "Unblock";
 "securelink_contact_blocked_toast" = "Contact blocked: they cannot call you and their messages will not notify you. If this is abuse, report them to the administrator.";
 "securelink_contact_unblocked_toast" = "Contact unblocked";
-"securelink_deletion_requested_toast" = "Request ready – send it to the administrator";
+"securelink_deletion_requested_toast" = "Request sent – the account will be deleted within 7 days";
 "securelink_request_deletion" = "Request account deletion";
-"securelink_request_deletion_message" = "Send the deletion request to the administrator as a message. The administrator deletes the account within 7 days and confirms it to you. Your keys and messages stored on the server are deleted too.";
+"securelink_request_deletion_message" = "The deletion request goes to the administrator, who deletes your account, your keys and your messages stored on the server within 7 days and lets you know.";
 "securelink_request_deletion_draft" = "Please delete my SecureLink account.";
 "securelink_privacy_policy" = "Privacy policy";
 "securelink_terms" = "Terms of use";
@@ -670,3 +670,6 @@
 "securelink_terms_text" = "SecureLink is for invited users only. By using it you agree not to send unlawful, offensive or harassing content and not to harass anyone. The administrator blocks accounts for such behaviour. You can report an inappropriate message or user to the administrator at any time (long-press the message or open the contact); the administrator responds to reports within 24 hours.";
 "securelink_terms_accept" = "I agree";
 "securelink_terms_read_full" = "Full terms";
+"securelink_request_deletion_confirm" = "Request deletion";
+"securelink_deletion_request_failed_toast" = "The request could not be sent, please try again";
+"securelink_signout_message" = "The account is removed from this phone. It stays on the server – to delete it, use “Request account deletion”.";
