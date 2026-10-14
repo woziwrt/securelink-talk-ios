@@ -278,7 +278,6 @@
 			dstSubfolderSpec = 13;
 			files = (
 				660AAF7F2B839272004C0FA6 /* msgNotificationService.appex in Embed Foundation Extensions */,
-				D792F1612F02BCC2002E3225 /* intentsExtension.appex in Embed Foundation Extensions */,
 				D7458F392E0BDCF4000C957A /* linphoneExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
@@ -1332,7 +1331,6 @@
 			dependencies = (
 				660AAF7E2B839272004C0FA6 /* PBXTargetDependency */,
 				D7458F382E0BDCF4000C957A /* PBXTargetDependency */,
-				D792F1602F02BCC2002E3225 /* PBXTargetDependency */,
 			);
 			name = LinphoneApp;
 			productName = Linphone;
