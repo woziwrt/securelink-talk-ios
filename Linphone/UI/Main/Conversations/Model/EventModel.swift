@@ -83,6 +83,23 @@ class EventModel: ObservableObject {
 				case .ConferenceEphemeralMessageLifetimeChanged:
 					textValue = String(format: NSLocalizedString("conversation_event_ephemeral_messages_lifetime_changed", comment: ""),
 									   self.formatEphemeralExpiration(duration: Int64(eventLog.ephemeralMessageLifetime)).lowercased())
+				case .ConferenceSecurityEvent:
+					// SecureLink: upstream showed only a number here – the user must see that a key changed
+					let who = eventLog.securityEventFaultyDeviceAddress.flatMap {
+						ContactsManager.shared.getFriendWithAddress(address: $0)?.name
+					} ?? name
+					switch eventLog.securityEventType {
+					case .ManInTheMiddleDetected:
+						textValue = String(format: NSLocalizedString("Pozor: klíč pro %@ nesouhlasí s ověřeným. Nic citlivého nepište, dokud si hovorem neověříte bezpečnostní slovo.", comment: ""), who)
+					case .EncryptionIdentityKeyChanged:
+						textValue = String(format: NSLocalizedString("%@ má nový klíč pro zprávy (nový telefon nebo přeinstalovaná appka). Ověřte si hovorem bezpečnostní slovo.", comment: ""), who)
+					case .SecurityLevelDowngraded:
+						textValue = String(format: NSLocalizedString("%@ má nové, zatím neověřené zařízení.", comment: ""), who)
+					case .ParticipantMaxDeviceCountExceeded:
+						textValue = String(format: NSLocalizedString("%@ má příliš mnoho zařízení.", comment: ""), who)
+					default:
+						textValue = NSLocalizedString("Změna zabezpečení konverzace.", comment: "")
+					}
 				default:
 					textValue = String(eventLog.type.rawValue)
 				}
@@ -91,7 +108,7 @@ class EventModel: ObservableObject {
 				switch eventLog.type {
 				case .ConferenceEphemeralMessageEnabled, .ConferenceEphemeralMessageDisabled, .ConferenceEphemeralMessageLifetimeChanged:
 					iconValue = Image("clock-countdown")
-				case .ConferenceTerminated:
+				case .ConferenceTerminated, .ConferenceSecurityEvent:
 					iconValue = Image("warning-circle")
 				case .ConferenceSubjectChanged:
 					iconValue = Image("pencil-simple")

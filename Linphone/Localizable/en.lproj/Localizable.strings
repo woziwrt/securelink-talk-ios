@@ -717,3 +717,8 @@
 "Nedostupný – telefon je vypnutý nebo bez signálu" = "Unavailable – the phone is off or has no signal";
 "Obsazeno" = "Busy";
 "Nepřijato" = "Not answered";
+"Pozor: klíč pro %@ nesouhlasí s ověřeným. Nic citlivého nepište, dokud si hovorem neověříte bezpečnostní slovo." = "Warning: the key for %@ does not match the verified one. Do not write anything sensitive until you have checked the security word in a call.";
+"%@ má nový klíč pro zprávy (nový telefon nebo přeinstalovaná appka). Ověřte si hovorem bezpečnostní slovo." = "%@ has a new message key (new phone or reinstalled app). Check the security word in a call.";
+"%@ má nové, zatím neověřené zařízení." = "%@ has a new device that is not verified yet.";
+"%@ má příliš mnoho zařízení." = "%@ has too many devices.";
+"Změna zabezpečení konverzace." = "The conversation's security changed.";

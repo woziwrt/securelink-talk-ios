@@ -156,6 +156,9 @@ class ConversationViewModel: ObservableObject {
 		}, onParticipantAdminStatusChanged: { (_: ChatRoom, eventLog: EventLog) in
 			self.getEventMessage(eventLog: eventLog)
 			self.getParticipantConversationModel()
+		}, onSecurityEvent: { (_: ChatRoom, eventLog: EventLog) in
+			// SecureLink: a changed message key (new phone, reinstall – or someone in between) shows in the conversation
+			self.getEventMessage(eventLog: eventLog)
 		}, onSubjectChanged: { (_: ChatRoom, eventLog: EventLog) in
 			self.getEventMessage(eventLog: eventLog)
 		}, onConferenceJoined: {(chatRoom: ChatRoom, eventLog: EventLog) in

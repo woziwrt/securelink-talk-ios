@@ -307,7 +307,7 @@ enum SecureLinkAdmin {
 		}
 	}
 
-	/// "karel@securelink.cc" instead of "sip:karel@securelink.cc;gr=…"
+	/// "123456789@securelink.cc" instead of "sip:123456789@securelink.cc;gr=…"
 	static func plainAddress(_ uri: String) -> String {
 		var a = uri
 		for prefix in ["sips:", "sip:"] where a.lowercased().hasPrefix(prefix) { a = String(a.dropFirst(prefix.count)) }
