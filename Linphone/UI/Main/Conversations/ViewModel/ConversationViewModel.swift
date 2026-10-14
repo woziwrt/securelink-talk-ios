@@ -2433,23 +2433,12 @@ class ConversationViewModel: ObservableObject {
 	}
 	
 	func getMessageTime(startDate: time_t) -> String {
-		let timeInterval = TimeInterval(startDate)
-		
-		let myNSDate = Date(timeIntervalSince1970: timeInterval)
-		
+		let myNSDate = Date(timeIntervalSince1970: TimeInterval(startDate))
+		// SecureLink: in the phone's language (was US formats)
 		if Calendar.current.isDateInToday(myNSDate) {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "HH:mm" : "h:mm a"
-			return formatter.string(from: myNSDate)
-		} else if Calendar.current.isDate(myNSDate, equalTo: .now, toGranularity: .year) {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "dd/MM HH:mm" : "MM/dd h:mm a"
-			return formatter.string(from: myNSDate)
-		} else {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "dd/MM/yy HH:mm" : "MM/dd/yy h:mm a"
-			return formatter.string(from: myNSDate)
+			return SecureLinkDates.time(myNSDate)
 		}
+		return SecureLinkDates.day(myNSDate) + " " + SecureLinkDates.time(myNSDate)
 	}
 	
 	func getImageIMDN(status: Message.Status) -> String {

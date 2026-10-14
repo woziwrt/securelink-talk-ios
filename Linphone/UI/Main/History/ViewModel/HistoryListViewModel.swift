@@ -155,27 +155,9 @@ class HistoryListViewModel: ObservableObject {
 	}
 	
 	func getCallTime(startDate: time_t) -> String {
-		let timeInterval = TimeInterval(startDate)
-		
-		let myNSDate = Date(timeIntervalSince1970: timeInterval)
-		
-		if Calendar.current.isDateInToday(myNSDate) {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "HH:mm" : "h:mm a"
-			return "Today | " + formatter.string(from: myNSDate)
-		} else if Calendar.current.isDateInYesterday(myNSDate) {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "HH:mm" : "h:mm a"
-			return "Yesterday | " + formatter.string(from: myNSDate)
-		} else if Calendar.current.isDate(myNSDate, equalTo: .now, toGranularity: .year) {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "dd/MM | HH:mm" : "MM/dd | h:mm a"
-			return formatter.string(from: myNSDate)
-		} else {
-			let formatter = DateFormatter()
-			formatter.dateFormat = Locale.current.identifier == "fr_FR" ? "dd/MM/yy | HH:mm" : "MM/dd/yy | h:mm a"
-			return formatter.string(from: myNSDate)
-		}
+		let myNSDate = Date(timeIntervalSince1970: TimeInterval(startDate))
+		// SecureLink: in the phone's language (was English "Today"/"Yesterday" and US formats)
+		return SecureLinkDates.day(myNSDate) + " | " + SecureLinkDates.time(myNSDate)
 	}
 	
 	func filterCallLogs(filter: String) {

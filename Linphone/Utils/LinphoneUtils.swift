@@ -561,3 +561,26 @@ enum SecureLinkPrivacy {
 		}
 	}
 }
+
+// SecureLink: dates in the phone's own language and 12/24 h setting – upstream hardcoded English words
+// ("Yesterday", "Today") and US formats (h:mm a, MM/dd) for everything except fr_FR
+enum SecureLinkDates {
+	static func time(_ date: Date) -> String {
+		return DateFormatter.localizedString(from: date, dateStyle: .none, timeStyle: .short)
+	}
+	
+	/// "Today"/"Yesterday" in the phone's language, otherwise the date (without the year in the current year)
+	static func day(_ date: Date) -> String {
+		let calendar = Calendar.current
+		let formatter = DateFormatter()
+		if calendar.isDateInToday(date) || calendar.isDateInYesterday(date) {
+			formatter.doesRelativeDateFormatting = true
+			formatter.dateStyle = .medium
+			formatter.timeStyle = .none
+			let text = formatter.string(from: date)
+			return text.prefix(1).uppercased() + text.dropFirst()
+		}
+		formatter.setLocalizedDateFormatFromTemplate(calendar.isDate(date, equalTo: .now, toGranularity: .year) ? "dM" : "dMyy")
+		return formatter.string(from: date)
+	}
+}
