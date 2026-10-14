@@ -491,10 +491,11 @@ class CoreContext: ObservableObject {
 					}
 					ContactsManager.shared.fetchContacts()
 					
-					if let defaultAccountParams = self.mCore.defaultAccount?.params, defaultAccountParams.publishEnabled == false {
-						let params = defaultAccountParams
-						let clonedParams = params.clone()
-						clonedParams?.publishEnabled = true
+					// SecureLink: no presence (v1 agreement) – upstream switched PUBLISH on here at every registration,
+					// overriding publish=0 from the profile, so phones kept announcing "online" to the server
+					if let defaultAccountParams = self.mCore.defaultAccount?.params, defaultAccountParams.publishEnabled == true {
+						let clonedParams = defaultAccountParams.clone()
+						clonedParams?.publishEnabled = false
 						self.mCore.defaultAccount?.params = clonedParams
 					}
 					
