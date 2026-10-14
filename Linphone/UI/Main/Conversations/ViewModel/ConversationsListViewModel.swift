@@ -77,6 +77,14 @@ class ConversationsListViewModel: ObservableObject {
 				avatarAddresses.forEach { contactAvatarModel, contactAddress in
 					participantsByConversation.forEach { conversationModel, participantsAddress in
 						if participantsAddress.contains(contactAddress) {
+							if conversationModel.isGroup {
+								// SecureLink: a group's title is its members' names – refresh it once the directory knows them
+								// (a list built before the directory loaded showed "Skupina" for good)
+								let titleTmp = SecureLinkGroups.title(conversationModel.chatRoom)
+								DispatchQueue.main.async {
+									conversationModel.subject = titleTmp
+								}
+							}
 							if conversationModel.isGroup && participantsAddress.count > 1 {
 								if let lastMessage = conversationModel.chatRoom.lastMessageInHistory, let fromAddress = lastMessage.fromAddress, fromAddress.asStringUriOnly().contains(contactAddress) {
 									var fromAddressFriend = self.contactsManager.getFriendWithAddress(address: fromAddress)?.name
@@ -137,6 +145,14 @@ class ConversationsListViewModel: ObservableObject {
 		CoreContext.shared.doOnCoreQueue { _ in
 			participantsByConversation.forEach { conversationModel, participantsAddress in
 				if participantsAddress.contains(contactAddress) {
+					if conversationModel.isGroup {
+						// SecureLink: a group's title is its members' names – refresh it once the directory knows them
+						// (a list built before the directory loaded showed "Skupina" for good)
+						let titleTmp = SecureLinkGroups.title(conversationModel.chatRoom)
+						DispatchQueue.main.async {
+							conversationModel.subject = titleTmp
+						}
+					}
 					if conversationModel.isGroup && participantsAddress.count > 1 {
 						if let lastMessage = conversationModel.chatRoom.lastMessageInHistory, let fromAddress = lastMessage.fromAddress, fromAddress.asStringUriOnly().contains(contactAddress) {
 							var fromAddressFriend = self.contactsManager.getFriendWithAddress(address: fromAddress)?.name
