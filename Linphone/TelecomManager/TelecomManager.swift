@@ -683,6 +683,18 @@ class TelecomManager: ObservableObject {
 			case .End,
 					.Error:
 				
+				// SecureLink: tell the caller why an unanswered call ended – a switched-off phone used to end in silence
+				if call.dir == .Outgoing && call.callLog?.status != .Success {
+					switch call.reason {
+					case .NotAnswered, .TemporarilyUnavailable, .IOError:
+						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_unavailable", duration: 4.0) }
+					case .Busy:
+						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_busy", duration: 4.0) }
+					default:
+						break
+					}
+				}
+				
 				UIDevice.current.isProximityMonitoringEnabled = false
 				if core.callsNb == 0 {
 					core.outputAudioDevice = core.defaultOutputAudioDevice

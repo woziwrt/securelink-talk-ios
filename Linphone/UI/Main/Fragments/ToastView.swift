@@ -482,6 +482,20 @@ struct ToastView: View {
 							.default_text_style(styleSize: 15)
 							.padding(8)
 					
+					case "Info_securelink_call_unavailable":
+						Text("Nedostupný – telefon je vypnutý nebo bez signálu")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.grayMain2c700)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
+					case "Info_securelink_call_busy":
+						Text("Obsazeno")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.grayMain2c700)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
 					case "Failed_securelink_deletion_request":
 						Text("securelink_deletion_request_failed_toast")
 							.multilineTextAlignment(.center)
