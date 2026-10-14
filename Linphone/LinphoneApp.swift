@@ -72,6 +72,8 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 		// Set up notifications
 		UNUserNotificationCenter.current().delegate = self
+		// SecureLink: cover the app before iOS takes the app-switcher snapshot
+		PrivacyCover.shared.start()
 
 		return true
 	}
@@ -468,9 +470,58 @@ final class AppLock: ObservableObject {
 	}
 }
 
+// MARK: - SecureLink privacy cover (app switcher)
+
+// iOS stores a screenshot of the app for the app switcher when it leaves the foreground; without a cover the open
+// conversation was readable there (and on disk). The cover is a window like the lock screen, shown before the snapshot.
+final class PrivacyCover {
+	static let shared = PrivacyCover()
+	private var window: UIWindow?
+
+	private init() {
+		// queue .main: the handlers run synchronously while the notification is posted, i.e. before iOS takes the snapshot
+		NotificationCenter.default.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.show()
+		}
+		NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.hide()
+		}
+	}
+
+	func start() {}   // touching `shared` registers the observers
+
+	private func show() {
+		guard window == nil else { return }
+		let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+		guard let scene = scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first else { return }
+		let cover = UIWindow(windowScene: scene)
+		cover.windowLevel = .alert + 2   // above the lock screen too: the switcher shows only the logo
+		cover.rootViewController = UIHostingController(rootView: PrivacyCoverView())
+		cover.isHidden = false
+		window = cover
+	}
+
+	private func hide() {
+		window?.isHidden = true
+		window = nil
+	}
+}
+
+struct PrivacyCoverView: View {
+	var body: some View {
+		ZStack {
+			Color.orangeMain500.ignoresSafeArea()
+			Image("securelink-white")
+				.resizable()
+				.scaledToFit()
+				.frame(width: 90, height: 90)
+		}
+	}
+}
+
 struct AppLockView: View {
 	@ObservedObject var appLock: AppLock
-	
+
 	var body: some View {
 		ZStack {
 			Color.orangeMain500.ignoresSafeArea()

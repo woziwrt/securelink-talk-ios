@@ -79,8 +79,9 @@ class ProviderDelegate: NSObject {
 		providerConfiguration.maximumCallsPerCallGroup = 10
 		providerConfiguration.maximumCallGroups = 10
 		
-		// not show app's calls in tel's history
-		// providerConfiguration.includesCallsInRecents = YES;
+		// SecureLink: calls stay out of the Phone app's Recents – iOS keeps that list outside our control,
+		// syncs it through iCloud and it survives deleting the app; our own call log expires after 7 days
+		providerConfiguration.includesCallsInRecents = false
 		
 		return providerConfiguration
 	}
