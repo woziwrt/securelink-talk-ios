@@ -279,30 +279,41 @@ class ConversationsListViewModel: ObservableObject {
 			return
 		}
 		
+		// SecureLink: build the model here on the core queue. Built on the main thread it read the SDK database
+		// (unread count) while the core queue was still inserting the new group: SIGSEGV in sqlite on group creation.
+		let model = ConversationModel(chatRoom: chatRoom)
 		DispatchQueue.main.async {
-			let currentList = self.conversationsList
-			let found = currentList.first(where: {$0.chatRoom.identifier == identifier})
+			let found = self.conversationsList.first(where: {$0.chatRoom.identifier == identifier})
 			if (found != nil) {
 				Log.warn("\(ConversationsListViewModel.TAG) Created chat room with identifier \(identifier ?? "Identifier error") is already in the list, skipping")
 				return
 			}
-			
-			if !self.currentFilter.isEmpty {
-				let filteredRooms = defaultAccount!.filterChatRooms(filter: self.currentFilter)
-				let found = filteredRooms.first(where: {$0.identifier == chatRoom.identifier})
-				if found == nil {
-					return
+
+			let filter = self.currentFilter
+			if filter.isEmpty {
+				self.insertConversation(model, identifier: identifier)
+				return
+			}
+			// filtering asks the SDK too: back to the core queue, then insert on the main thread
+			self.coreContext.doOnCoreQueue { _ in
+				if defaultAccount!.filterChatRooms(filter: filter).contains(where: {$0.identifier == identifier}) {
+					DispatchQueue.main.async {
+						self.insertConversation(model, identifier: identifier)
+					}
 				}
 			}
-			
-			var newList: [ConversationModel] = []
-			let model = ConversationModel(chatRoom: chatRoom)
-			newList.append(model)
-			newList.append(contentsOf: currentList)
-			Log.info("\(ConversationsListViewModel.TAG) Adding chat room with identifier \(identifier ?? "Identifier error") to list")
-			
-			self.conversationsList = newList
 		}
+	}
+
+	private func insertConversation(_ model: ConversationModel, identifier: String?) {
+		if self.conversationsList.contains(where: {$0.chatRoom.identifier == identifier}) {
+			return
+		}
+		var newList: [ConversationModel] = [model]
+		newList.append(contentsOf: self.conversationsList)
+		Log.info("\(ConversationsListViewModel.TAG) Adding chat room with identifier \(identifier ?? "Identifier error") to list")
+
+		self.conversationsList = newList
 	}
 
 	private func removeChatRoom(chatRoom: ChatRoom) {

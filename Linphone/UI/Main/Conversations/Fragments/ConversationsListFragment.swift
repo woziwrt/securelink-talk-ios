@@ -61,16 +61,7 @@ struct ConversationsListFragment: View {
 						}
 					})
 					
-					if !contactsManager.lastSearchSuggestions.isEmpty {
-						HStack(alignment: .center) {
-							Text("generic_address_picker_suggestions_list_title")
-								.default_text_style_800(styleSize: 16)
-							
-							Spacer()
-						}
-						
-						suggestionsList
-					}
+					// SecureLink: no "Suggestions" – only people from our directory
 				}
 			}
 			.safeAreaInset(edge: .top, content: {

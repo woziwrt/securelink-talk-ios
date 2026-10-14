@@ -175,18 +175,7 @@ struct ConversationForwardMessageFragment: View {
 								})
 								.padding(.horizontal, 16)
 								
-								if !contactsManager.lastSearchSuggestions.isEmpty {
-									HStack(alignment: .center) {
-										Text("generic_address_picker_suggestions_list_title")
-											.default_text_style_800(styleSize: 16)
-										
-										Spacer()
-									}
-									.padding(.vertical, 10)
-									.padding(.horizontal, 16)
-									
-									suggestionsList
-								}
+								// SecureLink: no "Suggestions" – only people from our directory
 							}
 							
 							if magicSearch.isLoading {

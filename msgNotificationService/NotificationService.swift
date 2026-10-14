@@ -151,8 +151,10 @@ class NotificationService: UNNotificationServiceExtension {
                     // SecureLink: opening a chat creates the encrypted room – the invite cannot be hidden without Apple's
                     // filtering entitlement (an empty content made iOS show the raw text), so name who opened it
                     let other = chatRoom?.participants.first?.address
+                    // SecureLink: in a group the first participant is not necessarily who created it – no name there
+                    let isGroup = chatRoom.map { !$0.hasCapability(mask: ChatRoom.Capabilities.OneToOne.rawValue) } ?? false
                     // SecureLink: accounts are numbers – the name comes from this phone's directory
-                    let name = other?.asStringUriOnly().getDisplayNameFromSipAddress(lc: lc!) ?? other?.displayName ?? ""
+                    let name = isGroup ? "" : (other?.asStringUriOnly().getDisplayNameFromSipAddress(lc: lc!) ?? other?.displayName ?? "")
                     bestAttemptContent.title = "SecureLink"
                     bestAttemptContent.body = name.isEmpty ? String(localized: "GC_MSG") : String(localized: "GC_MSG") + ": " + name
                     stopCore()
