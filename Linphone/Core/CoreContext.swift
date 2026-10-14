@@ -598,7 +598,8 @@ class CoreContext: ObservableObject {
 	}
 	
 	func updatePresence(core: Core, presence: ConsolidatedPresence) {
-		if core.config!.getBool(section: "app", key: "publish_presence", defaultValue: true) {
+		// SecureLink: no presence (v1 agreement) – off unless a profile explicitly asks for it
+		if core.config!.getBool(section: "app", key: "publish_presence", defaultValue: false) {
 			core.consolidatedPresence = presence
 		}
 	}

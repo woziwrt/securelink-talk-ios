@@ -36,6 +36,8 @@ class CallAppData: NSObject {
 }
 
 class TelecomManager: ObservableObject {
+	// SecureLink: outgoing calls that rang at the other end – a timeout then means "not answered", not "switched off"
+	var securelinkRangCallIds = Set<String>()
 	static let shared = TelecomManager()
 	static var uuidReplacedCall: String?
 	
@@ -660,6 +662,9 @@ class TelecomManager: ObservableObject {
 					.OutgoingRinging,
 					.OutgoingEarlyMedia:
 				
+				if cstate == .OutgoingRinging || cstate == .OutgoingEarlyMedia {
+					self.securelinkRangCallIds.insert(callId)
+				}
 				if TelecomManager.callKitEnabled(core: core) {
 					let uuid = providerDelegate.uuids[""]
 					if  uuid != nil {
@@ -684,10 +689,13 @@ class TelecomManager: ObservableObject {
 					.Error:
 				
 				// SecureLink: tell the caller why an unanswered call ended – a switched-off phone used to end in silence
+				// (the server answers 408 both when the phone is off and when it rang with nobody answering)
+				let rang = self.securelinkRangCallIds.remove(callId) != nil
 				if call.dir == .Outgoing && call.callLog?.status != .Success {
 					switch call.reason {
 					case .NotAnswered, .TemporarilyUnavailable, .IOError:
-						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_unavailable", duration: 4.0) }
+						let toast = rang ? "Info_securelink_call_not_answered" : "Info_securelink_call_unavailable"
+						DispatchQueue.main.async { ToastViewModel.shared.show(toast, duration: 4.0) }
 					case .Busy:
 						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_busy", duration: 4.0) }
 					default:

@@ -489,6 +489,13 @@ struct ToastView: View {
 							.default_text_style(styleSize: 15)
 							.padding(8)
 					
+					case "Info_securelink_call_not_answered":
+						Text("Nepřijato")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.grayMain2c700)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
 					case "Info_securelink_call_busy":
 						Text("Obsazeno")
 							.multilineTextAlignment(.center)
