@@ -1,3 +1,18 @@
+# SecureLink Talk for iOS
+
+**This is a modified version of Linphone iOS.** SecureLink Talk is a private voice and messaging app for a closed
+group of people (end-to-end encrypted calls with post-quantum ZRTP, LIME-encrypted messages, no sign-up, no
+presence, accounts and groups as random numbers). Modified by Petr Wozniak since October 2026; the changes are the
+commits on the branch `securelink` on top of upstream `master`, each marked `SecureLink:` in the code.
+
+- License: GNU GPLv3, like Linphone (see `LICENSE.txt`). Copyright notices of Belledonne Communications are kept.
+- Build instructions, including the linphone-sdk build with the post-quantum engine: [`securelink/BUILD.md`](securelink/BUILD.md)
+- Every build released in the App Store or TestFlight has a tag `build-<number>` with its exact source.
+
+The original Linphone README follows.
+
+---
+
 
 Linphone is an open source softphone for voice and video over IP calling and instant messaging. It is fully SIP-based, for all calling, presence and IM features.
 General description is available from [linphone web site](https://www.linphone.org/technical-corner/linphone)

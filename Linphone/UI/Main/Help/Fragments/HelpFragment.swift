@@ -229,7 +229,10 @@ struct HelpFragment: View {
 								// SecureLink: tapping the version does nothing (no hidden developer mode)
 								
 								Button {
-									// SecureLink: licence text is shown below, no web page is opened
+									// SecureLink: GPLv3 – the source of this exact version is public (tag = build)
+									if let url = URL(string: "https://github.com/woziwrt/securelink-talk-ios") {
+										UIApplication.shared.open(url)
+									}
 								} label: {
 									HStack {
 										Image("check-square-offset")

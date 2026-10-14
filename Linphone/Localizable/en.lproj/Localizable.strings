@@ -355,7 +355,7 @@
 "help_about_advanced_title" = "Advanced";
 "help_about_check_for_update" = "Check update";
 "help_about_contribute_translations_title" = "Contribute on Linphone translation";
-"help_about_open_source_licenses_subtitle" = "SecureLink © 2026 Petr Wozniak, distributed under the GNU GPL v3. Using Linphone © Belledonne Communications (GPL v3). Source code is available from your administrator.";
+"help_about_open_source_licenses_subtitle" = "SecureLink © 2026 Petr Wozniak, distributed under the GNU GPL v3. Using Linphone © Belledonne Communications (GPL v3). Source code: github.com/woziwrt/securelink-talk-ios";
 "help_about_open_source_licenses_title" = "Licence";
 "help_about_privacy_policy_subtitle" = "What information Linphone collects and uses";
 "help_about_privacy_policy_title" = "Privacy policy";
