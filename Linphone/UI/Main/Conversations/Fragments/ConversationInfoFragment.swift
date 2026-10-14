@@ -198,23 +198,8 @@ struct ConversationInfoFragment: View {
 													.default_text_style(styleSize: 14)
 													.padding(.top, 10)
 												
-												if conversationViewModel.isUserAdmin {
-													Button(
-														action: {
-															isShowConversationInfoPopup = true
-														},
-														label: {
-															Image("pencil-simple")
-																.renderingMode(.template)
-																.resizable()
-																.foregroundStyle(Color.orangeMain500)
-																.frame(width: 20, height: 20)
-														}
-													)
-													.padding(.top, 10)
-												}
+												// SecureLink: no renaming – the server would read the name (groups show their members instead)
 											}
-											.padding(.leading, conversationViewModel.isUserAdmin ? 20 : 0)
 											
 											if displayPeerAddress {
 												Button {

@@ -711,3 +711,6 @@
 "✓ Oznámení povolena" = "✓ Notifications allowed";
 "✗ Oznámení nepovolena – zamčený telefon nezazvoní" = "✗ Notifications not allowed – a locked phone will not ring";
 "Napsat podpoře" = "Write to support";
+"Vytvořit skupinu?" = "Create the group?";
+"Skupina se zobrazí jako jména jejích členů." = "The group is shown as its members' names.";
+"Skupina" = "Group";

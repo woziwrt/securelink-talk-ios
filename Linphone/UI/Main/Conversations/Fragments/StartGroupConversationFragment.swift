@@ -41,11 +41,6 @@ struct StartGroupConversationFragment: View {
 			if !startConversationViewModel.participants.isEmpty {
 				startConversationPopup
 					.background(.black.opacity(0.65))
-					.onAppear {
-						DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-							isMessageTextFocused = true
-						}
-					}
 			}
 			
 			if startConversationViewModel.operationGroupInProgress {
@@ -71,24 +66,15 @@ struct StartGroupConversationFragment: View {
 	var startConversationPopup: some View {
 		GeometryReader { geometry in
 			VStack(alignment: .leading) {
-				Text("conversation_dialog_set_subject")
+				// SecureLink: no name field – the server sees only a random number, the phones show the members' names
+				Text("Vytvořit skupinu?")
 					.default_text_style_800(styleSize: 16)
 					.frame(alignment: .leading)
 					.padding(.bottom, 2)
 				
-				TextField("conversation_dialog_subject_hint", text: $startConversationViewModel.messageText)
+				Text("Skupina se zobrazí jako jména jejích členů.")
 					.default_text_style(styleSize: 15)
-					.frame(height: 25)
-					.padding(.horizontal, 20)
-					.padding(.vertical, 15)
-					.cornerRadius(60)
-					.overlay(
-						RoundedRectangle(cornerRadius: 60)
-							.inset(by: 0.5)
-							.stroke(isMessageTextFocused ? Color.orangeMain500 : Color.gray200, lineWidth: 1)
-					)
 					.padding(.bottom)
-					.focused($isMessageTextFocused)
 				
 				Button(action: {
 					startConversationViewModel.participants.removeAll()
@@ -118,9 +104,8 @@ struct StartGroupConversationFragment: View {
 				})
 				.padding(.horizontal, 20)
 				.padding(.vertical, 10)
-				.background(startConversationViewModel.messageText.isEmpty ? Color.orangeMain100 : Color.orangeMain500)
+				.background(Color.orangeMain500)
 				.cornerRadius(60)
-				.disabled(startConversationViewModel.messageText.isEmpty)
 			}
 			.padding(.horizontal, 20)
 			.padding(.vertical, 20)

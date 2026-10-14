@@ -151,7 +151,8 @@ class NotificationService: UNNotificationServiceExtension {
                     // SecureLink: opening a chat creates the encrypted room – the invite cannot be hidden without Apple's
                     // filtering entitlement (an empty content made iOS show the raw text), so name who opened it
                     let other = chatRoom?.participants.first?.address
-                    let name = other?.displayName ?? other?.username ?? ""
+                    // SecureLink: accounts are numbers – the name comes from this phone's directory
+                    let name = other?.asStringUriOnly().getDisplayNameFromSipAddress(lc: lc!) ?? other?.displayName ?? ""
                     bestAttemptContent.title = "SecureLink"
                     bestAttemptContent.body = name.isEmpty ? String(localized: "GC_MSG") : String(localized: "GC_MSG") + ": " + name
                     stopCore()
@@ -296,16 +297,18 @@ class NotificationService: UNNotificationServiceExtension {
         
         var msgData = MsgData(from: fromAddr, body: "", subtitle: "", callId: callId, localAddr: localUri, peerAddr: peerUri)
         
+        // SecureLink: a group's subject is a random number (the server reads it) – notifications say "Skupina" instead
+        let group: String? = message.subject != nil ? String(localized: "Skupina") : nil
         if let showMsg = lc!.config?.getBool(section: "ui", key: "display_notification_content", defaultValue: true), showMsg == true {
-            msgData.subtitle = message.subject ?? from
+            msgData.subtitle = group ?? from
             if reactionContent == nil {
-                msgData.body = (message.subject != nil ? "\(from): " : "") + content
+                msgData.body = (group != nil ? "\(from): " : "") + content
             } else {
                 msgData.body = String(format: String(localized: "notification_chat_message_reaction_received"), from, reactionContent!, content)
             }
         } else {
-            if let subject = message.subject {
-                msgData.body = subject + ": " + from
+            if let group = group {
+                msgData.body = group + ": " + from
             } else {
                 msgData.body = from
             }

@@ -88,7 +88,8 @@ class StartConversationViewModel: ObservableObject {
 				self.operationGroupInProgress = true
 			}
 			
-			let groupChatRoomSubject = self.messageText
+			// SecureLink: the subject is readable by the chat server → a random number; phones show the members' names
+			let groupChatRoomSubject = SecureLinkGroups.randomSubject()
 			do {
 				let chatRoomParams = try core.createConferenceParams(conference: nil)
 				chatRoomParams.chatEnabled = true

@@ -106,7 +106,7 @@ class ConversationModel: ObservableObject, Identifiable {
 		var subjectTmp = ""
 		
 		if self.isGroup {
-			subjectTmp = chatRoom.subject!
+			subjectTmp = SecureLinkGroups.title(chatRoom)
 		} else if addressFriend != nil {
 			subjectTmp = addressFriend!.name!
 		} else {

@@ -188,6 +188,25 @@ class LinphoneUtils: NSObject {
 	}
 }
 
+// SecureLink: group conversations carry no readable name. The chat server stores the subject in plain text, so it is a
+// random number; every phone shows the members' names from its own directory instead.
+enum SecureLinkGroups {
+	static func randomSubject() -> String {
+		return String(UInt32.random(in: 1_000_000...9_999_999))
+	}
+
+	/// "Eva, Karel, Milan" from this phone's directory (sorted, without me); falls back to "Skupina"
+	static func title(_ chatRoom: ChatRoom) -> String {
+		let names = chatRoom.participants.compactMap { participant -> String? in
+			guard let address = participant.address else { return nil }
+			if let name = ContactsManager.shared.getFriendWithAddress(address: address)?.name, !name.isEmpty { return name }
+			if let display = address.displayName, !display.isEmpty { return display }
+			return nil
+		}.sorted { $0.localizedCompare($1) == .orderedAscending }
+		return names.isEmpty ? NSLocalizedString("Skupina", comment: "") : names.joined(separator: ", ")
+	}
+}
+
 // SecureLink: reports, account deletion requests and blocking (App Review 1.2 and 5.1.1(v)).
 // Reports and requests go to the administrator as an end-to-end encrypted message – the server never sees them.
 // The administrator's address and the web pages come from the server profile ([app] admin_uri, privacy_url, terms_url).
