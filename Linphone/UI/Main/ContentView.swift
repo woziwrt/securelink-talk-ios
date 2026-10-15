@@ -563,7 +563,14 @@ struct ContentView: View {
                                                                         imageTmp = image
                                                                     }
                                                             case .failure:
-                                                                if let avatar = account.avatarModel {
+                                                                // SecureLink: accounts are numbers – a lone digit in the circle meant nothing, show a person
+                                                                if let avatar = account.avatarModel, !avatar.name.isEmpty, avatar.name.allSatisfy({ $0.isNumber }) {
+                                                                    Image(systemName: "person.crop.circle.fill")
+                                                                        .resizable()
+                                                                        .foregroundColor(.white)
+                                                                        .frame(width: avatarSize, height: avatarSize)
+                                                                        .clipShape(Circle())
+                                                                } else if let avatar = account.avatarModel {
                                                                     let tmpImage = contactsManager.textToImage(firstName: avatar.name, lastName: "")
                                                                     Image(uiImage: tmpImage)
                                                                         .resizable()

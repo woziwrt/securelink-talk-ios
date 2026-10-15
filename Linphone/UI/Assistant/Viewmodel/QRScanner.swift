@@ -117,8 +117,9 @@ class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 				ToastViewModel.shared.show("Success_qr_code_validated")
 			}
 		case .Failed:
+			// SecureLink: the code was read fine – the server refused it (used once already, expired) or was unreachable
 			DispatchQueue.main.async {
-				ToastViewModel.shared.show("Invalide URI")
+				ToastViewModel.shared.show("securelink_qr_login_failed")
 			}
 		default:
 			break

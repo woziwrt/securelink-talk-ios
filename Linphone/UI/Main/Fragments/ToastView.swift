@@ -196,7 +196,14 @@ struct ToastView: View {
 							.foregroundStyle(Color.redDanger500)
 							.default_text_style(styleSize: 15)
 							.padding(8)
-						
+
+					case "securelink_qr_login_failed":
+						Text("securelink_qr_login_failed")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.redDanger500)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+
 					case "Registration_failed":
 						Text("assistant_account_login_forbidden_error")
 							.multilineTextAlignment(.center)
