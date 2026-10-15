@@ -302,6 +302,7 @@ class AccountModel: ObservableObject {
 	func logout() {
 		CoreContext.shared.doOnCoreQueue { core in
 			Log.info("Account \(self.account.displayName()) has been removed")
+			let wasLastAccount = core.accountList.count <= 1   // removal may complete later (unregister first)
 			core.removeAccountWithData(account: self.account)
 			
 			if let authInfo = self.account.findAuthInfo() {
@@ -309,7 +310,15 @@ class AccountModel: ObservableObject {
 			}
 			// SecureLink: "Smazat vše" promises that the contacts go too. The old account's directory stayed in the phone
 			// and its people were listed next to the new account's directory after a fresh QR (15. 10.)
-			if core.accountList.isEmpty {
+			if wasLastAccount {
+				// no credentials and no directory address may survive: right after the logout the core fetched the
+				// directory again with a leftover auth info and brought the old people back (6s log, 15. 10.)
+				core.clearAllAuthInfo()
+				if let cfg = core.config {
+					cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
+					cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
+					try? cfg.sync()
+				}
 				core.friendsLists.forEach { list in
 					if list.type == .VCard4 || list.type == .CardDAV {
 						core.removeFriendList(list: list)
