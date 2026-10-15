@@ -317,7 +317,8 @@ struct ContactInnerActionsFragment: View {
 		.padding(.horizontal)
 		.padding(.top, 10)
 		
-		if sharedMainViewModel.displayedFriendExistingChatRoom != nil {
+		// SecureLink (Petr 15. 10.): attachments are opened from their bubble only – no media/documents archive
+		if SecureLinkUI.attachmentLists && sharedMainViewModel.displayedFriendExistingChatRoom != nil {
 			HStack(alignment: .center) {
 				Text("conversation_details_media_documents_title")
 					.default_text_style_800(styleSize: 16)

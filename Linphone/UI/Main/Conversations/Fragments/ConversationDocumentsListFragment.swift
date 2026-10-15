@@ -182,3 +182,9 @@ struct DocumentRow: View {
 		}
 	}
 }
+
+// SecureLink: no media/documents lists – an attachment is opened (and, by the user's choice, exported) from its
+// message bubble and disappears with the message (Petr 15. 10. 2026)
+enum SecureLinkUI {
+	static let attachmentLists = false
+}
