@@ -774,6 +774,27 @@ final class ContactsManager: ObservableObject {
 		}
 	}
 	
+	// SecureLink: a change in the directory (new member, someone's first sign-in) showed only after the app went to the
+	// background and back (Petr 15. 10.). Refresh whenever contacts are about to be used and every 5 minutes while the
+	// app is open; at most once per 20 s – the directory is a few lines, the server does not feel it.
+	private var lastDirectoryRefresh = Date.distantPast
+	private var directoryTimer: Timer?
+
+	func refreshDirectoryIfStale() {
+		guard Date().timeIntervalSince(lastDirectoryRefresh) > 20, coreContext.mCore != nil else { return }
+		lastDirectoryRefresh = Date()
+		refreshCardDavContacts()
+	}
+
+	func startDirectoryTimer() {
+		DispatchQueue.main.async {
+			guard self.directoryTimer == nil else { return }
+			self.directoryTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { _ in
+				if UIApplication.shared.applicationState == .active { self.refreshDirectoryIfStale() }
+			}
+		}
+	}
+
 	func refreshCardDavContacts() {
 		self.coreContext.doOnCoreQueue { core in
 			core.friendsLists.forEach{ friendList in

@@ -335,6 +335,7 @@ struct StartConversationFragment: View {
 				}
 			}
 			.onAppear {
+				ContactsManager.shared.refreshDirectoryIfStale()   // SecureLink: pick from today's directory
 				if !magicSearch.currentFilter.isEmpty || (self.contactsManager.lastSearch.isEmpty && self.contactsManager.lastSearchSuggestions.isEmpty) {
 					magicSearch.currentFilter = ""
 					magicSearch.searchForContacts()

@@ -172,6 +172,8 @@ class SharedMainViewModel: ObservableObject {
 		
 		indexView = indexViewInt
 		preferences.set(indexView, forKey: indexViewKey)
+		// SecureLink: contacts tab opened – show today's directory
+		if indexViewInt == 0 { ContactsManager.shared.refreshDirectoryIfStale() }
 	}
 	
 	func getDialPlansList() {

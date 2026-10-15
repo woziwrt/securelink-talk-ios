@@ -289,7 +289,7 @@ struct AppView: View {
 				Log.info("[AppLock] foreground: inCall=\(inCall) flag=\(telecomManager.callInProgress) calls=\(coreContext.activeCalls)")
 				appLock.enteredForeground()
 				// SecureLink: a new member of the circle shows up at the next foreground, not only after an app restart
-				if coreContext.mCore != nil { ContactsManager.shared.refreshCardDavContacts() }
+				if coreContext.mCore != nil { ContactsManager.shared.refreshDirectoryIfStale(); ContactsManager.shared.startDirectoryTimer() }
 				// SecureLink: badge and Messages tab from the real count – after an account was removed they kept the old number
 				if coreContext.mCore != nil { SharedMainViewModel.shared.updateUnreadMessagesCount() }
 				// SecureLink: messages and attachments stay out of iCloud backups (also folders created since the last start)
