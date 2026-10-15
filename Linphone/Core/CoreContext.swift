@@ -130,7 +130,10 @@ class CoreContext: ObservableObject {
 				try? cfg.sync()
 				Log.info("[SecureLink] provisioning done – removed misc/config-uri")
 			}
-			// SecureLink: the server directory arrives with the provisioning – load it now, not at the next foreground
+			// SecureLink: the server directory arrives with the provisioning – load it now, not at the next foreground.
+			// The directory list is new and gets no onFriendListCreated, so without re-attaching the delegate the contacts
+			// screen stayed empty until the app was restarted (iPad, 15. 10.)
+			ContactsManager.shared.addFriendListDelegate()
 			ContactsManager.shared.refreshCardDavContacts()
 			var accountModels: [AccountModel] = []
 			for account in self.mCore.accountList {
