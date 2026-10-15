@@ -628,7 +628,13 @@ struct ChatBubbleView: View {
 										selectedURLAttachment = eventLogMessage.message.attachments.first!.full
 									}
 								})
-							
+							// SecureLink: on iOS 15 the bubble's long-press tracking sets isPressed on touch-down and swallowed
+							// the image's own tap – tapping a photo did nothing (6s, 13. and 15. 10.); take the tap first
+							.highPriorityGesture(TapGesture().onEnded {
+								if !didLongPress {
+									selectedURLAttachment = eventLogMessage.message.attachments.first!.full
+								}
+							})
 							.overlay(
 								Group {
 									if eventLogMessage.message.attachments.first!.type == .video {
@@ -778,7 +784,12 @@ struct ChatBubbleView: View {
 												selectedURLAttachment = attachment.full
 											}
 										})
-									
+									// SecureLink: see the single-image case above – iOS 15 lost the tap
+									.highPriorityGesture(TapGesture().onEnded {
+										if !didLongPress {
+											selectedURLAttachment = attachment.full
+										}
+									})
 									.overlay(
 										Group {
 											if attachment.type == .video {
@@ -800,7 +811,12 @@ struct ChatBubbleView: View {
 												selectedURLAttachment = attachment.full
 											}
 										})
-									
+									// SecureLink: see the single-image case above – iOS 15 lost the tap
+									.highPriorityGesture(TapGesture().onEnded {
+										if !didLongPress {
+											selectedURLAttachment = attachment.full
+										}
+									})
 									.overlay(
 										Group {
 											if attachment.type == .video {

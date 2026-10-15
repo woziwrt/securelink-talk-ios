@@ -288,6 +288,9 @@ class CoreContext: ObservableObject {
 			
 			let filesDirectoriesURL = FileUtil.sharedContainerUrl().appendingPathComponent("Library/Images")
 			self.mCore.chatMessageFilesDirectories = [filesDirectoriesURL.path]
+			// SecureLink: a message that disappears (or is deleted) takes its attachment file with it. The SDK keeps the
+			// files by default ([chat] delete_contents=0) – a photo outlived its 7-day message in Media (Petr 15. 10.)
+			self.mCore.config?.setInt(section: "chat", key: "delete_contents", value: 1)
 			
 			//self.copyDatabaseFileToDocumentsDirectory()
 			
