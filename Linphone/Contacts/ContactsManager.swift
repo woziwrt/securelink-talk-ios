@@ -230,6 +230,14 @@ final class ContactsManager: ObservableObject {
 			
 			UIColor(Color.grayMain2c200).setFill()
 			UIBezierPath(roundedRect: rect, cornerRadius: 10).fill()
+
+			// SecureLink: accounts are numbers – a lone digit in the circle meant nothing, draw a person instead
+			let wholeName = ((firstName ?? "") + (lastName ?? "")).filter { !$0.isWhitespace }
+			if !wholeName.isEmpty, wholeName.allSatisfy({ $0.isNumber }),
+			   let person = UIImage(systemName: "person.fill")?.withTintColor(UIColor(Color.grayMain2c600), renderingMode: .alwaysOriginal) {
+				person.draw(in: rect.insetBy(dx: 50, dy: 50))
+				return
+			}
 			
 			let paragraph = NSMutableParagraphStyle()
 			paragraph.alignment = .center

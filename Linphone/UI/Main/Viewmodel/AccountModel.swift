@@ -140,7 +140,11 @@ class AccountModel: ObservableObject {
 		let photoAvatarModelKey = usernaneAvatarTmp
 		
 		if !photoAvatarModelKey.isEmpty {
-			if preferences.object(forKey: photoAvatarModelKey) == nil {
+			// SecureLink: numeric accounts got a lone-digit avatar before 15. 10. – redraw it once as a person
+			let personKey = photoAvatarModelKey + ".person"
+			let redrawPerson = usernaneAvatarTmp.allSatisfy({ $0.isNumber }) && !preferences.bool(forKey: personKey)
+			if preferences.object(forKey: photoAvatarModelKey) == nil || redrawPerson {
+				preferences.set(true, forKey: personKey)
 				self.saveImage(
 					image: ContactsManager.shared.textToImage(
 						firstName: usernaneAvatarTmp, lastName: ""),
