@@ -48,6 +48,9 @@ struct BottomSheetContent: View {
 	@Binding var isShowParticipantsListFragment: Bool
 	
 	@Binding var imageAudioRoute: String
+	
+	// SecureLink: the sheet does not open (no handle) – see CallView
+	var locked: Bool = false
     
 	var body: some View {
 		let minHeight = minBottomSheetHeight * UIScreen.main.bounds.height
@@ -76,6 +79,8 @@ struct BottomSheetContent: View {
                         .padding(.top, 15)
                 }
                 .padding(10)
+                .opacity(locked ? 0 : 1)
+                .disabled(locked)
                 
                 Spacer()
                 
@@ -1043,6 +1048,8 @@ struct BottomSheetView<Content: View>: View {
 	@Binding var currentOffset: CGFloat
 	@Binding var pointingUp: CGFloat
 	
+	var locked: Bool = false
+	
 	var body: some View {
 		GeometryReader { geometry in
 			VStack(spacing: 0.0) {
@@ -1070,11 +1077,13 @@ struct BottomSheetView<Content: View>: View {
 			.highPriorityGesture(
 				DragGesture()
 					.onChanged { value in
+						guard !locked else { return }
 						currentOffset -= value.translation.height
 						currentOffset = min(max(currentOffset, minHeight), maxHeight)
 						pointingUp = -(((currentOffset - minHeight) / (maxHeight - minHeight)) - 0.5) * 2
 					}
 					.onEnded { _ in
+						guard !locked else { return }
 						withAnimation {
 							currentOffset = (currentOffset - minHeight <= maxHeight - currentOffset) ? minHeight : maxHeight
 							pointingUp = -(((currentOffset - minHeight) / (maxHeight - minHeight)) - 0.5) * 2

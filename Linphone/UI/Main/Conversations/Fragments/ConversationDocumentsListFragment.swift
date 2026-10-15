@@ -188,7 +188,8 @@ struct DocumentRow: View {
 enum SecureLinkUI {
 	static let attachmentLists = false
 	// SecureLink: no transfer and no "new call" during a call (a verified call must not be handed to someone
-	// else, group calls are not in v1); no keypad – nothing on our side answers to tones (the test line needs none);
+	// else, group calls are not in v1); no keypad – nothing on our side answers to tones (the test line needs none); in a
+	// one-to-one call the sheet does not open at all (CallView.sheetLocked);
 	// the calls list shows only with 2+ calls
 	static let extraCallActions = false
 }

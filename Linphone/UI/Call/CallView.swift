@@ -88,9 +88,7 @@ struct CallView: View {
 			)) ? 40.0 : 0.0
 			
 			let minBottomSheetHeight: CGFloat = isLandscape ? (idiom != .pad ? 0.3 : 0.2) : 0.15
-			// SecureLink: a one-to-one call has a single row of extra actions (messages, pause), so the sheet opens less far
-			let compactSheet = !SecureLinkUI.extraCallActions && callViewModel.isOneOneCall && callViewModel.callsCounter <= 1
-			let maxBottomSheetHeight: CGFloat = isLandscape && idiom != .pad ? 0.6 : (compactSheet && !isLandscape ? 0.3 : 0.4)
+			let maxBottomSheetHeight: CGFloat = isLandscape && idiom != .pad ? 0.6 : 0.4
 			
 			let minHeight = minBottomSheetHeight * UIScreen.main.bounds.height + topBarCallCounter
 			let maxHeight = maxBottomSheetHeight * UIScreen.main.bounds.height + topBarCallCounter
@@ -487,13 +485,23 @@ struct CallView: View {
 							isShowStartCallFragment: $isShowStartCallFragment,
 							isShowCallsListFragment: $isShowCallsListFragment,
 							isShowParticipantsListFragment: $isShowParticipantsListFragment,
-							imageAudioRoute: $imageAudioRoute
+							imageAudioRoute: $imageAudioRoute,
+							locked: sheetLocked
 						),
 						minHeight: minHeight,
 						maxHeight: maxHeight,
 						currentOffset: $currentOffset,
-						pointingUp: $pointingUp
+						pointingUp: $pointingUp,
+						locked: sheetLocked
 					)
+					.onChange(of: sheetLocked) { locked in
+						if locked {
+							withAnimation {
+								currentOffset = minHeight
+								pointingUp = -(((currentOffset - minHeight) / (maxHeight - minHeight)) - 0.5) * 2
+							}
+						}
+					}
 					.onAppear {
 						currentOffset = minHeight
 						pointingUp = -(((currentOffset - minHeight) / (maxHeight - minHeight)) - 0.5) * 2
@@ -506,6 +514,12 @@ struct CallView: View {
 			}
 		}
 		.background(!fullscreenVideo || (fullscreenVideo && telecomManager.isPausedByRemote) ? Color.gray600 : Color.gray900)
+	}
+	
+	// SecureLink: a one-to-one call keeps only the main row (no transfer, new call, keypad, messages or pause);
+	// the sheet opens only when two calls exist, to switch between them (Petr 15. 10. 2026)
+	var sheetLocked: Bool {
+		!SecureLinkUI.extraCallActions && callViewModel.isOneOneCall && callViewModel.callsCounter <= 1
 	}
 	
 	// swiftlint:disable:next cyclomatic_complexity
