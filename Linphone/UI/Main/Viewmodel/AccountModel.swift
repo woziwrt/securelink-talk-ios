@@ -307,6 +307,19 @@ class AccountModel: ObservableObject {
 			if let authInfo = self.account.findAuthInfo() {
 				core.removeAuthInfo(info: authInfo)
 			}
+			// SecureLink: "Smazat vše" promises that the contacts go too. The old account's directory stayed in the phone
+			// and its people were listed next to the new account's directory after a fresh QR (15. 10.)
+			if core.accountList.isEmpty {
+				core.friendsLists.forEach { list in
+					if list.type == .VCard4 || list.type == .CardDAV {
+						core.removeFriendList(list: list)
+					} else {
+						list.friends.forEach { _ = list.removeFriend(linphoneFriend: $0) }
+					}
+				}
+				MagicSearchSingleton.shared.magicSearch?.resetSearchCache()
+				MagicSearchSingleton.shared.searchForContacts()
+			}
 			// SecureLink: the removed account's unread messages must not stay on the icon and the Messages tab
 			SharedMainViewModel.shared.updateUnreadMessagesCount()
 			SharedMainViewModel.shared.updateMissedCallsCount()

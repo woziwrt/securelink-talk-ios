@@ -99,6 +99,14 @@ final class MagicSearchSingleton: ObservableObject {
 					$0.address?.weakEqual(address2: contactAddress) ?? false
 				}
 			}
+
+			// SecureLink: never list the phone's own account as a contact – a fresh iPad showed "iPad Test" to itself
+			// (15. 10.); the friend comes from a local list, not from the server directory, which leaves the caller out
+			let ownAddresses = core.accountList.compactMap { $0.params?.identityAddress }
+			lastSearchFriend.removeAll { result in
+				guard let address = result.friend?.address ?? result.address else { return false }
+				return ownAddresses.contains { address.weakEqual(address2: $0) }
+			}
 			
 			let sortedLastSearch = lastSearchFriend.sorted {
 				let name1 = $0.friend?.name?.lowercased()
