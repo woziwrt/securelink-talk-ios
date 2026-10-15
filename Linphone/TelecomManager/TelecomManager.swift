@@ -751,7 +751,8 @@ class TelecomManager: ObservableObject {
 							// Configure the notification's payload.
 							let content = UNMutableNotificationContent()
 							content.title = NSString.localizedUserNotificationString(forKey: NSLocalizedString("notification_missed_call_title", comment: ""), arguments: nil)
-							content.body = NSString.localizedUserNotificationString(forKey: displayName, arguments: nil)
+							// SecureLink (Petr 15. 10.): no caller name – iOS keeps delivered notifications on the phone
+							content.body = ""
 							
 							// Deliver the notification.
 							let request = UNNotificationRequest(identifier: "call_request", content: content, trigger: nil) // Schedule the notification.

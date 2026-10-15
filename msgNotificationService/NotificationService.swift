@@ -155,8 +155,10 @@ class NotificationService: UNNotificationServiceExtension {
                     let isGroup = chatRoom.map { !$0.hasCapability(mask: ChatRoom.Capabilities.OneToOne.rawValue) } ?? false
                     // SecureLink: accounts are numbers – the name comes from this phone's directory
                     let name = isGroup ? "" : (other?.asStringUriOnly().getDisplayNameFromSipAddress(lc: lc!) ?? other?.displayName ?? "")
+                    // SecureLink (Petr 15. 10.): no name in any notification – iOS keeps delivered notifications on the phone
+                    _ = name
                     bestAttemptContent.title = "SecureLink"
-                    bestAttemptContent.body = name.isEmpty ? String(localized: "GC_MSG") : String(localized: "GC_MSG") + ": " + name
+                    bestAttemptContent.body = String(localized: "GC_MSG")
                     stopCore()
                     contentHandler(bestAttemptContent)
                     return
@@ -203,18 +205,15 @@ class NotificationService: UNNotificationServiceExtension {
                         }
                         
                         bestAttemptContent.sound = UNNotificationSound(named: UNNotificationSoundName(rawValue: "msg.caf"))
-                        bestAttemptContent.title = String(localized: "notification_chat_message_received_title")
-                        if let subtitle = msgData?.subtitle {
-                            bestAttemptContent.subtitle = subtitle
-                        }
-                        if let body = msgData?.body {
-                            bestAttemptContent.body = body
-                        }
+                        // SecureLink (Petr 15. 10.): "SecureLink – Zpráva přijata", never who wrote or what. iOS stores
+                        // delivered notifications on the phone, where they would outlive the message deleted in the app.
+                        bestAttemptContent.title = "SecureLink"
+                        bestAttemptContent.subtitle = ""
+                        bestAttemptContent.body = String(localized: "notification_chat_message_received_title")
                         
                         bestAttemptContent.categoryIdentifier = "msg_cat"
                         
                         bestAttemptContent.userInfo.updateValue(msgData?.callId as Any, forKey: "CallId")
-                        bestAttemptContent.userInfo.updateValue(msgData?.from as Any, forKey: "from")
                         bestAttemptContent.userInfo.updateValue(msgData?.peerAddr as Any, forKey: "peer_addr")
                         bestAttemptContent.userInfo.updateValue(msgData?.localAddr as Any, forKey: "local_addr")
                         
