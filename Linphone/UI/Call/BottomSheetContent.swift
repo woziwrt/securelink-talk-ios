@@ -129,6 +129,26 @@ struct BottomSheetContent: View {
                         .frame(width: buttonSize, height: buttonSize)
                     }
                     
+                    // SecureLink: no video – the keypad takes the camera's place in the main row. It was hidden in the
+                    // expanded sheet, and the test line asks for key 1 after the security code (15. 10.)
+                    if SharedMainViewModel.shared.disableVideoCall && callViewModel.isOneOneCall {
+                        Button {
+                            showingDialer.toggle()
+                        } label: {
+                            HStack {
+                                Image("dialer")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .foregroundStyle(.white)
+                                    .frame(width: 32, height: 32)
+                            }
+                        }
+                        .buttonStyle(PressedButtonStyle(buttonSize: buttonSize))
+                        .frame(width: buttonSize, height: buttonSize)
+                        .background(Color.gray500)
+                        .cornerRadius(40)
+                    }
+
                     Button {
                         callViewModel.toggleMuteMicrophone()
                     } label: {
