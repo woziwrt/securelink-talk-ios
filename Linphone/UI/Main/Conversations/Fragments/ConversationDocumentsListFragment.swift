@@ -187,4 +187,7 @@ struct DocumentRow: View {
 // message bubble and disappears with the message (Petr 15. 10. 2026)
 enum SecureLinkUI {
 	static let attachmentLists = false
+	// SecureLink: no transfer and no "new call" during a call (a verified call must not be handed to someone
+	// else, group calls are not in v1); the dialer sits in the main row, the calls list shows only with 2+ calls
+	static let extraCallActions = false
 }

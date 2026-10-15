@@ -88,7 +88,9 @@ struct CallView: View {
 			)) ? 40.0 : 0.0
 			
 			let minBottomSheetHeight: CGFloat = isLandscape ? (idiom != .pad ? 0.3 : 0.2) : 0.15
-			let maxBottomSheetHeight: CGFloat = isLandscape && idiom != .pad ? 0.6 : 0.4
+			// SecureLink: a one-to-one call has a single row of extra actions (messages, pause), so the sheet opens less far
+			let compactSheet = !SecureLinkUI.extraCallActions && callViewModel.isOneOneCall && callViewModel.callsCounter <= 1
+			let maxBottomSheetHeight: CGFloat = isLandscape && idiom != .pad ? 0.6 : (compactSheet && !isLandscape ? 0.3 : 0.4)
 			
 			let minHeight = minBottomSheetHeight * UIScreen.main.bounds.height + topBarCallCounter
 			let maxHeight = maxBottomSheetHeight * UIScreen.main.bounds.height + topBarCallCounter

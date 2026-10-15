@@ -217,7 +217,7 @@ struct BottomSheetContent: View {
 				VStack(spacing: 0) {
 					if geo.size.width < geo.size.height {
 						HStack(spacing: 0) {
-							if callViewModel.isOneOneCall {
+							if callViewModel.isOneOneCall && SecureLinkUI.extraCallActions {
 								VStack {
 									Button {
 										withAnimation {
@@ -282,7 +282,7 @@ struct BottomSheetContent: View {
 										.default_text_style(styleSize: 15)
 								}
 								.frame(width: basePortraitSize, height: buttonPortraitDimension)
-							} else {
+							} else if !callViewModel.isOneOneCall {
 								ZStack {
 									VStack {
 										Button {
@@ -339,62 +339,64 @@ struct BottomSheetContent: View {
 								}
 								.frame(width: basePortraitSize, height: buttonPortraitDimension)
 							}
-							VStack {
-								ZStack {
-									Button {
-										callViewModel.getCallsList()
-										withAnimation {
-											isShowCallsListFragment.toggle()
-										}
-										
-										DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-											telecomManager.callStarted = false
-											DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-												telecomManager.callStarted = true
-											}
-										}
-									} label: {
-										HStack {
-											Image("phone-list")
-												.renderingMode(.template)
-												.resizable()
-												.foregroundStyle(.white)
-												.frame(width: 32, height: 32)
-										}
-									}
-									.buttonStyle(PressedButtonStyle(buttonSize: buttonSize))
-									.frame(width: buttonSize, height: buttonSize)
-									.background(Color.gray500)
-									.cornerRadius(40)
-									
-									if callViewModel.callsCounter > 1 {
-										VStack {
-											HStack {
-												Spacer()
-												
-												VStack {
-													Text("\(callViewModel.callsCounter)")
-														.foregroundStyle(.white)
-														.default_text_style(styleSize: 15)
-												}
-												.frame(width: 20, height: 20)
-												.background(Color.redDanger500)
-												.cornerRadius(10)
+							if SecureLinkUI.extraCallActions || callViewModel.callsCounter > 1 {
+								VStack {
+									ZStack {
+										Button {
+											callViewModel.getCallsList()
+											withAnimation {
+												isShowCallsListFragment.toggle()
 											}
 											
-											Spacer()
+											DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+												telecomManager.callStarted = false
+												DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+													telecomManager.callStarted = true
+												}
+											}
+										} label: {
+											HStack {
+												Image("phone-list")
+													.renderingMode(.template)
+													.resizable()
+													.foregroundStyle(.white)
+													.frame(width: 32, height: 32)
+											}
 										}
+										.buttonStyle(PressedButtonStyle(buttonSize: buttonSize))
 										.frame(width: buttonSize, height: buttonSize)
+										.background(Color.gray500)
+										.cornerRadius(40)
+										
+										if callViewModel.callsCounter > 1 {
+											VStack {
+												HStack {
+													Spacer()
+													
+													VStack {
+														Text("\(callViewModel.callsCounter)")
+															.foregroundStyle(.white)
+															.default_text_style(styleSize: 15)
+													}
+													.frame(width: 20, height: 20)
+													.background(Color.redDanger500)
+													.cornerRadius(10)
+												}
+												
+												Spacer()
+											}
+											.frame(width: buttonSize, height: buttonSize)
+										}
 									}
+									
+									Text("call_action_go_to_calls_list")
+										.foregroundStyle(.white)
+										.default_text_style(styleSize: 15)
 								}
-								
-								Text("call_action_go_to_calls_list")
-									.foregroundStyle(.white)
-									.default_text_style(styleSize: 15)
+								.frame(width: basePortraitSize, height: buttonPortraitDimension)
 							}
-							.frame(width: basePortraitSize, height: buttonPortraitDimension)
 							
-							if callViewModel.isOneOneCall {
+							if callViewModel.isOneOneCall && SecureLinkUI.extraCallActions {
 								VStack {
 									Button {
 										showingDialer.toggle()
@@ -423,7 +425,7 @@ struct BottomSheetContent: View {
 										.default_text_style(styleSize: 15)
 								}
 								.frame(width: basePortraitSize, height: buttonPortraitDimension)
-							} else {
+							} else if !callViewModel.isOneOneCall {
 								ZStack {
 									VStack {
 										Button {
@@ -646,7 +648,7 @@ struct BottomSheetContent: View {
 						}
 					} else {
 						HStack {
-							if callViewModel.isOneOneCall {
+							if callViewModel.isOneOneCall && SecureLinkUI.extraCallActions {
 								VStack {
 									Button {
 										withAnimation {
@@ -711,7 +713,7 @@ struct BottomSheetContent: View {
 										.default_text_style(styleSize: 15)
 								}
 								.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
-							} else {
+							} else if !callViewModel.isOneOneCall {
 								ZStack {
 									VStack {
 										VStack {
@@ -771,62 +773,64 @@ struct BottomSheetContent: View {
 								.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
 							}
 							
-							VStack {
-								ZStack {
-									Button {
-										callViewModel.getCallsList()
-										withAnimation {
-											isShowCallsListFragment.toggle()
-										}
-										
-										DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-											telecomManager.callStarted = false
-											DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-												telecomManager.callStarted = true
-											}
-										}
-									} label: {
-										HStack {
-											Image("phone-list")
-												.renderingMode(.template)
-												.resizable()
-												.foregroundStyle(.white)
-												.frame(width: 32, height: 32)
-										}
-									}
-									.buttonStyle(PressedButtonStyle(buttonSize: buttonSize))
-									.frame(width: buttonSize, height: buttonSize)
-									.background(Color.gray500)
-									.cornerRadius(40)
-									
-									if callViewModel.callsCounter > 1 {
-										VStack {
-											HStack {
-												Spacer()
-												
-												VStack {
-													Text("\(callViewModel.callsCounter)")
-														.foregroundStyle(.white)
-														.default_text_style(styleSize: 15)
-												}
-												.frame(width: 20, height: 20)
-												.background(Color.redDanger500)
-												.cornerRadius(10)
+							if SecureLinkUI.extraCallActions || callViewModel.callsCounter > 1 {
+								VStack {
+									ZStack {
+										Button {
+											callViewModel.getCallsList()
+											withAnimation {
+												isShowCallsListFragment.toggle()
 											}
 											
-											Spacer()
+											DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+												telecomManager.callStarted = false
+												DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+													telecomManager.callStarted = true
+												}
+											}
+										} label: {
+											HStack {
+												Image("phone-list")
+													.renderingMode(.template)
+													.resizable()
+													.foregroundStyle(.white)
+													.frame(width: 32, height: 32)
+											}
 										}
+										.buttonStyle(PressedButtonStyle(buttonSize: buttonSize))
 										.frame(width: buttonSize, height: buttonSize)
+										.background(Color.gray500)
+										.cornerRadius(40)
+										
+										if callViewModel.callsCounter > 1 {
+											VStack {
+												HStack {
+													Spacer()
+													
+													VStack {
+														Text("\(callViewModel.callsCounter)")
+															.foregroundStyle(.white)
+															.default_text_style(styleSize: 15)
+													}
+													.frame(width: 20, height: 20)
+													.background(Color.redDanger500)
+													.cornerRadius(10)
+												}
+												
+												Spacer()
+											}
+											.frame(width: buttonSize, height: buttonSize)
+										}
 									}
+									
+									Text("call_action_go_to_calls_list")
+										.foregroundStyle(.white)
+										.default_text_style(styleSize: 15)
 								}
-								
-								Text("call_action_go_to_calls_list")
-									.foregroundStyle(.white)
-									.default_text_style(styleSize: 15)
+								.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
 							}
-							.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
 							
-							if callViewModel.isOneOneCall {
+							if callViewModel.isOneOneCall && SecureLinkUI.extraCallActions {
 								VStack {
 									Button {
 										showingDialer.toggle()
@@ -855,7 +859,7 @@ struct BottomSheetContent: View {
 										.default_text_style(styleSize: 15)
 								}
 								.frame(width: baseLandscapeSize, height: buttonLandscapeDimension)
-							} else {
+							} else if !callViewModel.isOneOneCall {
 								VStack {
 									Button {
 										changeLayoutSheet = true
