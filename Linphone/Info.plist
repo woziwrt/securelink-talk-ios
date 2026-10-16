@@ -58,26 +58,6 @@
 				<string>sips</string>
 			</array>
 		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>tel</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>cc.securelink.talk</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>callto</string>
-			</array>
-		</dict>
 	</array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>SecureLink uses Face ID to unlock the app.</string>

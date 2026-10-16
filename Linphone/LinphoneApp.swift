@@ -290,6 +290,8 @@ struct AppView: View {
 				appLock.enteredForeground()
 				// SecureLink: a new member of the circle shows up at the next foreground, not only after an app restart
 				if coreContext.mCore != nil { ContactsManager.shared.refreshDirectoryIfStale(); ContactsManager.shared.startDirectoryTimer() }
+				// SecureLink: messages from a blocked contact that the notification extension stored while the app slept
+				if coreContext.mCore != nil { CoreContext.shared.doOnCoreQueue { core in SecureLinkAdmin.purgeBlockedMessages(core) } }
 				// SecureLink: badge and Messages tab from the real count – after an account was removed they kept the old number
 				if coreContext.mCore != nil { SharedMainViewModel.shared.updateUnreadMessagesCount() }
 				// SecureLink: messages and attachments stay out of iCloud backups (also folders created since the last start)
@@ -335,7 +337,7 @@ final class AppLock: ObservableObject {
 	static let shared = AppLock()
 	@Published var locked = true { didSet { updateWindow() } }
 	@Published var failed = false
-	@Published var noPasscode = false          // the phone has no passcode: the app refuses to open and says why
+	@Published var noPasscode = false          // the device has no passcode: a warning, then the app opens unprotected
 	private var backgroundSince: Date?
 	private var authenticating = false
 	private let graceSeconds: TimeInterval = 30
@@ -448,7 +450,7 @@ final class AppLock: ObservableObject {
 		var error: NSError?
 		// deviceOwnerAuthentication = biometrics with the device passcode as fallback; no own PIN to forget
 		guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
-			Log.error("[AppLock] no device authentication available: \(error?.localizedDescription ?? "?") – app stays locked")
+			Log.error("[AppLock] no device authentication available: \(error?.localizedDescription ?? "?") – warning shown")
 			authenticating = false
 			failed = true
 			noPasscode = (error as? LAError)?.code == .passcodeNotSet
@@ -467,6 +469,14 @@ final class AppLock: ObservableObject {
 				}
 			}
 		}
+	}
+
+	// No passcode on the device: the app cannot lock itself. It warns on every opening and lets the user in –
+	// refusing to open locked out anyone without a passcode, an App Review tester too (16. 10.)
+	func continueWithoutPasscode() {
+		Log.warn("[AppLock] opened without a device passcode")
+		lastActivity = Date()
+		locked = false
 	}
 }
 
@@ -535,11 +545,22 @@ struct AppLockView: View {
 				Text("Zamčeno")
 					.default_text_style_white_600(styleSize: 16)
 				if appLock.noPasscode {
-					Text("Tento iPhone nemá nastavený kód zámku. SecureLink jde otevřít jen na telefonu s kódem (Nastavení → Face ID a kód / Touch ID a kód).")
+					Text("Toto zařízení nemá nastavený kód zámku. Bez něj si vaše konverzace přečte každý, kdo ho vezme do ruky. Kód nastavíte v Nastavení → Face ID a kód (nebo Touch ID a kód).")
 						.default_text_style_white(styleSize: 15)
 						.multilineTextAlignment(.center)
 						.padding(.horizontal, 30)
 						.padding(.top, 10)
+					Button(action: { appLock.continueWithoutPasscode() }, label: {
+						Text("Pokračovat bez ochrany")
+							.default_text_style_600(styleSize: 18)
+							.frame(height: 35)
+							.frame(maxWidth: 260)
+					})
+					.padding(.horizontal, 20)
+					.padding(.vertical, 8)
+					.background(Color.white)
+					.cornerRadius(60)
+					.padding(.top, 20)
 				}
 				if appLock.failed && !appLock.noPasscode {
 					Button(action: { appLock.authenticate() }, label: {

@@ -463,6 +463,10 @@ class CoreContext: ObservableObject {
 					
 					self.digestAuthInfoPendingPasswordUpdate = authInfo
 				}
+			}, onMessagesReceived: { (core: Core, chatRoom: ChatRoom, messages: [ChatMessage]) in
+				// SecureLink: a message from a contact blocked on this phone is dropped at once (App Review 1.2).
+				// This delegate is added before the conversation list's, so the list never shows it.
+				SecureLinkAdmin.dropBlockedMessages(core, chatRoom, messages)
 			}, onTransferStateChanged: { (_: Core, transferred: Call, callState: Call.State) in
 				Log.info("[CoreContext] Transferred call \(transferred.remoteAddress!.asStringUriOnly()) state changed \(callState)")
 				DispatchQueue.main.async {

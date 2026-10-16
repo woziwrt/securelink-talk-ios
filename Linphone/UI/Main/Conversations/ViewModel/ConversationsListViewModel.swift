@@ -42,9 +42,15 @@ class ConversationsListViewModel: ObservableObject {
 	
 	private var chatRoomDelegate: ChatRoomDelegate?
 	
+	private var blockedObserver: NSObjectProtocol?
+
 	init() {
 		computeChatRoomsList()
 		addConversationDelegate()
+		// SecureLink: a contact blocked or unblocked on this phone – its conversation leaves or returns to the list
+		blockedObserver = NotificationCenter.default.addObserver(forName: SecureLinkAdmin.blockedChangedNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.computeChatRoomsList()
+		}
 	}
 	
 	func computeChatRoomsList() {
@@ -53,6 +59,7 @@ class ConversationsListViewModel: ObservableObject {
 				let conversationsListTmp = account.filterChatRooms(filter: self.currentFilter)
 				var conversationsTmp: [ConversationModel] = []
 				conversationsListTmp.forEach { chatRoom in
+					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: blocked contact
 					let model = ConversationModel(chatRoom: chatRoom)
 					conversationsTmp.append(model)
 				}
@@ -205,6 +212,7 @@ class ConversationsListViewModel: ObservableObject {
 		coreContext.doOnCoreQueue { core in
 			self.coreConversationDelegate = CoreDelegateStub(
 				onMessagesReceived: { (core: Core, chatRoom: ChatRoom, _: [ChatMessage]) in
+					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: its messages were dropped
 					if let defaultAddress = core.defaultAccount?.params?.identityAddress,
 					   let localAddress = chatRoom.localAddress,
 					   defaultAddress.weakEqual(address2: localAddress) {
@@ -288,6 +296,10 @@ class ConversationsListViewModel: ObservableObject {
 			return
 		}
 		
+		if SecureLinkAdmin.isBlockedRoom(coreContext.mCore, chatRoom) {
+			return   // SecureLink: a contact blocked on this phone
+		}
+
 		let hideEmptyChatRooms = coreContext.mCore.config == nil ? true : coreContext.mCore.config!.getBool(section: "misc", key: "hide_empty_chat_rooms", defaultValue: true)
 		// Hide empty chat rooms only applies to 1-1 conversations
 		if (hideEmptyChatRooms && !LinphoneUtils.isChatRoomAGroup(chatRoom: chatRoom) && chatRoom.lastMessageInHistory == nil) {
@@ -428,6 +440,7 @@ class ConversationsListViewModel: ObservableObject {
 				let conversationsListTmp = account.filterChatRooms(filter: filter)
 				var conversationsTmp: [ConversationModel] = []
 				conversationsListTmp.forEach { chatRoom in
+					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: blocked contact
 					let model = ConversationModel(chatRoom: chatRoom)
 					conversationsTmp.append(model)
 				}

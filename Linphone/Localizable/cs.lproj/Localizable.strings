@@ -648,7 +648,8 @@
 "securelink_report_message_draft" = "⚠️ Nahlášení zprávy od: %@ (%@), %@\nZpráva: „%@“\nCo se stalo: ";
 "securelink_block_contact" = "Zablokovat";
 "securelink_unblock_contact" = "Odblokovat";
-"securelink_contact_blocked_toast" = "Kontakt je zablokovaný: nebude vám volat. Pokud jde o zneužití, nahlaste ho správci – ten ho ze služby vyřadí.";
+"securelink_contact_blocked_toast" = "Kontakt je zablokovaný: jeho hovory ani zprávy k vám nedojdou a správce dostal hlášení.";
+"securelink_block_report_draft" = "🚫 Automatické hlášení: na svém telefonu jsem zablokoval(a) %@ (%@).";
 "securelink_contact_unblocked_toast" = "Kontakt je odblokovaný";
 "securelink_deletion_requested_toast" = "Žádost odeslána – účet bude smazán do 7 dnů";
 "securelink_request_deletion" = "Požádat o smazání účtu";

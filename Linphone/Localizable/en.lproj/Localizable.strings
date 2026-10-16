@@ -658,7 +658,8 @@
 "securelink_report_message_draft" = "⚠️ Report of a message from: %@ (%@), %@\nMessage: “%@”\nWhat happened: ";
 "securelink_block_contact" = "Block";
 "securelink_unblock_contact" = "Unblock";
-"securelink_contact_blocked_toast" = "Contact blocked: they cannot call you. If this is abuse, report them to the administrator, who removes them from the service.";
+"securelink_contact_blocked_toast" = "Contact blocked: their calls and messages no longer reach you, and the administrator has been notified.";
+"securelink_block_report_draft" = "🚫 Automatic report: I blocked %@ (%@) on my phone.";
 "securelink_contact_unblocked_toast" = "Contact unblocked";
 "securelink_deletion_requested_toast" = "Request sent – the account will be deleted within 7 days";
 "securelink_request_deletion" = "Request account deletion";
@@ -680,7 +681,8 @@
 "Odemknout SecureLink" = "Unlock SecureLink";
 "Zamčeno" = "Locked";
 "Odemknout" = "Unlock";
-"Tento iPhone nemá nastavený kód zámku. SecureLink jde otevřít jen na telefonu s kódem (Nastavení → Face ID a kód / Touch ID a kód)." = "This iPhone has no passcode. SecureLink opens only on a phone with a passcode (Settings → Face ID & Passcode / Touch ID & Passcode).";
+"Toto zařízení nemá nastavený kód zámku. Bez něj si vaše konverzace přečte každý, kdo ho vezme do ruky. Kód nastavíte v Nastavení → Face ID a kód (nebo Touch ID a kód)." = "This device has no passcode. Without one, anyone who picks it up can read your conversations. Set one in Settings → Face ID & Passcode (or Touch ID & Passcode).";
+"Pokračovat bez ochrany" = "Continue without protection";
 "Komunikace jen uvnitř okruhu.\nÚčet dostanete od správce jako QR kód." = "Communication only within your circle.\nYour administrator gives you your account as a QR code.";
 "Nic dalšího nastavovat nemusíte." = "There is nothing else to set up.";
 "Druhá strana má nové zařízení. Řekněte si navzájem bezpečnostní slovo a potvrďte, že souhlasí." = "The other person has a new device. Read the security word to each other and confirm that it matches.";

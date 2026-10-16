@@ -407,8 +407,10 @@ enum SecureLinkAdmin {
 		}.resume()
 	}
 
-	// --- blocking on this phone: no calls ring, the conversation is muted; the administrator gets a report
+	// --- blocking on this phone (App Review 1.2): no calls ring, messages are dropped, the one-to-one conversation
+	// leaves the list at once, and the administrator gets an automatic report
 	private static let blockedKey = "blocked_uris"
+	static let blockedChangedNotification = Notification.Name("SecureLinkBlockedChanged")
 
 	static func blockedList(_ core: Core) -> [String] {
 		return (core.config?.getString(section: "securelink", key: blockedKey, defaultString: "") ?? "")
@@ -433,8 +435,66 @@ enum SecureLinkAdmin {
 		core.config?.setString(section: "securelink", key: blockedKey, value: list.joined(separator: ","))
 		for room in core.chatRooms where room.participants.count == 1 && room.participants.first?.address?.weakEqual(address2: address) == true {
 			room.muted = blocked
+			if blocked {
+				room.markAsRead()   // its unread messages would keep a badge the user can no longer clear
+			}
 		}
 		Log.info("[SecureLink] \(uri) \(blocked ? "blocked" : "unblocked") on this phone")
+		if blocked && uri != blockKey(try? Factory.Instance.createAddress(addr: setting(core, "admin_uri"))) {
+			openConversation(draft: blockReportDraft(address), sendNow: true)
+		}
+		SharedMainViewModel.shared.updateUnreadMessagesCount()
+		DispatchQueue.main.async {
+			if blocked, let shown = SharedMainViewModel.shared.displayedConversation,
+			   shown.chatRoom.participants.count == 1, shown.chatRoom.participants.first?.address?.weakEqual(address2: address) == true {
+				SharedMainViewModel.shared.displayedConversation = nil
+			}
+			NotificationCenter.default.post(name: blockedChangedNotification, object: nil)
+		}
+	}
+
+	/// a one-to-one conversation with a contact blocked on this phone: not shown in the list
+	static func isBlockedRoom(_ core: Core, _ room: ChatRoom) -> Bool {
+		guard room.hasCapability(mask: ChatRoom.Capabilities.OneToOne.rawValue), room.participants.count == 1 else { return false }
+		return isBlocked(core, room.participants.first?.address)
+	}
+
+	/// messages from a blocked contact (one-to-one or in a group) are deleted as they arrive
+	static func dropBlockedMessages(_ core: Core, _ room: ChatRoom, _ messages: [ChatMessage]) {
+		let list = blockedList(core)
+		guard !list.isEmpty else { return }
+		var dropped = 0
+		for message in messages where !message.isOutgoing {
+			if let key = blockKey(message.fromAddress), list.contains(key) {
+				room.deleteMessage(message: message)
+				dropped += 1
+			}
+		}
+		if dropped > 0 {
+			if isBlockedRoom(core, room) {
+				room.markAsRead()   // not in a group: the other members' unread messages stay unread
+			}
+			Log.info("[SecureLink] \(dropped) message(s) from a blocked contact dropped")
+		}
+	}
+
+	/// the notification extension stores messages while the app sleeps – this delegate never sees them; at foreground
+	/// the unread ones from a blocked contact are deleted the same way
+	static func purgeBlockedMessages(_ core: Core) {
+		guard !blockedList(core).isEmpty else { return }
+		for room in core.chatRooms where room.unreadMessagesCount > 0 {
+			dropBlockedMessages(core, room, room.getHistory(nbMessage: room.unreadMessagesCount))
+			if isBlockedRoom(core, room) {
+				room.markAsRead()
+			}
+		}
+	}
+
+	/// automatic report sent to the administrator when a contact is blocked
+	private static func blockReportDraft(_ address: Address) -> String {
+		let plain = plainAddress(address.asStringUriOnly())
+		let name = ContactsManager.shared.getFriendWithAddress(address: address)?.name ?? plain
+		return String(format: NSLocalizedString("securelink_block_report_draft", comment: ""), name, plain)
 	}
 }
 

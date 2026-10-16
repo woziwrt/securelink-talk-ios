@@ -230,6 +230,7 @@
 		D7F5F6412C359F3B007FCF2F /* SipAddressesPopup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F5F6402C359F3B007FCF2F /* SipAddressesPopup.swift */; };
 		D7FB55112AD447FD00A5AB15 /* RegisterFragment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FB55102AD447FD00A5AB15 /* RegisterFragment.swift */; };
 		D7FC8E4A2EBA12F90080C09D /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D7FC8E492EBA12F90080C09D /* Launch Screen.storyboard */; };
+		5EC0A1112F9C000100A1B2C3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5EC0A1102F9C000100A1B2C3 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -506,6 +507,7 @@
 		D7F5F6402C359F3B007FCF2F /* SipAddressesPopup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SipAddressesPopup.swift; sourceTree = "<group>"; };
 		D7FB55102AD447FD00A5AB15 /* RegisterFragment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterFragment.swift; sourceTree = "<group>"; };
 		D7FC8E492EBA12F90080C09D /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+		5EC0A1102F9C000100A1B2C3 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -767,6 +769,7 @@
 				D719ABBA2ABC67BF00B41C10 /* Assets.xcassets */,
 				D719ABBC2ABC67BF00B41C10 /* Linphone.entitlements */,
 				D7A2EDDA2AC19EEC005D90FC /* Info.plist */,
+				5EC0A1102F9C000100A1B2C3 /* PrivacyInfo.xcprivacy */,
 				D737AEED2DA011F2005C1280 /* Localizable.strings */,
 				5EC0A1022F9C000100A1B2C3 /* InfoPlist.strings */,
 				D719ABBD2ABC67BF00B41C10 /* Preview Content */,
@@ -1490,7 +1493,7 @@
 				D7D67B6A2F601F6100DD9976 /* AppIntentVocabulary.plist in Resources */,
 				D732A90D2B0376F500DB42BA /* linphonerc-factory in Resources */,
 				5EC0CA0000000000000000A2 /* securelink-ca.pem in Resources */,
-				D783C77C2B1089B200622CC2 /* assistant_linphone_default_values in Resources */,
+				5EC0A1112F9C000100A1B2C3 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2185,7 +2188,6 @@
 				INFOPLIST_FILE = Linphone/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SecureLink;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_ITSEncryptionExportComplianceCode = "b5cb085f-772a-4a4f-8c77-5d1332b1f93f";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "SecureLink does not use your calendar.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "SecureLink does not use your calendar.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SecureLink uses the camera to scan your invitation QR code and, only when you turn it on, for video calls.";
@@ -2244,7 +2246,6 @@
 				INFOPLIST_FILE = Linphone/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SecureLink;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_ITSEncryptionExportComplianceCode = "b5cb085f-772a-4a4f-8c77-5d1332b1f93f";
 				INFOPLIST_KEY_NSCalendarsUsageDescription = "SecureLink does not use your calendar.";
 				INFOPLIST_KEY_NSCalendarsWriteOnlyAccessUsageDescription = "SecureLink does not use your calendar.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "SecureLink uses the camera to scan your invitation QR code and, only when you turn it on, for video calls.";
