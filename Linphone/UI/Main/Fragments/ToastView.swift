@@ -309,6 +309,13 @@ struct ToastView: View {
 							.default_text_style(styleSize: 15)
 							.padding(8)
 						
+					case "Failed_securelink_contact_is_blocked":
+						Text("securelink_contact_is_blocked_toast")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.redDanger500)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
 					case "Failed_toast_call_transfer_failed":
 						Text("call_transfer_failed_toast")
 							.multilineTextAlignment(.center)

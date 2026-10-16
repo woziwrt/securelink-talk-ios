@@ -651,6 +651,7 @@
 "securelink_contact_blocked_toast" = "Kontakt je zablokovaný: jeho hovory ani zprávy k vám nedojdou a správce dostal hlášení.";
 "securelink_block_report_draft" = "🚫 Automatické hlášení: na svém telefonu jsem zablokoval(a) %@ (%@).";
 "securelink_contact_unblocked_toast" = "Kontakt je odblokovaný";
+"securelink_contact_is_blocked_toast" = "Kontakt je zablokovaný. Chcete-li mu volat nebo psát, odblokujte ho v jeho kartě.";
 "securelink_deletion_requested_toast" = "Žádost odeslána – účet bude smazán do 7 dnů";
 "securelink_request_deletion" = "Požádat o smazání účtu";
 "securelink_request_deletion_message" = "Žádost o smazání účtu odejde správci. Do 7 dnů smaže váš účet, vaše klíče a zprávy uložené na serveru a dá vám vědět.";

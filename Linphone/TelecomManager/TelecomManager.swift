@@ -104,6 +104,9 @@ class TelecomManager: ObservableObject {
 			Log.info("Can not start a call with null address!")
 			return
 		}
+		if SecureLinkAdmin.refuseIfBlocked(core, addr) {
+			return   // SecureLink: a contact blocked on this phone is not called either – unblock first
+		}
 
 		if TelecomManager.callKitEnabled(core: core) {// && !nextCallIsTransfer != true {
 			let uuid = UUID()

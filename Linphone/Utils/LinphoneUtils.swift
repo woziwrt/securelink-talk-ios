@@ -459,13 +459,27 @@ enum SecureLinkAdmin {
 		return isBlocked(core, room.participants.first?.address)
 	}
 
+	/// an incoming message from a contact blocked on this phone
+	static func isBlockedMessage(_ core: Core, _ message: ChatMessage?) -> Bool {
+		guard let message = message, !message.isOutgoing else { return false }
+		return isBlocked(core, message.fromAddress)
+	}
+
+	/// no new conversation and no call with a blocked contact: a toast says to unblock first
+	static func refuseIfBlocked(_ core: Core, _ address: Address?) -> Bool {
+		guard isBlocked(core, address) else { return false }
+		Log.info("[SecureLink] refused: the contact is blocked on this phone")
+		DispatchQueue.main.async { ToastViewModel.shared.show("Failed_securelink_contact_is_blocked") }
+		return true
+	}
+
 	/// messages from a blocked contact (one-to-one or in a group) are deleted as they arrive
 	static func dropBlockedMessages(_ core: Core, _ room: ChatRoom, _ messages: [ChatMessage]) {
 		let list = blockedList(core)
 		guard !list.isEmpty else { return }
 		var dropped = 0
 		for message in messages where !message.isOutgoing {
-			if let key = blockKey(message.fromAddress), list.contains(key) {
+			if let key = blockKey(message.fromAddress), list.contains(key) {   // isBlockedMessage, list read once
 				room.deleteMessage(message: message)
 				dropped += 1
 			}

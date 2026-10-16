@@ -661,6 +661,7 @@
 "securelink_contact_blocked_toast" = "Contact blocked: their calls and messages no longer reach you, and the administrator has been notified.";
 "securelink_block_report_draft" = "🚫 Automatic report: I blocked %@ (%@) on my phone.";
 "securelink_contact_unblocked_toast" = "Contact unblocked";
+"securelink_contact_is_blocked_toast" = "This contact is blocked. To call or write to them, unblock them on their contact card.";
 "securelink_deletion_requested_toast" = "Request sent – the account will be deleted within 7 days";
 "securelink_request_deletion" = "Request account deletion";
 "securelink_request_deletion_message" = "The deletion request goes to the administrator, who deletes your account, your keys and your messages stored on the server within 7 days and lets you know.";

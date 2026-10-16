@@ -140,7 +140,10 @@ class ConversationViewModel: ObservableObject {
 		let chatRoomDelegate = ChatRoomDelegateStub( onIsComposingReceived: { (_: ChatRoom, _: Address, _: Bool) in
 			self.computeComposingLabel()
 		}, onChatMessagesReceived: { (_: ChatRoom, eventLogs: [EventLog]) in
-			self.getNewMessages(eventLogs: eventLogs)
+			// SecureLink: a blocked contact's messages are dropped by CoreContext – an open conversation must not show
+			// them either (this delegate may run first)
+			let core = CoreContext.shared.mCore!
+			self.getNewMessages(eventLogs: eventLogs.filter { !SecureLinkAdmin.isBlockedMessage(core, $0.chatMessage) })
 		}, onChatMessageSending: { (_: ChatRoom, eventLog: EventLog) in
 			if self.conversationMessagesSection.isEmpty || self.conversationMessagesSection[0].rows.isEmpty {
 				self.sendFirstMessage(eventLog: eventLog)

@@ -164,6 +164,7 @@ class StartConversationViewModel: ObservableObject {
 	
 	func createOneToOneChatRoomWith(remote: Address) {
 		CoreContext.shared.doOnCoreQueue { core in
+			if SecureLinkAdmin.refuseIfBlocked(core, remote) { return }   // SecureLink: unblock first
 			let account = core.defaultAccount
 			if account == nil {
 				Log.error(
