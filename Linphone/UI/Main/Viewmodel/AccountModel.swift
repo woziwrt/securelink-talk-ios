@@ -182,7 +182,8 @@ class AccountModel: ObservableObject {
 				
 				isRegistrered = state == .Ok
 				isDefaultAccount = isDefault
-				self.displayName = displayName
+				// SecureLink: accounts are numbers and carry no name – the side menu says "My account" instead of the number
+				self.displayName = (displayNameTmp == displayName || displayNameTmp.isEmpty) ? NSLocalizedString("securelink_my_account", comment: "") : displayName
 				address.map {self.address = $0}
 				
 				photoAvatarModel = photoAvatarModelTmp
@@ -307,17 +308,17 @@ class AccountModel: ObservableObject {
 		CoreContext.shared.doOnCoreQueue { core in
 			Log.info("Account \(self.account.displayName()) has been removed")
 			let wasLastAccount = core.accountList.count <= 1   // removal may complete later (unregister first)
+			let authInfo = self.account.findAuthInfo()
 			core.removeAccountWithData(account: self.account)
-			
-			if let authInfo = self.account.findAuthInfo() {
-				core.removeAuthInfo(info: authInfo)
-			}
+			// SecureLink: the unregister is authenticated (digest). Credentials removed right away made it fail and the
+			// server kept the old binding for a year – the next account on this phone rang for the old one too (iPad,
+			// 17. 10.). They go once the unregister is done, or after 10 s (no network).
+			AccountModel.removeCredentialsAfterUnregister(core: core, account: self.account, authInfo: authInfo)
 			// SecureLink: "Smazat vše" promises that the contacts go too. The old account's directory stayed in the phone
 			// and its people were listed next to the new account's directory after a fresh QR (15. 10.)
 			if wasLastAccount {
 				// no credentials and no directory address may survive: right after the logout the core fetched the
 				// directory again with a leftover auth info and brought the old people back (6s log, 15. 10.)
-				core.clearAllAuthInfo()
 				if let cfg = core.config {
 					cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
 					cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
@@ -339,6 +340,41 @@ class AccountModel: ObservableObject {
 		}
 	}
 	
+	private static var unregisterDelegates: [AccountDelegate] = []
+
+	private static func removeCredentialsAfterUnregister(core: Core, account: Account, authInfo: AuthInfo?) {
+		var done = false
+		var delegate: AccountDelegate?
+		let finish = {
+			guard !done else { return }
+			done = true
+			if let authInfo = authInfo {
+				core.removeAuthInfo(info: authInfo)
+			}
+			// no credentials may survive the last account (the directory came back with a leftover auth info, 15. 10.);
+			// an account signed in meanwhile keeps its own
+			if core.accountList.isEmpty {
+				core.clearAllAuthInfo()
+			}
+			if let delegate = delegate {
+				account.removeDelegate(delegate: delegate)
+				unregisterDelegates.removeAll { $0 === delegate }
+			}
+			Log.info("\(AccountModel.TAG) credentials of the removed account deleted (registration \(account.state))")
+		}
+		let stub = AccountDelegateStub(onRegistrationStateChanged: { (_: Account, state: RegistrationState, _: String) in
+			if state == .Cleared || state == .Failed || state == .None {
+				finish()
+			}
+		})
+		delegate = stub
+		unregisterDelegates.append(stub)
+		account.addDelegate(delegate: stub)
+		DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+			CoreContext.shared.doOnCoreQueue { _ in finish() }
+		}
+	}
+
 	func saveImage(image: UIImage, name: String, prefix: String) {
 		guard let data = image.jpegData(compressionQuality: 1) ?? image.pngData() else {
 			return

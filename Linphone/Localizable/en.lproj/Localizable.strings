@@ -654,6 +654,8 @@
 
 "securelink_report_contact" = "Report to administrator";
 "securelink_report_contact_draft" = "⚠️ Report of user: %@ (%@)\nWhat happened: ";
+"securelink_my_account" = "My account";
+"securelink_admin_title" = "SecureLink Support";
 "securelink_report_message" = "Report to administrator";
 "securelink_report_message_draft" = "⚠️ Report of a message from: %@ (%@), %@\nMessage: “%@”\nWhat happened: ";
 "securelink_block_contact" = "Block";

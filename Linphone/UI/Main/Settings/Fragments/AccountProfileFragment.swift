@@ -297,6 +297,7 @@ struct AccountProfileFragment: View {
 														}
 													}
 													
+													if false {   // SecureLink: the account has no name of its own (accounts are numbers) – the field only showed the number
 													VStack(alignment: .leading) {
 														Text("sip_address_display_name")
 															.default_text_style_700(styleSize: 15)
@@ -323,6 +324,7 @@ struct AccountProfileFragment: View {
 														// SecureLink: the name others see comes from the administrator's directory; a local edit
 														// would make calls show a different name than Contacts
 														.disabled(true)
+													}
 													}
 													
 													if false {   // SecureLink: no international prefix – calls go to accounts, never to phone numbers

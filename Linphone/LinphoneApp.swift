@@ -82,6 +82,12 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 	func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 		let userInfo = response.notification.request.content.userInfo
 		
+		// SecureLink: "new member in your contacts" – show the contacts, freshly loaded
+		if userInfo["securelink"] as? String == "dir" {
+			ContactsManager.shared.refreshCardDavContacts()
+			DispatchQueue.main.async { SharedMainViewModel.shared.changeIndexView(indexViewInt: 0) }
+		}
+		
 		if let callId = userInfo["CallId"] as? String, let peerAddr = userInfo["peer_addr"] as? String, let localAddr = userInfo["local_addr"] as? String {
 			if self.navigationManager != nil {
 				self.navigationManager!.selectedCallId = callId
@@ -107,6 +113,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 		if let inviteAddr = userInfo["chat-room-addr"] as? String, !inviteAddr.isEmpty {
 			completionHandler([])
 			return
+		}
+		// SecureLink: somebody new in the contacts (server securelink-dirwatch) – load the directory now
+		if userInfo["securelink"] as? String == "dir" {
+			ContactsManager.shared.refreshCardDavContacts()
 		}
 
 		let strPeerAddr = userInfo["peer_addr"] as? String

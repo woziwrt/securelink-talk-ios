@@ -285,14 +285,21 @@ struct ConversationFragment: View {
 			}
 		}
 		.navigationViewStyle(.stack)
+		.onReceive(SharedMainViewModel.shared.$displayedConversation) { conversation in
+			// SecureLink: the report draft as soon as the administrator's conversation is shown on this screen
+			DispatchQueue.main.async {
+				if let draft = SecureLinkAdmin.takeDraft(for: conversation) {
+					messageText = draft
+				}
+			}
+		}
 		.onAppear {
 			if let conv = SharedMainViewModel.shared.displayedConversation {
 				cachedConversation = conv
 			}
 			// SecureLink: report / account deletion request opened the administrator's conversation with a draft
-			if let draft = SecureLinkAdmin.pendingDraft {
+			if let draft = SecureLinkAdmin.takeDraft(for: SharedMainViewModel.shared.displayedConversation) {
 				messageText = draft
-				SecureLinkAdmin.pendingDraft = nil
 			}
 			
 			if !SharedMainViewModel.shared.fileUrlsToShare.isEmpty {
@@ -1622,9 +1629,8 @@ struct ConversationFragment: View {
 					conversationViewModel.deleteMessageForEveryone()
 				}.onReceive(NotificationCenter.default.publisher(for: SecureLinkAdmin.draftReadyNotification)) { _ in
 					// SecureLink: the report draft when the screen was already open (onAppear above covers a new screen)
-					if let draft = SecureLinkAdmin.pendingDraft {
+					if let draft = SecureLinkAdmin.takeDraft(for: SharedMainViewModel.shared.displayedConversation) {
 						messageText = draft
-						SecureLinkAdmin.pendingDraft = nil
 					}
 				}
 			}

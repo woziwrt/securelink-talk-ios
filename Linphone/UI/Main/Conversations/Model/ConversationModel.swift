@@ -107,6 +107,10 @@ class ConversationModel: ObservableObject, Identifiable {
 		
 		if self.isGroup {
 			subjectTmp = SecureLinkGroups.title(chatRoom)
+		} else if self.isAdminConversation, let core = CoreContext.shared.mCore,
+				  let admin = try? Factory.Instance.createAddress(addr: SecureLinkAdmin.setting(core, "admin_uri")),
+				  chatRoomParticipants.first?.address?.weakEqual(address2: admin) == true {
+			subjectTmp = NSLocalizedString("securelink_admin_title", comment: "")   // SecureLink: nobody has the administrator in contacts
 		} else if addressFriend != nil {
 			subjectTmp = addressFriend!.name!
 		} else {

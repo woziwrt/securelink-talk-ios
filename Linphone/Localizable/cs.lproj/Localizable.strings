@@ -644,6 +644,8 @@
 
 "securelink_report_contact" = "Nahlásit správci";
 "securelink_report_contact_draft" = "⚠️ Nahlášení uživatele: %@ (%@)\nCo se stalo: ";
+"securelink_my_account" = "Můj účet";
+"securelink_admin_title" = "Podpora SecureLink";
 "securelink_report_message" = "Nahlásit správci";
 "securelink_report_message_draft" = "⚠️ Nahlášení zprávy od: %@ (%@), %@\nZpráva: „%@“\nCo se stalo: ";
 "securelink_block_contact" = "Zablokovat";

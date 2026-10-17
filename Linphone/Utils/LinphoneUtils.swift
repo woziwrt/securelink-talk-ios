@@ -213,6 +213,15 @@ enum SecureLinkGroups {
 enum SecureLinkAdmin {
 	/// text put into the message field when the administrator's conversation opens (the user sees it and sends it)
 	static var pendingDraft: String?
+	static var pendingDraftConversationId: String?   // the draft goes only into this (administrator's) conversation
+
+	/// the waiting report draft, if the shown conversation is the one it was made for
+	static func takeDraft(for conversation: ConversationModel?) -> String? {
+		guard let draft = pendingDraft, let conversation = conversation, conversation.id == pendingDraftConversationId else { return nil }
+		pendingDraft = nil
+		pendingDraftConversationId = nil
+		return draft
+	}
 
 	/// v1 agreement: messages disappear 7 days after they are read by default; users can shorten it, not switch it off.
 	/// Not in the administrator's conversation – reports and requests stay there as a record.
@@ -279,6 +288,7 @@ enum SecureLinkAdmin {
 						Log.info("[SecureLink] message sent to the administrator")
 					}
 				} else {
+					pendingDraftConversationId = LinphoneUtils.getChatRoomId(room: room)
 					pendingDraft = draft
 					show(room)
 				}
@@ -346,9 +356,12 @@ enum SecureLinkAdmin {
 			SharedMainViewModel.shared.displayedFriend = nil
 			SharedMainViewModel.shared.displayedCall = nil
 			SharedMainViewModel.shared.displayedConversation = model
-			// reporting a message from an open conversation keeps the same screen: onAppear does not run again
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-				NotificationCenter.default.post(name: draftReadyNotification, object: nil)
+			// reporting a message from an open conversation keeps the same screen: onAppear does not run again;
+			// a slow phone switches later, so ask again (takeDraft hands the draft over once, to this conversation only)
+			for delay in [0.3, 1.0, 2.5] {
+				DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+					NotificationCenter.default.post(name: draftReadyNotification, object: nil)
+				}
 			}
 		}
 	}
