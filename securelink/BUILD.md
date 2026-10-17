@@ -15,12 +15,15 @@ cd linphone-sdk-src
 git checkout 80bf7c1d269a185dbe30248271c6590887637e4f
 git submodule update --init --recursive
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-developer-dir.patch
+git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-no-secrets-in-log.patch
 cmake --preset=ios-sdk -G Ninja -B build-ios \
   -DLINPHONESDK_IOS_ARCHS=arm64 -DLINPHONESDK_IOS_PLATFORM=Iphone \
   -DENABLE_PQCRYPTO=ON -DENABLE_NON_FREE_FEATURES=ON -DENABLE_VIDEO=OFF
 cmake --build build-ios
 ```
 
+- `no-secrets-in-log`: remote provisioning logged every entry with its value, the account password included; the
+  password, digest hash, keys and tokens are now logged as `***`.
 - The patch passes `DEVELOPER_DIR` to the per-architecture build, which runs under `env -i`
   (without it `xcrun` fails when `xcode-select` points to the Command Line Tools).
 - `ENABLE_NON_FREE_FEATURES=ON` is required by the build system for `ENABLE_PQCRYPTO`. With video off it adds
