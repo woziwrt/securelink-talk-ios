@@ -346,6 +346,10 @@ enum SecureLinkAdmin {
 			SharedMainViewModel.shared.displayedFriend = nil
 			SharedMainViewModel.shared.displayedCall = nil
 			SharedMainViewModel.shared.displayedConversation = model
+			// reporting a message from an open conversation keeps the same screen: onAppear does not run again
+			DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+				NotificationCenter.default.post(name: draftReadyNotification, object: nil)
+			}
 		}
 	}
 
@@ -418,6 +422,8 @@ enum SecureLinkAdmin {
 	// leaves the list at once, and the administrator gets an automatic report
 	private static let blockedKey = "blocked_uris"
 	static let blockedChangedNotification = Notification.Name("SecureLinkBlockedChanged")
+	/// a report draft waits in pendingDraft – for a conversation screen that stays open and only switches conversation
+	static let draftReadyNotification = Notification.Name("SecureLinkDraftReady")
 
 	static func blockedList(_ core: Core) -> [String] {
 		return (core.config?.getString(section: "securelink", key: blockedKey, defaultString: "") ?? "")

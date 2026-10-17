@@ -1620,6 +1620,12 @@ struct ConversationFragment: View {
 					conversationViewModel.deleteMessage()
 				}.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("DeleteMessageForEveryone"))) { _ in
 					conversationViewModel.deleteMessageForEveryone()
+				}.onReceive(NotificationCenter.default.publisher(for: SecureLinkAdmin.draftReadyNotification)) { _ in
+					// SecureLink: the report draft when the screen was already open (onAppear above covers a new screen)
+					if let draft = SecureLinkAdmin.pendingDraft {
+						messageText = draft
+						SecureLinkAdmin.pendingDraft = nil
+					}
 				}
 			}
 			
