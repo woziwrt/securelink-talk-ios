@@ -113,7 +113,7 @@ struct ContactRow: View {
 			}
 		}
 		.onLongPressGesture(minimumDuration: 0.2) {
-            if SharedMainViewModel.shared.indexView == 0 {
+            if SharedMainViewModel.shared.indexView == 0 && !AppServices.corePreferences.hideContactEdition {   // SecureLink: the sheet only offers favourite/delete, both hidden – no empty sheet
                 contactsListViewModel.selectedFriend = contactAvatarModel
                 showingSheet.toggle()
             }

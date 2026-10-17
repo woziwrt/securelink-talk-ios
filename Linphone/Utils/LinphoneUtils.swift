@@ -221,12 +221,19 @@ enum SecureLinkAdmin {
 	static func isAdminRoom(_ core: Core, _ room: ChatRoom) -> Bool {
 		let uri = setting(core, "admin_uri")
 		guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri) else { return false }
+		// on the administrator's own phone every conversation is a report or a request: it must not disappear either
+		if room.localAddress?.weakEqual(address2: admin) == true { return true }
 		return room.participants.contains { $0.address?.weakEqual(address2: admin) == true }
 	}
 
 	/// every conversation of this phone (also ones others started) disappears after at most 7 days; a shorter time
 	/// chosen in the conversation stays; run at start and foreground
 	static func enforceDisappearing(_ core: Core) {
+		// build 7 and older switched it on in the administrator's own conversations too – switch it back off there
+		for room in core.chatRooms where isAdminRoom(core, room) && room.ephemeralEnabled {
+			room.ephemeralEnabled = false
+			Log.info("[SecureLink] disappearing messages switched off in an administrator conversation")
+		}
 		for room in core.chatRooms where !isAdminRoom(core, room) {
 			if !room.ephemeralEnabled || room.ephemeralLifetime <= 0 || room.ephemeralLifetime > disappearAfterSeconds {
 				room.ephemeralLifetime = disappearAfterSeconds

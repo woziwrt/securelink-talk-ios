@@ -180,17 +180,17 @@ class CorePreferences: ObservableObject {
 	}
 	
 	var hideContactEdition: Bool {
-		get { _hideContactEdition }
+		get { true }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set { _hideContactEdition = newValue; config.setBool(section: "ui", key: "hide_contact_edition", value: newValue) }
 	}
 
 	var disableAddContact: Bool {
-		get { _disableAddContact }
+		get { true }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set { _disableAddContact = newValue; config.setBool(section: "ui", key: "disable_add_contact", value: newValue) }
 	}
 
 	var disableCallRecordings: Bool {
-		get { _disableCallRecordings }
+		get { true }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set { _disableCallRecordings = newValue; config.setBool(section: "ui", key: "disable_call_recordings_feature", value: newValue) }
 	}
 
@@ -200,9 +200,7 @@ class CorePreferences: ObservableObject {
 	}
 	
 	var disableMeetings: Bool {
-		get {
-			config.getBool(section: "ui", key: "disable_meetings_feature", defaultValue: false)
-		}
+		get { true }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set {
 			config.setBool(section: "ui", key: "disable_meetings_feature", value: newValue)
 		}
@@ -250,7 +248,7 @@ class CorePreferences: ObservableObject {
 	}
 	
 	var hideSipAddresses: Bool {
-		get { _hideSipAddresses }
+		get { true }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set { _hideSipAddresses = newValue; config.setBool(section: "ui", key: "hide_sip_addresses", value: newValue) }
 	}
 	
@@ -350,7 +348,7 @@ class CorePreferences: ObservableObject {
 	}
 	
 	var showDeveloperSettings: Bool {
-		get { _showDeveloperSettings }
+		get { false }  // SecureLink: fixed in the binary, a provisioning file cannot turn it on (App Review 2.5.19)
 		set { _showDeveloperSettings = newValue; config.setBool(section: "ui", key: "show_developer_settings", value: newValue) }
 	}
 	

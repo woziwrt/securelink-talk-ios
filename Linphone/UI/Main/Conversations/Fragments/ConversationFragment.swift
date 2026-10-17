@@ -1379,6 +1379,34 @@ struct ConversationFragment: View {
 									}
 									
 									VStack {
+										// SecureLink: report a received message to the administrator (App Review guideline 1.2) – the text is
+										// decrypted only on this phone, the user sees the draft before sending it; first item, a long message
+										// would push the end of the menu below the screen
+										if !conversationViewModel.selectedMessage!.message.isOutgoing {
+											Button {
+												let msg = conversationViewModel.selectedMessage!.message
+												let content = msg.text.isEmpty ? msg.attachmentsNames : msg.text
+												conversationViewModel.selectedMessage = nil
+												SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportMessageDraft(senderAddress: msg.address, sent: msg.createdAt, text: content))
+											} label: {
+												HStack {
+													Text("securelink_report_message")
+														.foregroundStyle(Color.orangeMain500)
+														.default_text_style(styleSize: 15)
+													Spacer()
+													Image("warning-circle")
+														.renderingMode(.template)
+														.resizable()
+														.foregroundStyle(Color.orangeMain500)
+														.frame(width: 20, height: 20, alignment: .leading)
+												}
+												.padding(.vertical, 5)
+												.padding(.horizontal, 20)
+											}
+											
+											Divider()
+										}
+										
 										if conversationViewModel.selectedMessage!.message.status == .error {
 											Button {
 												conversationViewModel.resendMessage(chatMessage: conversationViewModel.selectedMessage!)
@@ -1499,33 +1527,6 @@ struct ConversationFragment: View {
 													Spacer()
 													Image("copy")
 														.resizable()
-														.frame(width: 20, height: 20, alignment: .leading)
-												}
-												.padding(.vertical, 5)
-												.padding(.horizontal, 20)
-											}
-											
-											Divider()
-										}
-										
-										// SecureLink: report a received message to the administrator (App Review guideline 1.2) – the text is
-										// decrypted only on this phone, the user sees the draft before sending it
-										if !conversationViewModel.selectedMessage!.message.isOutgoing {
-											Button {
-												let msg = conversationViewModel.selectedMessage!.message
-												let content = msg.text.isEmpty ? msg.attachmentsNames : msg.text
-												conversationViewModel.selectedMessage = nil
-												SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportMessageDraft(senderAddress: msg.address, sent: msg.createdAt, text: content))
-											} label: {
-												HStack {
-													Text("securelink_report_message")
-														.foregroundStyle(Color.orangeMain500)
-														.default_text_style(styleSize: 15)
-													Spacer()
-													Image("warning-circle")
-														.renderingMode(.template)
-														.resizable()
-														.foregroundStyle(Color.orangeMain500)
 														.frame(width: 20, height: 20, alignment: .leading)
 												}
 												.padding(.vertical, 5)
