@@ -1322,12 +1322,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D719ABC22ABC67BF00B41C10 /* Build configuration list for PBXNativeTarget "LinphoneApp" */;
 			buildPhases = (
+				D7D1F5432EDDB9C20034EEB0 /* ShellScript */,
 				D719ABAF2ABC67BF00B41C10 /* Sources */,
 				D719ABB02ABC67BF00B41C10 /* Frameworks */,
 				660AAF802B839272004C0FA6 /* Embed Foundation Extensions */,
 				D719ABB12ABC67BF00B41C10 /* Resources */,
 				D72F04F52DDB2CB800F4C713 /* ShellScript */,
-				D7D1F5432EDDB9C20034EEB0 /* ShellScript */,
 			);
 			buildRules = (
 			);
