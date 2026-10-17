@@ -606,6 +606,12 @@ struct ChatBubbleView: View {
 										selectedURLAttachment = eventLogMessage.message.attachments.first!.full
 									}
 								})
+							// SecureLink: iPadOS 17 lost the tap the same way as iOS 15 below (iPad, 17. 10.)
+							.highPriorityGesture(TapGesture().onEnded {
+								if !didLongPress {
+									selectedURLAttachment = eventLogMessage.message.attachments.first!.full
+								}
+							})
 							.overlay(
 								Group {
 									if eventLogMessage.message.attachments.first!.type == .video {
