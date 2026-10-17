@@ -74,6 +74,16 @@ class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 		   let result = metadataObj.stringValue {
 			if !result.isEmpty && result != lastResult {
 				if let url = NSURL(string: result) {
+					// SecureLink: a personal invitation (https://<install host>/i/<token>, asks for the code sent by SMS) and the
+					// review page (/r/<code>) are web pages, not logins – a new user scanned the invitation with the app and got
+					// "login failed" (17. 10.); open them in Safari
+					if URIHandler.isAllowedProvisioning(result), (url as URL).scheme == "https", ["/i/", "/r/"].contains(where: { (url as URL).path.hasPrefix($0) }) {
+						lastResult = result
+						DispatchQueue.main.async {
+							UIApplication.shared.open(url as URL)
+						}
+						return
+					}
 					if UIApplication.shared.canOpenURL(url as URL) && URIHandler.isAllowedProvisioning(result) {   // SecureLink: our servers only
 						lastResult = result
 						coreContext.doOnCoreQueue { core in
