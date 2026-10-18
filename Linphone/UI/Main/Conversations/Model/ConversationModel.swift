@@ -119,7 +119,8 @@ class ConversationModel: ObservableObject, Identifiable {
 				
 				subjectTmp = chatRoomParticipants.first!.address!.displayName != nil
 				? chatRoomParticipants.first!.address!.displayName!
-				: (chatRoomParticipants.first!.address!.username ?? String(chatRoomParticipants.first!.address!.asStringUriOnly().dropFirst(4)))
+				: (ContactsManager.shared.rememberedName(chatRoomParticipants.first!.address)   // SecureLink: left the directory
+				   ?? chatRoomParticipants.first!.address!.username ?? String(chatRoomParticipants.first!.address!.asStringUriOnly().dropFirst(4)))
 				
 			}
 		}

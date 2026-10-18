@@ -77,7 +77,8 @@ class HistoryModel: ObservableObject, Identifiable {
 			
 			let addressNameTmp = confInfoTmp != nil && confInfoTmp!.subject != nil
 			? confInfoTmp!.subject!
-			: (addressLinphoneTmp.displayName != nil ? addressLinphoneTmp.displayName ?? "" : addressLinphoneTmp.username ?? "")
+			: (addressLinphoneTmp.displayName != nil ? addressLinphoneTmp.displayName ?? ""
+			   : ContactsManager.shared.rememberedName(addressLinphoneTmp) ?? addressLinphoneTmp.username ?? "")   // SecureLink: left the directory
 			
 			let addressTmp = addressLinphoneTmp.asStringUriOnly()
 			

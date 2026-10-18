@@ -322,6 +322,7 @@ class AccountModel: ObservableObject {
 				if let cfg = core.config {
 					cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
 					cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
+					cfg.cleanSection(section: ContactsManager.rememberedNamesSection)
 					try? cfg.sync()
 				}
 				core.friendsLists.forEach { list in

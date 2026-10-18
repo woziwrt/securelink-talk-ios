@@ -546,6 +546,7 @@ final class ContactsManager: ObservableObject {
 								// those it sent again: somebody who left it (signed out, deleted, blocked) stayed in the list for
 								// good, and calling or writing to them only flashed the call screen or spun (Petr 18. 10.)
 								let isDirectory = friendList.type == .VCard4
+								if isDirectory { self.rememberNames(friendList.friends) }
 								tempRemoteFriendList.friends.forEach { friend in
 									if let friendAddress = friend.address,
 									   isDirectory || friendList.friends.contains(where: { $0.address?.weakEqual(address2: friendAddress) == true }) {
@@ -776,6 +777,26 @@ final class ContactsManager: ObservableObject {
 				linphoneFL.updateSubscriptions()
 			}
 		}
+	}
+	
+	// SecureLink: the name of everyone the directory has listed – an old conversation or call with somebody who left it
+	// (signed out, deleted) showed the bare account number. Display only, never a contact; wiped with "Sign out and erase
+	// everything" (AccountModel.logout). Core queue.
+	static let rememberedNamesSection = "securelink_names"
+	
+	func rememberNames(_ friends: [Friend]) {
+		guard let cfg = coreContext.mCore?.config else { return }
+		friends.forEach { friend in
+			if let username = friend.address?.username, let name = friend.name, !name.isEmpty {
+				cfg.setString(section: ContactsManager.rememberedNamesSection, key: username, value: name)
+			}
+		}
+	}
+	
+	func rememberedName(_ address: Address?) -> String? {
+		guard let username = address?.username, let cfg = coreContext.mCore?.config else { return nil }
+		let name = cfg.getString(section: ContactsManager.rememberedNamesSection, key: username, defaultString: "")
+		return name.isEmpty ? nil : name
 	}
 	
 	// SecureLink: a change in the directory (new member, someone's first sign-in) showed only after the app went to the
