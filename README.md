@@ -5,7 +5,10 @@ group of people (end-to-end encrypted calls with post-quantum ZRTP, LIME-encrypt
 presence, accounts and groups as random numbers). Modified by Petr Wozniak since October 2026; the changes are the
 commits on the branch `securelink` on top of upstream `master`, each marked `SecureLink:` in the code.
 
-- License: GNU GPLv3, like Linphone (see `LICENSE.txt`). Copyright notices of Belledonne Communications are kept.
+- **SecureLink © 2026 Petr Wozniak, distributed under the GNU GPLv3. Using Linphone © Belledonne Communications (GNU GPLv3).**
+  The license text is `LICENSE.txt` (GPLv3, unchanged); copyright notices of Belledonne Communications are kept.
+- The proprietary (paid) license mentioned in the original README below is offered by Belledonne Communications for
+  their Linphone only. SecureLink Talk is available under the GNU GPLv3 only.
 - Build instructions, including the linphone-sdk build with the post-quantum engine: [`securelink/BUILD.md`](securelink/BUILD.md)
 - Every build released in the App Store or TestFlight has a tag `build-<number>` with its exact source.
 
