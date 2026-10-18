@@ -731,3 +731,4 @@
 "securelink_qr_login_failed" = "Sign-in failed. A QR code works only once and for 7 days – ask your administrator for a new one.";
 "securelink_peer_no_device" = "This contact has no phone signed in right now. Your messages wait and are delivered when they sign in again.";
 "securelink_message_waiting" = "Waiting for the recipient to sign in";
+"securelink_deletion_requested_on" = "Deletion requested on %@ – the account will be deleted within 7 days";

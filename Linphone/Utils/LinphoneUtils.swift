@@ -378,7 +378,23 @@ enum SecureLinkAdmin {
 				return
 			}
 			let storedHa1 = (auth.algorithm ?? "").uppercased() == "SHA-256" ? (auth.ha1 ?? "") : ""
-			postDeletion(url: url, user: user, password: auth.password ?? "", storedHa1: storedHa1, authorization: nil, done: done)
+			postDeletion(url: url, user: user, password: auth.password ?? "", storedHa1: storedHa1, authorization: nil) { sent in
+				if sent {
+					CoreContext.shared.doOnCoreQueue { core in
+						core.config?.setInt(section: "securelink", key: "deletion_requested_\(user)", value: Int(Date().timeIntervalSince1970))
+					}
+				}
+				done(sent)
+			}
+		}
+	}
+	
+	// when this account asked for its deletion (the button then says so instead of offering it again – Petr 18. 10.)
+	static func deletionRequested(done: @escaping (Date?) -> Void) {
+		CoreContext.shared.doOnCoreQueue { core in
+			let user = core.defaultAccount?.findAuthInfo()?.username ?? ""
+			let time = user.isEmpty ? 0 : (core.config?.getInt(section: "securelink", key: "deletion_requested_\(user)", defaultValue: 0) ?? 0)
+			DispatchQueue.main.async { done(time > 0 ? Date(timeIntervalSince1970: TimeInterval(time)) : nil) }
 		}
 	}
 

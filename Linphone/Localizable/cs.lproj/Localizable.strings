@@ -671,3 +671,4 @@
 "securelink_qr_login_failed" = "Přihlášení se nepovedlo. QR kód platí jen jednou a 7 dní – požádejte správce o nový.";
 "securelink_peer_no_device" = "Kontakt teď nemá přihlášený telefon. Zprávy počkají a doručí se, až se znovu přihlásí.";
 "securelink_message_waiting" = "Čeká, až se příjemce přihlásí";
+"securelink_deletion_requested_on" = "O smazání požádáno %@ – účet bude smazán do 7 dní";

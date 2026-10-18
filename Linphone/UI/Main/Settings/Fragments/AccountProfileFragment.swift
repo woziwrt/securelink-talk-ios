@@ -38,6 +38,10 @@ struct AccountProfileFragment: View {
 	@State private var isShowPopup = false
 	@State private var isShowLogoutPopup = false
 	@State private var isShowDeletionPopup = false
+	// SecureLink: the result of the deletion request – the toast was drawn under this screen and nobody saw it, and an
+	// App Store reviewer looks exactly here for a clear confirmation (Petr 18. 10.)
+	@State private var deletionResult: Bool? = nil
+	@State private var deletionRequestedAt: Date? = nil
 	@State private var flag = true
 	
 	@FocusState var isDisplayNameFocused: Bool
@@ -600,7 +604,23 @@ struct AccountProfileFragment: View {
 											
 											Divider()
 											
-											// SecureLink: account deletion is initiated in the app (App Review 5.1.1(v))
+											// SecureLink: account deletion is initiated in the app (App Review 5.1.1(v)); once asked, it says
+											// when instead of offering it again
+											if let requested = deletionRequestedAt {
+												HStack {
+													Image("clock")
+														.renderingMode(.template)
+														.resizable()
+														.foregroundStyle(Color.grayMain2c500)
+														.frame(width: 25, height: 25)
+													
+													Text(String(format: NSLocalizedString("securelink_deletion_requested_on", comment: ""),
+																DateFormatter.localizedString(from: requested, dateStyle: .medium, timeStyle: .short)))
+														.foregroundStyle(Color.grayMain2c600)
+														.default_text_style(styleSize: 15)
+														.frame(maxWidth: .infinity, alignment: .leading)
+												}
+											} else {
 											Button(action: {
 												isShowDeletionPopup = true
 											}, label: {
@@ -617,6 +637,7 @@ struct AccountProfileFragment: View {
 														.frame(maxWidth: .infinity, alignment: .leading)
 												}
 											})
+											}
 										}
 										.padding(.vertical, 20)
 										.padding(.horizontal, 20)
@@ -667,10 +688,9 @@ struct AccountProfileFragment: View {
 						actionSecondButton: {
 							isShowDeletionPopup = false
 							SecureLinkAdmin.requestDeletion { sent in
-								ToastViewModel.shared.show(sent ? "Success_securelink_deletion_requested" : "Failed_securelink_deletion_request")
-								// the request itself is on the server; the administrator also learns about it on the phone
-								if sent {
-									SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true)
+								DispatchQueue.main.async {
+									deletionResult = sent
+									if sent { deletionRequestedAt = Date() }
 								}
 							}
 						},
@@ -717,6 +737,20 @@ struct AccountProfileFragment: View {
 			.navigationBarHidden(true)
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
+		.onAppear {
+			SecureLinkAdmin.deletionRequested { deletionRequestedAt = $0 }
+		}
+		.alert(Text(LocalizedStringKey(deletionResult == true ? "securelink_deletion_requested_toast" : "securelink_deletion_request_failed_toast")),
+			   isPresented: Binding(get: { deletionResult != nil }, set: { if !$0 { deletionResult = nil } })) {
+			let sent = deletionResult == true
+			Button("OK", role: .cancel) {
+				// the request itself is on the server; the administrator also learns about it on the phone – after the
+				// confirmation, as this opens the administrator's conversation
+				if sent {
+					SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true)
+				}
+			}
+		}
 	}
 	
 	func saveImage() {
