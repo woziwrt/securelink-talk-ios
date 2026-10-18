@@ -273,7 +273,7 @@ class HistoryListViewModel: ObservableObject {
 					
 					DispatchQueue.main.async {
 						SharedMainViewModel.shared.operationInProgress = false
-						ToastViewModel.shared.show("Failed_to_create_conversation_error")
+						ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 					}
 					return
 				}
@@ -318,7 +318,7 @@ class HistoryListViewModel: ObservableObject {
 						
 						DispatchQueue.main.async {
 							SharedMainViewModel.shared.operationInProgress = false
-							ToastViewModel.shared.show("Failed_to_create_conversation_error")
+							ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 						}
 					}
 				} else {
@@ -348,7 +348,7 @@ class HistoryListViewModel: ObservableObject {
 				}
 				DispatchQueue.main.async {
 					SharedMainViewModel.shared.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		}, onConferenceJoined: { (chatRoom: ChatRoom, _: EventLog) in
@@ -386,7 +386,7 @@ class HistoryListViewModel: ObservableObject {
 				}
 				DispatchQueue.main.async {
 					SharedMainViewModel.shared.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		})

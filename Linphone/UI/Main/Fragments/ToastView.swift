@@ -517,6 +517,13 @@ struct ToastView: View {
 							.default_text_style(styleSize: 15)
 							.padding(8)
 					
+					case "Info_securelink_call_failed":
+						Text("Hovor se nepodařil – zkuste to prosím znovu")
+							.multilineTextAlignment(.center)
+							.foregroundStyle(Color.grayMain2c700)
+							.default_text_style(styleSize: 15)
+							.padding(8)
+					
 					case "Failed_securelink_deletion_request":
 						Text("securelink_deletion_request_failed_toast")
 							.multilineTextAlignment(.center)

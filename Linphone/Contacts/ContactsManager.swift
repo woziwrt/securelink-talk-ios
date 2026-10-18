@@ -542,9 +542,13 @@ final class ContactsManager: ObservableObject {
 					if status == .Successful {
                         if friendList.displayName != self.nativeAddressBookFriendList && friendList.displayName != self.linphoneAddressBookFriendList {
                             if let tempRemoteFriendList = self.tempRemoteFriendList {
+								// SecureLink: the server directory is the only source of contacts – drop every copy, not only
+								// those it sent again: somebody who left it (signed out, deleted, blocked) stayed in the list for
+								// good, and calling or writing to them only flashed the call screen or spun (Petr 18. 10.)
+								let isDirectory = friendList.type == .VCard4
 								tempRemoteFriendList.friends.forEach { friend in
 									if let friendAddress = friend.address,
-									   friendList.friends.contains(where: { $0.address?.weakEqual(address2: friendAddress) == true }) {
+									   isDirectory || friendList.friends.contains(where: { $0.address?.weakEqual(address2: friendAddress) == true }) {
 										_ = tempRemoteFriendList.removeFriend(linphoneFriend: friend)
 									}
                                 }

@@ -285,7 +285,10 @@ class CoreContext: ObservableObject {
 			
 			self.mCore.videoPreviewEnabled = false
 			self.mCore.fecEnabled = true
-			
+			// SecureLink: a call put on hold (a second call came in) is silent for the other side – the SDK played its
+			// default music to them (Petr 18. 10.: "hudbu vypnout v každém případě")
+			self.mCore.callOnHoldMusicFile = nil
+
 			let filesDirectoriesURL = FileUtil.sharedContainerUrl().appendingPathComponent("Library/Images")
 			self.mCore.chatMessageFilesDirectories = [filesDirectoriesURL.path]
 			// SecureLink: a message that disappears (or is deleted) takes its attachment file with it. The SDK keeps the

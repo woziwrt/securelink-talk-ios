@@ -782,6 +782,25 @@ struct ConversationFragment: View {
 						.transition(.move(edge: .bottom))
 					}
 					
+					// SecureLink: the other side has no phone signed in – say why a message waits instead of a silent spinner
+					if conversationViewModel.peerHasNoDevice && !isSearchVisible {
+						HStack(alignment: .top, spacing: 8) {
+							Image("warning-circle")
+								.renderingMode(.template)
+								.resizable()
+								.foregroundStyle(Color.grayMain2c500)
+								.frame(width: 20, height: 20)
+							Text("securelink_peer_no_device")
+								.default_text_style(styleSize: 13)
+								.foregroundStyle(Color.grayMain2c600)
+								.frame(maxWidth: .infinity, alignment: .leading)
+								.fixedSize(horizontal: false, vertical: true)
+						}
+						.padding(.horizontal, 16)
+						.padding(.vertical, 8)
+						.background(Color.gray100)
+					}
+
                     if !(SharedMainViewModel.shared.displayedConversation?.isReadOnly ?? cachedConversation!.isReadOnly) && !isSearchVisible {
 						if conversationViewModel.messageToReply != nil {
 							ZStack(alignment: .top) {

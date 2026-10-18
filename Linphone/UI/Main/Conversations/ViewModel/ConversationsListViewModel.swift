@@ -557,7 +557,7 @@ class ConversationsListViewModel: ObservableObject {
 					
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 						self.sharedMainViewModel.operationInProgress = false
-						ToastViewModel.shared.show("Failed_to_create_conversation_error")
+						ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 					}
 					return
 				}
@@ -601,7 +601,7 @@ class ConversationsListViewModel: ObservableObject {
 						Log.error("\(ConversationsListViewModel.TAG) Failed to create 1-1 conversation with \(remote.asStringUriOnly())")
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 							self.sharedMainViewModel.operationInProgress = false
-							ToastViewModel.shared.show("Failed_to_create_conversation_error")
+							ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 						}
 					}
 				} else {
@@ -631,7 +631,7 @@ class ConversationsListViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.sharedMainViewModel.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		}, onConferenceJoined: { (chatRoom: ChatRoom, _: EventLog) in
@@ -658,7 +658,7 @@ class ConversationsListViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.sharedMainViewModel.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		})

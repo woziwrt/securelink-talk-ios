@@ -1585,7 +1585,7 @@ class CallViewModel: ObservableObject {
 					)
 					DispatchQueue.main.async {
 						self.operationInProgress = false
-						ToastViewModel.shared.show("Failed_to_create_conversation_error")
+						ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 					}
 				}
 			}
@@ -1676,7 +1676,7 @@ class CallViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		}, onConferenceJoined: { [weak self] (chatRoom: ChatRoom, _: EventLog) in
@@ -1711,7 +1711,7 @@ class CallViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		})

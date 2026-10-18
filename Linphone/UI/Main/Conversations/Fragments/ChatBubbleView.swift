@@ -360,7 +360,17 @@ struct ChatBubbleView: View {
 													
 													if (SharedMainViewModel.shared.displayedConversation != nil && SharedMainViewModel.shared.displayedConversation!.isGroup)
 														|| eventLogMessage.message.isOutgoing {
-														if eventLogMessage.message.status == .sending {
+														if eventLogMessage.message.status == .sending && conversationViewModel.peerHasNoDevice {
+															// SecureLink: waiting for the other side to sign in again (see the note above the
+															// composer) – a clock, not a spinner that never stops
+															Image("clock")
+																.renderingMode(.template)
+																.resizable()
+																.foregroundStyle(Color.grayMain2c500)
+																.frame(width: 14, height: 14)
+																.padding(.top, 1)
+																.accessibilityLabel(Text("securelink_message_waiting"))
+														} else if eventLogMessage.message.status == .sending {
 															ProgressView()
 																.controlSize(.mini)
 																.progressViewStyle(CircularProgressViewStyle(tint: .orangeMain500))

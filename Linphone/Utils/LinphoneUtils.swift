@@ -265,14 +265,14 @@ enum SecureLinkAdmin {
 			guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri),
 				  let account = core.defaultAccount, let params = try? core.createConferenceParams(conference: nil) else {
 				Log.error("[SecureLink] no administrator address in the profile – cannot open the conversation")
-				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
 				return
 			}
 			// chat parameters exist only once chat is enabled on the conference parameters
 			params.chatEnabled = true
 			guard let chatParams = params.chatParams else {
 				Log.error("[SecureLink] no chat parameters – cannot open the administrator conversation")
-				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
 				return
 			}
 			params.groupEnabled = false
@@ -307,7 +307,7 @@ enum SecureLinkAdmin {
 				let stub = ChatRoomDelegateStub(onStateChanged: { (room: ChatRoom, state: ChatRoom.State) in
 					if state == ChatRoom.State.CreationFailed {
 						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
-						DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+						DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
 					}
 				}, onConferenceJoined: { (room: ChatRoom, _: EventLog) in
 					if room.state == ChatRoom.State.Created {
@@ -319,7 +319,7 @@ enum SecureLinkAdmin {
 				room.addDelegate(delegate: stub)
 			} catch {
 				Log.error("[SecureLink] cannot create the administrator conversation: \(error)")
-				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error") }
+				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
 			}
 		}
 	}

@@ -135,7 +135,7 @@ class ConversationForwardMessageViewModel: ObservableObject {
 					
 					DispatchQueue.main.async {
 						self.operationInProgress = false
-						ToastViewModel.shared.show("Failed_to_create_conversation_error")
+						ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 					}
 					return
 				}
@@ -180,7 +180,7 @@ class ConversationForwardMessageViewModel: ObservableObject {
 						
 						DispatchQueue.main.async {
 							self.operationInProgress = false
-							ToastViewModel.shared.show("Failed_to_create_conversation_error")
+							ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 						}
 					}
 				} else {
@@ -210,7 +210,7 @@ class ConversationForwardMessageViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		}, onConferenceJoined: { (chatRoom: ChatRoom, _: EventLog) in
@@ -248,7 +248,7 @@ class ConversationForwardMessageViewModel: ObservableObject {
 				self.chatRoomDelegate = nil
 				DispatchQueue.main.async {
 					self.operationInProgress = false
-					ToastViewModel.shared.show("Failed_to_create_conversation_error")
+					ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0)
 				}
 			}
 		})

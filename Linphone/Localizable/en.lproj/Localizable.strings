@@ -264,7 +264,7 @@
 "conversation_event_participant_added" = "%@ has joined";
 "conversation_event_participant_removed" = "%@ has left";
 "conversation_event_subject_changed" = "New subject: %@";
-"conversation_failed_to_create_toast" = "Failed to create conversation!";
+"conversation_failed_to_create_toast" = "Cannot start the conversation – the contact is not available right now";
 "conversations_files_waiting_to_be_shared_single" = "1 file waiting to be shared";
 "conversations_files_waiting_to_be_shared_multiple" = "%@ files waiting to be shared";
 "conversation_forward_message_title" = "Forward message to…";
@@ -691,7 +691,7 @@
 "Druhá strana má nové zařízení. Řekněte si navzájem bezpečnostní slovo a potvrďte, že souhlasí." = "The other person has a new device. Read the security word to each other and confirm that it matches.";
 "Řekněte si navzájem bezpečnostní slovo. Musí být na obou telefonech stejné." = "Read the security word to each other. It must be the same on both phones.";
 "Souhlasí" = "It matches";
-"Nesouhlasí" = "It does not match";
+"Nesouhlasí" = "No match";
 "Můj účet" = "My account";
 "Jméno" = "Name";
 "Účet" = "Account";
@@ -721,6 +721,7 @@
 "Skupina" = "Group";
 "Nedostupný – telefon je vypnutý nebo bez signálu" = "Unavailable – the phone is off or has no signal";
 "Obsazeno" = "Busy";
+"Hovor se nepodařil – zkuste to prosím znovu" = "The call did not go through – please try again";
 "Nepřijato" = "Not answered";
 "Pozor: klíč pro %@ nesouhlasí s ověřeným. Nic citlivého nepište, dokud si hovorem neověříte bezpečnostní slovo." = "Warning: the key for %@ does not match the verified one. Do not write anything sensitive until you have checked the security word in a call.";
 "%@ má nový klíč pro zprávy (nový telefon nebo přeinstalovaná appka). Ověřte si hovorem bezpečnostní slovo." = "%@ has a new message key (new phone or reinstalled app). Check the security word in a call.";
@@ -728,3 +729,5 @@
 "%@ má příliš mnoho zařízení." = "%@ has too many devices.";
 "Změna zabezpečení konverzace." = "The conversation's security changed.";
 "securelink_qr_login_failed" = "Sign-in failed. A QR code works only once and for 7 days – ask your administrator for a new one.";
+"securelink_peer_no_device" = "This contact has no phone signed in right now. Your messages wait and are delivered when they sign in again.";
+"securelink_message_waiting" = "Waiting for the recipient to sign in";

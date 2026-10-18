@@ -81,6 +81,9 @@ class ConversationViewModel: ObservableObject {
 	@Published var participantConversationModelAdmin: [ContactAvatarModel] = []
 	@Published var myParticipantConversationModel: ContactAvatarModel? = nil
 	@Published var isUserAdmin: Bool = false
+	// SecureLink: nobody on the other side has a phone signed in (signed out, new QR) – the SDK keeps the messages queued
+	// until one appears, which looked like a spinner for ever (Petr 18. 10.)
+	@Published var peerHasNoDevice: Bool = false
 	@Published var participants: [SelectedAddressModel] = []
 	
 	@Published var mediasToSend: [Attachment] = []
@@ -145,6 +148,13 @@ class ConversationViewModel: ObservableObject {
 			let core = CoreContext.shared.mCore!
 			self.getNewMessages(eventLogs: eventLogs.filter { !SecureLinkAdmin.isBlockedMessage(core, $0.chatMessage) })
 		}, onChatMessageSending: { (_: ChatRoom, eventLog: EventLog) in
+			// SecureLink: queued messages leave once the other side signs in again – reload the list from the database
+			// then: added one by one they showed twice and the first copies kept spinning
+			if self.hadQueuedMessages {
+				self.reloadAfterQueuedSent()
+				return
+			}
+			guard self.firstSighting(eventLog.chatMessage) else { return }
 			if self.conversationMessagesSection.isEmpty || self.conversationMessagesSection[0].rows.isEmpty {
 				self.sendFirstMessage(eventLog: eventLog)
 			} else {
@@ -164,7 +174,12 @@ class ConversationViewModel: ObservableObject {
 			self.getEventMessage(eventLog: eventLog)
 		}, onSubjectChanged: { (_: ChatRoom, eventLog: EventLog) in
 			self.getEventMessage(eventLog: eventLog)
+		}, onParticipantDeviceAdded: { (chatRoom: ChatRoom, _: EventLog) in
+			self.updatePeerHasNoDevice(chatRoom: chatRoom)
+		}, onParticipantDeviceRemoved: { (chatRoom: ChatRoom, _: EventLog) in
+			self.updatePeerHasNoDevice(chatRoom: chatRoom)
 		}, onConferenceJoined: {(chatRoom: ChatRoom, eventLog: EventLog) in
+			self.updatePeerHasNoDevice(chatRoom: chatRoom)
 			if let displayedConversation = self.sharedMainViewModel.displayedConversation {
 				if displayedConversation.isGroup {
 					self.getEventMessage(eventLog: eventLog)
@@ -336,8 +351,59 @@ class ConversationViewModel: ObservableObject {
 		})
 		
 		self.chatRoomDelegateHolder = ChatRoomDelegateHolder(chatroom: chatRoom, delegate: chatRoomDelegate)
+		updatePeerHasNoDevice(chatRoom: chatRoom)
 	}
 	
+	// SecureLink: a queued outgoing message (nobody signed in on the other side) is announced twice – as sending and as
+	// queued – both on the core queue before the first one reaches the list, so it showed twice until the conversation
+	// was reopened. Remember what was already handed over, here on the core queue; the message itself is kept so its
+	// address cannot be reused by a later one while the conversation is open.
+	private var sightedOutgoing: [OpaquePointer: ChatMessage] = [:]
+	private var hadQueuedMessages = false
+	private var reloadWorkItem: DispatchWorkItem?
+	
+	private func reloadAfterQueuedSent() {
+		DispatchQueue.main.async {
+			self.reloadWorkItem?.cancel()
+			let item = DispatchWorkItem { [weak self] in
+				guard let self = self else { return }
+				let noDevice = self.peerHasNoDevice
+				self.coreContext.doOnCoreQueue { _ in
+					self.sightedOutgoing.removeAll()
+					// keep reloading while any of ours is still on its way (they leave one by one)
+					let waiting = self.sharedMainViewModel.displayedConversation?.chatRoom.getHistoryRangeEvents(begin: 0, end: 30)
+						.compactMap { $0.chatMessage }
+						.contains { $0.isOutgoing && [.Idle, .Queued, .PendingDelivery, .InProgress].contains($0.state) } ?? false
+					self.hadQueuedMessages = noDevice || waiting
+				}
+				self.getMessages(keepComposer: true)
+			}
+			self.reloadWorkItem = item
+			DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: item)
+		}
+	}
+	
+	func firstSighting(_ message: ChatMessage?) -> Bool {
+		guard let message = message, let ptr = message.getCobject else { return true }
+		if sightedOutgoing[ptr] != nil { return false }
+		sightedOutgoing[ptr] = message
+		return true
+	}
+	
+	func updatePeerHasNoDevice(chatRoom: ChatRoom) {
+		CoreContext.shared.doOnCoreQueue { _ in
+			let others = chatRoom.participants
+			let noDevice = chatRoom.hasCapability(mask: ChatRoom.Capabilities.Encrypted.rawValue) && chatRoom.state == .Created
+				&& !others.isEmpty && others.allSatisfy { $0.devices.isEmpty }
+			if noDevice { self.hadQueuedMessages = true }
+			DispatchQueue.main.async {
+				if self.peerHasNoDevice != noDevice { self.peerHasNoDevice = noDevice }
+			}
+		}
+	}
+	
+	// SecureLink: rows are found by message id below – a queued message has none yet, and an empty id matched some other
+	// row (a queued message showed an error icon); such a message is refreshed by the reload once it leaves
 	func addChatMessageDelegate(message: ChatMessage) {
 		if self.sharedMainViewModel.displayedConversation != nil {
 			var statusTmp: Message.Status? = .sending
@@ -359,11 +425,11 @@ class ConversationViewModel: ObservableObject {
 			let ephemeralExpireTimeTmp = message.ephemeralExpireTime
 			
 			if !self.conversationMessagesSection.isEmpty && !self.conversationMessagesSection[0].rows.isEmpty {
-				if let indexMessageEventLogId = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId.isEmpty && $0.eventModel.eventLog.chatMessage != nil ? $0.eventModel.eventLog.chatMessage!.messageId == message.messageId : false}) {
+				if let indexMessageEventLogId = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId.isEmpty && $0.eventModel.eventLog.chatMessage != nil ? $0.eventModel.eventLog.chatMessage!.messageId == message.messageId : false}) {
 					self.conversationMessagesSection[0].rows[indexMessageEventLogId].eventModel.eventLogId = message.messageId
 				}
 				
-				if let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId == message.messageId}) {
+				if let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId}) {
 					if indexMessage < self.conversationMessagesSection[0].rows.count {
 						if self.conversationMessagesSection[0].rows[indexMessage].message.status != statusTmp {
 							DispatchQueue.main.async {
@@ -384,10 +450,15 @@ class ConversationViewModel: ObservableObject {
 			self.coreContext.doOnCoreQueue { _ in
 				let chatMessageDelegate = ChatMessageDelegateStub(onMsgStateChanged: { (message: ChatMessage, msgState: ChatMessage.State) in
 					if msgState == .Queued || msgState == .PendingDelivery {
-						if let eventLog = message.eventLog {
+						self.hadQueuedMessages = true
+						if let eventLog = message.eventLog, self.firstSighting(message) {
 							self.getNewMessages(eventLogs: [eventLog])
 						}
 						return
+					}
+					// SecureLink: queued messages leaving now – their rows were added without an id, so reload the list
+					if self.hadQueuedMessages {
+						self.reloadAfterQueuedSent()
 					}
 					var statusTmp: Message.Status?
 					switch message.state {
@@ -407,7 +478,7 @@ class ConversationViewModel: ObservableObject {
 					if msgState == .FileTransferDone {
 						message.contents.filter({ $0.type != "text" }).enumerated().forEach { (contentIndex, content) in
 							guard
-								let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: { $0.eventModel.eventLogId == message.messageId }),
+								let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: { !message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId }),
 								contentIndex < self.conversationMessagesSection[0].rows[indexMessage].message.attachments.count
 							else { return }
 							
@@ -491,20 +562,20 @@ class ConversationViewModel: ObservableObject {
 					
 					if !self.conversationMessagesSection.isEmpty,
 					   !self.conversationMessagesSection[0].rows.isEmpty {
-						let indexMessageEventLogId = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId.isEmpty && $0.eventModel.eventLog.chatMessage != nil ? $0.eventModel.eventLog.chatMessage!.messageId == message.messageId : false})
+						let indexMessageEventLogId = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId.isEmpty && $0.eventModel.eventLog.chatMessage != nil ? $0.eventModel.eventLog.chatMessage!.messageId == message.messageId : false})
 						
 						DispatchQueue.main.async {
 							if let indexMessageEventLogId = indexMessageEventLogId, !self.conversationMessagesSection.isEmpty, !self.conversationMessagesSection[0].rows.isEmpty, self.conversationMessagesSection[0].rows.count > indexMessageEventLogId {
 								self.conversationMessagesSection[0].rows[indexMessageEventLogId].eventModel.eventLogId = message.messageId
 							}
-							let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId == message.messageId})
+							let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId})
 							if let indexMessage = indexMessage, !self.conversationMessagesSection.isEmpty, !self.conversationMessagesSection[0].rows.isEmpty, self.conversationMessagesSection[0].rows.count > indexMessage {
 								self.conversationMessagesSection[0].rows[indexMessage].message.status = statusTmp ?? .error
 							}
 						}
 					}
 				}, onNewMessageReaction: { (message: ChatMessage, _: ChatMessageReaction) in
-					let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId == message.messageId})
+					let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId})
 					var reactionsTmp: [String] = []
 					message.reactions.forEach({ chatMessageReaction in
 						reactionsTmp.append(chatMessageReaction.body)
@@ -516,7 +587,7 @@ class ConversationViewModel: ObservableObject {
 						}
 					}
 				}, onReactionRemoved: { (message: ChatMessage, _: Address) in
-					let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId == message.messageId})
+					let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId})
 					var reactionsTmp: [String] = []
 					message.reactions.forEach({ chatMessageReaction in
 						reactionsTmp.append(chatMessageReaction.body)
@@ -533,7 +604,7 @@ class ConversationViewModel: ObservableObject {
 					let path = URL(string: self.getNewFilePath(name: filePathSep[1]))
 					let progress = (offset * 100) / total
 					DispatchQueue.main.async {
-						guard let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {$0.eventModel.eventLogId == message.messageId}) else { return }
+						guard let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: {!message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId}) else { return }
 						if let attachmentIndex = self.conversationMessagesSection[0].rows[indexMessage].message.attachments.firstIndex(where: {$0.full == path || ($0.name == content.name && $0.transferProgressIndication < 100)}) {
 							self.conversationMessagesSection[0].rows[indexMessage].message.attachments[attachmentIndex].transferProgressIndication = progress
 							if progress >= 100 {
@@ -548,7 +619,7 @@ class ConversationViewModel: ObservableObject {
 					DispatchQueue.main.async {
 						if !self.conversationMessagesSection.isEmpty,
 						   !self.conversationMessagesSection[0].rows.isEmpty,
-						   let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: { $0.eventModel.eventLogId == message.messageId }),
+						   let indexMessage = self.conversationMessagesSection[0].rows.firstIndex(where: { !message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId }),
 						   indexMessage < self.conversationMessagesSection[0].rows.count {
 							self.conversationMessagesSection[0].rows[indexMessage].message.ephemeralExpireTime = ephemeralExpireTimeTmp
 						}
@@ -583,6 +654,8 @@ class ConversationViewModel: ObservableObject {
 		coreContext.doOnCoreQueue { _ in
 			self.chatRoomDelegateHolder = nil
 			self.chatMessageDelegateHolders.removeAll()
+			self.sightedOutgoing.removeAll()
+			self.hadQueuedMessages = false
 		}
 	}
 	
@@ -679,11 +752,13 @@ class ConversationViewModel: ObservableObject {
 		}
 	}
 	
-	func getMessages() {
-		self.mediasToSend.removeAll()
-		self.messageToReply = nil
-		
-		self.attachments.removeAll()
+	func getMessages(keepComposer: Bool = false) {
+		if !keepComposer {
+			self.mediasToSend.removeAll()
+			self.messageToReply = nil
+			
+			self.attachments.removeAll()
+		}
 		
 		coreContext.doOnCoreQueue { _ in
 			self.getHistorySize()
@@ -1230,7 +1305,9 @@ class ConversationViewModel: ObservableObject {
 			  !self.conversationMessagesSection[0].rows.isEmpty,
 			  let firstEventLogId = self.conversationMessagesSection[0].rows.first?.eventModel.eventLogId,
 			  let lastMessageId = eventLogs.last?.chatMessage?.messageId,
-			  firstEventLogId != lastMessageId
+			  // SecureLink: a queued message has no id yet – two of them in a row looked like the same one and the
+			  // second never showed (duplicates of queued messages are caught by firstSighting instead)
+			  lastMessageId.isEmpty || firstEventLogId != lastMessageId
 		else {
 			return
 		}
@@ -1244,7 +1321,7 @@ class ConversationViewModel: ObservableObject {
 		   !eventLogs.isEmpty,
 		   !self.conversationMessagesSection.isEmpty,
 		   !self.conversationMessagesSection[0].rows.isEmpty,
-		   firstEventLogId != lastMessageId {
+		   lastMessageId.isEmpty || firstEventLogId != lastMessageId {
 			eventLogs.enumerated().forEach { index, eventLog in
 				var attachmentNameList: String = ""
 				var attachmentList: [Attachment] = []

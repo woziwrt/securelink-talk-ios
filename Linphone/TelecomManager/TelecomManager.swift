@@ -699,10 +699,17 @@ class TelecomManager: ObservableObject {
 					case .NotAnswered, .TemporarilyUnavailable, .IOError:
 						let toast = rang ? "Info_securelink_call_not_answered" : "Info_securelink_call_unavailable"
 						DispatchQueue.main.async { ToastViewModel.shared.show(toast, duration: 4.0) }
+					case .NotFound:
+						// SecureLink: nobody signed in on that account (signed out, deleted) – the server says 480 since
+						// 18. 10., an older server or another path still 404: the call screen used to just flash
+						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_unavailable", duration: 4.0) }
 					case .Busy:
 						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_busy", duration: 4.0) }
+					case .None, .Declined:
+						break   // hung up by the caller, or turned down by the other side
 					default:
-						break
+						// SecureLink: never end a call without a word (Petr 18. 10.)
+						DispatchQueue.main.async { ToastViewModel.shared.show("Info_securelink_call_failed", duration: 4.0) }
 					}
 				}
 				

@@ -153,7 +153,7 @@
 "conversation_event_conference_destroyed" = "Opustil(a) jste skupinu";
 "conversation_event_ephemeral_messages_disabled" = "Mizející zprávy jsou vypnuté";
 "conversation_event_ephemeral_messages_enabled" = "Mizející zprávy jsou zapnuté: zprávy zmizí 7 dní po přečtení";
-"conversation_failed_to_create_toast" = "Vytvoření konverzace se nezdařilo!";
+"conversation_failed_to_create_toast" = "Konverzaci nelze začít – kontakt teď není dostupný";
 "conversation_forward_message_title" = "Přeposlat zprávu…";
 "conversation_info_add_participants_label" = "Přidat účastníky";
 "conversation_info_admin_menu_remove_participant" = "Odebrat ze skupiny";
@@ -669,3 +669,5 @@
 "securelink_signout_message" = "Účet se odebere z tohoto telefonu. Na serveru zůstane – smazat ho můžete přes „Požádat o smazání účtu“.";
 "securelink_deletion_notice_to_admin" = "🗑️ Požádal(a) jsem v aplikaci o smazání svého účtu. Žádost je zapsaná na serveru (securelink-check).";
 "securelink_qr_login_failed" = "Přihlášení se nepovedlo. QR kód platí jen jednou a 7 dní – požádejte správce o nový.";
+"securelink_peer_no_device" = "Kontakt teď nemá přihlášený telefon. Zprávy počkají a doručí se, až se znovu přihlásí.";
+"securelink_message_waiting" = "Čeká, až se příjemce přihlásí";
