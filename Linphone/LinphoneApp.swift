@@ -120,6 +120,13 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
 		}
 
 		let strPeerAddr = userInfo["peer_addr"] as? String
+		// SecureLink: with the app open the extension cannot read the message (the app owns the core), so the push says
+		// only "Message received" and names no conversation – inside a conversation it just repeated what is on the
+		// screen (two banners for the test line's two answers, Petr 18. 10.)
+		if strPeerAddr == nil, userInfo["call-id"] != nil, displayedChatroomPeerAddr != nil {
+			completionHandler([])
+			return
+		}
 		if strPeerAddr == nil {
 			completionHandler([.banner, .sound])
 		} else {
