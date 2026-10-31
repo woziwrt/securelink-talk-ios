@@ -108,7 +108,7 @@ class ConversationModel: ObservableObject, Identifiable {
 		if self.isGroup {
 			subjectTmp = SecureLinkGroups.title(chatRoom)
 		} else if self.isAdminConversation, let core = CoreContext.shared.mCore,
-				  let admin = try? Factory.Instance.createAddress(addr: SecureLinkAdmin.setting(core, "admin_uri")),
+				  let admin = try? Factory.Instance.createAddress(addr: SecureLinkAdmin.setting(core, "admin_uri", chatRoom.account)),
 				  chatRoomParticipants.first?.address?.weakEqual(address2: admin) == true {
 			subjectTmp = NSLocalizedString("securelink_admin_title", comment: "")   // SecureLink: nobody has the administrator in contacts
 		} else if addressFriend != nil {
@@ -233,7 +233,7 @@ class ConversationModel: ObservableObject, Identifiable {
 	
 	func createGroupCall() {
 		coreContext.doOnCoreQueue { core in
-			let account = core.defaultAccount
+			let account = self.chatRoom.account ?? core.defaultAccount   // SecureLink: the group's own server
 			if account == nil {
 				Log.error(
 					"\(ConversationModel.TAG) No default account found, can't create group call!"

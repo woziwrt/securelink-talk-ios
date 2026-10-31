@@ -76,7 +76,16 @@ class StartConversationViewModel: ObservableObject {
 	
 	func createGroupChatRoom() {
 		coreContext.doOnCoreQueue { core in
-			let account = core.defaultAccount
+			// SecureLink, two servers: a group lives on one company's chat server, which knows only its own people –
+			// the group goes through the members' server, and members of two companies cannot share one
+			let domains = Set(self.participants.map { $0.address.domain ?? "" })
+			if domains.count > 1 {
+				DispatchQueue.main.async {
+					ToastViewModel.shared.show("Failed_securelink_group_one_company", duration: 4.0)
+				}
+				return
+			}
+			let account = SecureLinkAccounts.accountFor(core, self.participants.first?.address)
 			if account == nil {
 				Log.error(
 					"\(StartConversationViewModel.TAG) No default account found, can't create group conversation!"

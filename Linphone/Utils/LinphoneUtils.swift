@@ -255,8 +255,10 @@ enum SecureLinkAdmin {
 
 	/// a server value: the account's own (two servers, SecureLinkAccounts) or, with one server, the phone-wide [app] one
 	static func setting(_ core: Core?, _ key: String, _ account: Account? = nil) -> String {
-		let own = SecureLinkAccounts.setting(account ?? core?.defaultAccount, key)
-		return !own.isEmpty ? own : (core?.config?.getString(section: "app", key: key, defaultString: "") ?? "")
+		let acc = account ?? core?.defaultAccount
+		// an account with its own server values never borrows the phone-wide ones – they are another company's
+		if !SecureLinkAccounts.setting(acc, "domain").isEmpty { return SecureLinkAccounts.setting(acc, key) }
+		return core?.config?.getString(section: "app", key: key, defaultString: "") ?? ""
 	}
 
 	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled;

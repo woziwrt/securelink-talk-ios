@@ -732,3 +732,4 @@
 "securelink_peer_no_device" = "This contact has no phone signed in right now. Your messages wait and are delivered when they sign in again.";
 "securelink_message_waiting" = "Waiting for the recipient to sign in";
 "securelink_deletion_requested_on" = "Deletion requested on %@ – the account will be deleted within 7 days";
+"securelink_group_one_company_toast" = "A group can only have people from one company";

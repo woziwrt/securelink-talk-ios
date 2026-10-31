@@ -165,7 +165,8 @@ struct HelpFragment: View {
 								}
 								
 								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile
-								let supportEmail = CoreContext.shared.mCore?.config?.getString(section: "app", key: "support_email", defaultString: "") ?? ""
+								// (two servers: the default account's company – as privacy and terms)
+								let supportEmail = SecureLinkAdmin.setting(CoreContext.shared.mCore, "support_email")
 								if !supportEmail.isEmpty, let mail = URL(string: "mailto:\(supportEmail)?subject=SecureLink") {
 									Button {
 										UIApplication.shared.open(mail)

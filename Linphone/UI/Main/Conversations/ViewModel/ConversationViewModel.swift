@@ -1905,9 +1905,10 @@ class ConversationViewModel: ObservableObject {
 	}
 	
 	func resendMessage(chatMessage: EventLogMessage) {
-		coreContext.doOnCoreQueue { _ in
+		coreContext.doOnCoreQueue { core in
 			if let message = chatMessage.eventModel.eventLog.chatMessage {
 				if message.state == .NotDelivered {
+					if let room = message.chatRoom { SecureLinkAccounts.useUploadServerOf(core, room) }   // SecureLink: its own server
 					message.send()
 				}
 			}
@@ -2614,10 +2615,11 @@ class ConversationViewModel: ObservableObject {
 	}
 	
 	func resend() {
-		coreContext.doOnCoreQueue { _ in
+		coreContext.doOnCoreQueue { core in
 			let chatMessageToResend = self.sharedMainViewModel.displayedConversation!.chatRoom.findEventLog(messageId: self.selectedMessage!.eventModel.eventLogId)?.chatMessage
 			if self.selectedMessage != nil && chatMessageToResend != nil {
 				Log.info("[ConversationViewModel] Re-sending message with ID \(chatMessageToResend!)")
+				SecureLinkAccounts.useUploadServerOf(core, self.sharedMainViewModel.displayedConversation!.chatRoom)   // SecureLink: its own server
 				chatMessageToResend!.send()
 			}
 		}
