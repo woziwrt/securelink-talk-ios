@@ -212,7 +212,7 @@
 "contact_new_title" = "New contact";
 "contact_video_call_action" = "Video call";
 "contacts_list_all_contacts_title" = "All contacts";
-"contacts_list_empty" = "No contact for the moment…";
+"contacts_list_empty" = "Nobody here yet. As soon as your administrator adds more people from your group, they will appear here.";
 "contacts_list_favourites_title" = "Favourites";
 "contacts_list_filter_popup_see_all" = "See all";
 "contacts_list_filter_popup_see_linphone_only" = "See %@ contacts";
@@ -688,6 +688,8 @@
 "Pokračovat bez ochrany" = "Continue without protection";
 "Komunikace jen uvnitř okruhu.\nÚčet dostanete od správce jako QR kód." = "Communication only within your circle.\nYour administrator gives you your account as a QR code.";
 "Nic dalšího nastavovat nemusíte." = "There is nothing else to set up.";
+"securelink_landing_intro" = "Communication only within your circle.\n\nTo sign in, open the message from your administrator again and tap the link in it. The page recognises you and offers to open SecureLink and sign you in.";
+"securelink_landing_have_qr" = "I have a QR code from my administrator";
 "Druhá strana má nové zařízení. Řekněte si navzájem bezpečnostní slovo a potvrďte, že souhlasí." = "The other person has a new device. Read the security word to each other and confirm that it matches.";
 "Řekněte si navzájem bezpečnostní slovo. Musí být na obou telefonech stejné." = "Read the security word to each other. It must be the same on both phones.";
 "Souhlasí" = "It matches";

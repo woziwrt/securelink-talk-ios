@@ -128,7 +128,9 @@
 "contact_message_action" = "Zpráva";
 "contact_new_title" = "Nový kontakt";
 "contacts_list_all_contacts_title" = "Všechny kontakty";
-"contacts_list_empty" = "Momentálně žádný kontakt…";
+"contacts_list_empty" = "Zatím tu nikdo není. Jakmile správce přidá další lidi z vaší skupiny, objeví se tady.";
+"securelink_landing_intro" = "Komunikace jen uvnitř okruhu.\n\nPro přihlášení otevřete znovu zprávu od správce a klepněte na odkaz v ní. Stránka vás pozná a nabídne „Otevřít SecureLink a přihlásit“.";
+"securelink_landing_have_qr" = "Mám QR kód od správce";
 "contacts_list_favourites_title" = "Oblíbené";
 "contacts_list_filter_popup_see_all" = "Zobrazit vše";
 "conversation_action_configure_ephemeral_messages" = "Nastavení mizejících zpráv";

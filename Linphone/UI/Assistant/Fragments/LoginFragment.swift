@@ -80,7 +80,9 @@ struct LoginFragment: View {
 		.navigationViewStyle(StackNavigationViewStyle())
 	}
 	
-	// SecureLink: the only way in is the administrator's QR code – no login form, no registration, no third-party SIP.
+	// SecureLink: the only way in is the administrator's invitation – no login form, no registration, no third-party SIP.
+	// People open the app right after installing it: the screen sends them back to the invitation link (as Android,
+	// zkouška Copservis 29. 10.); the QR code is the second way.
 	func innerScrollView(geometry: GeometryProxy) -> some View {
 		VStack {
 			Spacer()
@@ -96,7 +98,7 @@ struct LoginFragment: View {
 				.foregroundStyle(Color.orangeMain500)
 				.padding(.bottom, 6)
 
-			Text("Komunikace jen uvnitř okruhu.\nÚčet dostanete od správce jako QR kód.")
+			Text("securelink_landing_intro")
 				.default_text_style(styleSize: 16)
 				.foregroundStyle(Color.grayMain2c700)
 				.multilineTextAlignment(.center)
@@ -113,8 +115,8 @@ struct LoginFragment: View {
 						.resizable()
 						.foregroundStyle(Color.white)
 						.frame(width: 24, height: 24)
-					Text("assistant_scan_qr_code")
-						.default_text_style_white_600(styleSize: 20)
+					Text("securelink_landing_have_qr")
+						.default_text_style_white_600(styleSize: 18)
 						.frame(height: 35)
 				}
 				.frame(maxWidth: .infinity)
