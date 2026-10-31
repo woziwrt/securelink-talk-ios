@@ -101,7 +101,10 @@ class AccountModel: ObservableObject {
 		)
 		core.addDelegate(delegate: coreDelegate!)
 		
-		CoreContext.shared.doOnCoreQueue { _ in
+		// SecureLink: not doOnCoreQueue – models made while the core switches On (CoreContext) queued their update after
+		// the queue had been emptied, so it never ran; normally the first registration state filled the model, but an
+		// account switched off (signed out by the administrator) never registers and stayed a spinner in the side menu
+		CoreContext.shared.doOnCoreQueueCoreStarted { _ in
 			self.update()
 		}
 	}
