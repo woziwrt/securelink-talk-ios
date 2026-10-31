@@ -44,6 +44,21 @@ enum SecureLinkAccounts {
 		return core.accountList.first { $0.params?.identityAddress?.domain == remote?.domain } ?? core.defaultAccount
 	}
 
+	/// liblinphone leaves no default account when the default one is removed (sign-out, a new invitation of the same
+	/// server) and remembers that (default_proxy=-1): Messages then stay empty. The first remaining account takes over.
+	static func ensureDefaultAccount(_ core: Core) {
+		let current = core.defaultAccount?.params?.identityAddress
+		if let current = current, core.accountList.contains(where: { $0.params?.identityAddress?.weakEqual(address2: current) == true }) {
+			return
+		}
+		guard let first = core.accountList.first else { return }
+		Log.warn("[SecureLink Accounts] no default account, \(first.params?.identityAddress?.asStringUriOnly() ?? "") takes over")
+		core.defaultAccount = first
+		DispatchQueue.main.async {
+			NotificationCenter.default.post(name: NSNotification.Name("DefaultAccountChanged"), object: nil)
+		}
+	}
+
 	/// the domain whose people a directory list holds – nil with one server (the directory then replaces everybody)
 	static func directoryDomain(_ list: FriendList) -> String? {
 		guard let core = list.core, isMultiServer(core), let uri = list.uri, !uri.isEmpty else { return nil }
@@ -53,6 +68,12 @@ enum SecureLinkAccounts {
 	/// the conversations of all accounts, newest first – two servers (two employers) are one list, the name says the company
 	static func chatRooms(_ core: Core, filter: String) -> [ChatRoom] {
 		return core.accountList.flatMap { $0.filterChatRooms(filter: filter) }.sorted { $0.lastUpdateTime > $1.lastUpdateTime }
+	}
+
+	/// a conversation of one of this phone's accounts (Linphone lists only the default account's; with two servers both)
+	static func isListed(_ core: Core, _ room: ChatRoom) -> Bool {
+		guard let local = room.localAddress else { return false }
+		return core.accountList.contains { $0.params?.identityAddress?.weakEqual(address2: local) == true }
 	}
 
 	/// the upload server is one for the whole core: before sending, point it at the server of [room]'s account
@@ -98,12 +119,16 @@ enum SecureLinkAccounts {
 		}
 		let domain = identity.domain ?? ""
 
-		// the same server again (a new invitation): the old login of that server goes, the other server's stays
+		// the same server again (a new invitation): the old login of that server goes, the other server's stays. As a
+		// sign-out: unregistered first (with its credentials), else the server keeps ringing this phone for the old number
 		for old in core.accountList where old.params?.identityAddress?.domain == domain {
 			Log.warn("[SecureLink Accounts] replacing the account \(old.params?.identityAddress?.asStringUriOnly() ?? "")")
-			core.removeAccount(account: old)
+			// the same number (a new QR of the same account): the new credentials replace these, removing them later
+			// would remove the new ones (an auth info is found by user name and domain)
+			let oldAuth = old.findAuthInfo()
+			core.removeAccountWithData(account: old)
+			AccountModel.removeCredentialsAfterUnregister(core: core, account: old, authInfo: oldAuth?.username == username ? nil : oldAuth)
 		}
-		for info in core.authInfoList where info.domain == domain { core.removeAuthInfo(info: info) }
 
 		// the first account came by remote provisioning: its server values are in the phone-wide sections
 		let first = core.defaultAccount?.params
@@ -128,6 +153,14 @@ enum SecureLinkAccounts {
 		if profile.hasSection(section: section) != 0 {
 			for key in keys {
 				params.addCustomParam(key: paramPrefix + key, value: profile.getString(section: section, key: key, defaultString: ""))
+			}
+		} else { // a server from before securelink_account (31. 10. 2026): its values from its own profile, never the phone's
+			params.addCustomParam(key: paramPrefix + "domain", value: domain)
+			params.addCustomParam(key: paramPrefix + "org_name", value: domain)
+			params.addCustomParam(key: paramPrefix + "dir_url", value: profile.getString(section: "misc", key: "contacts-vcard-list", defaultString: ""))
+			params.addCustomParam(key: paramPrefix + "upload_url", value: profile.getString(section: "misc", key: "file_transfer_server_url", defaultString: ""))
+			for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url"] {
+				params.addCustomParam(key: paramPrefix + key, value: profile.getString(section: "app", key: key, defaultString: ""))
 			}
 		}
 

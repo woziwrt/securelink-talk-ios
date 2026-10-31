@@ -352,7 +352,7 @@ class AccountModel: ObservableObject {
 	
 	private static var unregisterDelegates: [AccountDelegate] = []
 
-	private static func removeCredentialsAfterUnregister(core: Core, account: Account, authInfo: AuthInfo?) {
+	static func removeCredentialsAfterUnregister(core: Core, account: Account, authInfo: AuthInfo?) {
 		var done = false
 		var delegate: AccountDelegate?
 		let finish = {

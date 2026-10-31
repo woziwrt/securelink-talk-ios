@@ -724,11 +724,8 @@ struct AccountProfileFragment: View {
 							if accountProfileViewModel.accountModelIndex != nil {
 								CoreContext.shared.accounts[accountProfileViewModel.accountModelIndex!].logout()
 								isShowAccountProfileFragment = false
-								if let firstAccount = CoreContext.shared.accounts.first?.account {
-									CoreContext.shared.doOnCoreQueue { core in
-										core.defaultAccount = firstAccount
-									}
-								}
+								// SecureLink: the new default account is chosen once the removal is done (onAccountRemoved) –
+								// the list here is still the old one and could make the removed account the default again
 							}
 						},
 						titleThirdButton: Text("dialog_cancel"),

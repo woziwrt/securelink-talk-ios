@@ -368,6 +368,7 @@ class CoreContext: ObservableObject {
 				if state == GlobalState.On {
 					let pushEnvironment = CoreContext.pushEnvironment   // SecureLink: from the signing profile, not the build type
 
+					SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: heals default_proxy=-1 left by an older build
 					if MagicSearchSingleton.shared.magicSearch == nil {
 						MagicSearchSingleton.shared.recreateMagicSearch(core: core)
 					}
@@ -557,8 +558,9 @@ class CoreContext: ObservableObject {
 					
 					ContactsManager.shared.fetchContacts()
 				}
-			}, onAccountAdded: { (_: Core, acc: Account) in
+			}, onAccountAdded: { (core: Core, acc: Account) in
 				self.forceRemotePushToMatchVoipPushSettings(account: acc)
+				SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: an added account may be the only one
 				
 				var accountModels: [AccountModel] = []
 				for account in self.mCore.accountList {
@@ -567,7 +569,8 @@ class CoreContext: ObservableObject {
 				DispatchQueue.main.async {
 					self.accounts = accountModels
 				}
-			}, onAccountRemoved: { (_: Core, acc: Account) in
+			}, onAccountRemoved: { (core: Core, acc: Account) in
+				SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: the removed one may have been the default
 				var accountModels: [AccountModel] = []
 				for account in self.mCore.accountList {
 					accountModels.append(AccountModel(account: account, core: self.mCore))
