@@ -209,7 +209,7 @@ class SharedMainViewModel: ObservableObject {
         CoreContext.shared.doOnCoreQueue { core in
             let account = core.defaultAccount
             if account != nil {
-                account?.resetMissedCallsCount()
+                core.accountList.forEach { $0.resetMissedCallsCount() }   // SecureLink: the Calls tab lists all accounts
                 DispatchQueue.main.async {
                     self.missedCallsCount = 0
                 }
@@ -225,7 +225,7 @@ class SharedMainViewModel: ObservableObject {
         CoreContext.shared.doOnCoreQueue { core in
             let account = core.defaultAccount
             if account != nil {
-                let count = account?.missedCallsCount != nil ? account!.missedCallsCount : core.missedCallsCount
+                let count = core.accountList.reduce(0) { $0 + $1.missedCallsCount }   // SecureLink: every account (two servers)
                 
                 DispatchQueue.main.async {
                     self.missedCallsCount = count
@@ -242,7 +242,8 @@ class SharedMainViewModel: ObservableObject {
         CoreContext.shared.doOnCoreQueue { core in
             let account = core.defaultAccount
             if account != nil {
-                let count = account?.unreadChatMessageCount != nil ? account!.unreadChatMessageCount : core.unreadChatMessageCount
+                // SecureLink: every account (two servers) – as the notification extension counts the icon badge
+                let count = core.accountList.reduce(0) { $0 + $1.unreadChatMessageCount }
                 
                 DispatchQueue.main.async {
                     self.unreadMessages = count

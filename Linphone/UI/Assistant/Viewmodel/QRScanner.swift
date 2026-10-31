@@ -87,6 +87,18 @@ class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 					if UIApplication.shared.canOpenURL(url as URL) && URIHandler.isAllowedProvisioning(result) {   // SecureLink: our servers only
 						lastResult = result
 						coreContext.doOnCoreQueue { core in
+							// SecureLink: already signed in – "Add account" + QR adds the second server's account; remote
+							// provisioning would overwrite the first one (it always writes proxy_0)
+							if SecureLinkAccounts.enabled && !core.accountList.isEmpty {
+								SecureLinkAccounts.addFromProvisioning(result) { added in
+									DispatchQueue.main.async {
+										ToastViewModel.shared.show(added ? "Success_qr_code_validated" : "Failed_uri_handler_bad_config_address")
+									}
+									// closes the sign-in screen and the side menu, reloads the lists (ContentView)
+									NotificationCenter.default.post(name: NSNotification.Name("DefaultAccountChanged"), object: nil)
+								}
+								return
+							}
 							try? core.setProvisioninguri(newValue: result)
 							core.stop()
 							try? core.start()

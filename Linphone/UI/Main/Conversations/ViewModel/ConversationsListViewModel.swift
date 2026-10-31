@@ -213,9 +213,7 @@ class ConversationsListViewModel: ObservableObject {
 			self.coreConversationDelegate = CoreDelegateStub(
 				onMessagesReceived: { (core: Core, chatRoom: ChatRoom, _: [ChatMessage]) in
 					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: its messages were dropped
-					if let defaultAddress = core.defaultAccount?.params?.identityAddress,
-					   let localAddress = chatRoom.localAddress,
-					   defaultAddress.weakEqual(address2: localAddress) {
+					if SecureLinkAccounts.isListed(core, chatRoom) {   // SecureLink: all accounts, not only the default one
 						let idTmp = LinphoneUtils.getChatRoomId(room: chatRoom)
 						let model = ConversationModel(chatRoom: chatRoom)
 						model.getContentTextMessage(chatRoom: chatRoom)
@@ -228,9 +226,7 @@ class ConversationsListViewModel: ObservableObject {
 						SharedMainViewModel.shared.updateUnreadMessagesCount()
 					}
 				}, onMessageSent: { (_: Core, chatRoom: ChatRoom, _: ChatMessage) in
-					if let defaultAddress = core.defaultAccount?.params?.identityAddress,
-					   let localAddress = chatRoom.localAddress,
-					   defaultAddress.weakEqual(address2: localAddress) {
+					if SecureLinkAccounts.isListed(core, chatRoom) {   // SecureLink: all accounts, not only the default one
 						let idTmp = LinphoneUtils.getChatRoomId(room: chatRoom)
 						let model = ConversationModel(chatRoom: chatRoom)
 						model.getContentTextMessage(chatRoom: chatRoom)
@@ -257,9 +253,7 @@ class ConversationsListViewModel: ObservableObject {
 					SharedMainViewModel.shared.updateUnreadMessagesCount()
 				}, onChatRoomStateChanged: { (core: Core, chatroom: ChatRoom, state: ChatRoom.State) in
 					// Log.info("[ConversationsListViewModel] Conversation [${LinphoneUtils.getChatRoomId(chatRoom)}] state changed [$state]")
-					if let defaultAddress = core.defaultAccount?.params?.identityAddress,
-					   let localAddress = chatroom.localAddress,
-					   defaultAddress.weakEqual(address2: localAddress) {
+					if SecureLinkAccounts.isListed(core, chatroom) {   // SecureLink: all accounts, not only the default one
 						if core.globalState == .On {
 							switch state {
 							case .Created:
