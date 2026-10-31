@@ -85,9 +85,20 @@ enum SecureLinkAccounts {
 		}
 	}
 
+	/// https only: the ATS exception for securelink.cc (our own CA) would also let plain http through. Debug builds also
+	/// take http – the lab VM serves its profile and directory on http://10.33.1.111:8080
+	private static func secureURL(_ link: String) -> URL? {
+		guard let url = URL(string: link) else { return nil }
+		#if DEBUG
+		if url.scheme == "http" { return url }
+		#endif
+		return url.scheme == "https" ? url : nil
+	}
+
 	/// downloads the profile behind a sign-in link and adds (or, for the same server, replaces) its account
 	static func addFromProvisioning(_ link: String, done: @escaping (Bool) -> Void) {
-		guard let url = URL(string: link) else {
+		guard let url = secureURL(link) else {
+			Log.error("[SecureLink Accounts] not an https link, refused: \(link)")
 			done(false)
 			return
 		}
@@ -222,7 +233,7 @@ enum SecureLinkAccounts {
 	static func refreshDirectories(_ core: Core) {
 		for account in core.accountList {
 			let link = setting(account, "dir_url")
-			guard !link.isEmpty, let url = URL(string: link), let auth = account.findAuthInfo() else { continue }
+			guard !link.isEmpty, let url = secureURL(link), let auth = account.findAuthInfo() else { continue }
 			let user = auth.username ?? ""
 			let ha1 = (auth.algorithm ?? "").uppercased() == "SHA-256" ? (auth.ha1 ?? "") : ""
 			let password = auth.password ?? ""
