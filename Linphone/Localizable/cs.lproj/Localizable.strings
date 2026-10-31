@@ -673,3 +673,6 @@
 "securelink_message_waiting" = "Čeká, až se příjemce přihlásí";
 "securelink_deletion_requested_on" = "O smazání požádáno %@ – účet bude smazán do 7 dní";
 "securelink_group_one_company_toast" = "Skupina může mít jen lidi z jednoho okruhu – kam kdo patří, je vidět za jeho jménem";
+"securelink_signed_out_title" = "Tento telefon byl odhlášen";
+"securelink_signed_out_message" = "Správce vám poslal novou pozvánku nebo tento telefon zablokoval. Pro nové přihlášení otevřete odkaz z pozvánky nebo naskenujte nový kód.";
+"securelink_signed_out_ok" = "Rozumím";

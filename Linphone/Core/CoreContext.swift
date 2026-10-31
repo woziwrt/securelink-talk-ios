@@ -75,6 +75,7 @@ class CoreContext: ObservableObject {
 	private var configuringStateCallBacks: [((ConfiguringState) -> Void)] = []
 	
 	var digestAuthInfoPendingPasswordUpdate: AuthInfo?
+	private var firstSignInRefusal: [String: Date] = [:]   // SecureLink: identity → first refused sign-in (core queue)
 	
 	@Published var reloadID = UUID()
 	
@@ -457,17 +458,30 @@ class CoreContext: ObservableObject {
 					}
 
 					let identity = "\(authInfo.username ?? "username")@\(authInfo.domain ?? "domain")"
-					Log.info("[CoreContext] Authentication requested method is HttpDigest, showing dialog asking user for password for identity [\(identity)]")
-					
-					DispatchQueue.main.async {
-						NotificationCenter.default.post(
-							name: NSNotification.Name("PasswordUpdate"),
-							object: nil,
-							userInfo: ["address": "sip:" + identity]
-						)
+					// SecureLink: people never have a password to type – the server refuses the stored one only after a new
+					// invitation (new password), a block or a deleted account. Linphone asked for a password nobody has
+					// (31. 10.). As Android: not on the first refusal (the server may still have the old password cached),
+					// only when it refuses again in a later attempt – then stop registering and say once what happened.
+					core.abortAuthentication(info: authInfo)
+					let now = Date()
+					if let first = self.firstSignInRefusal[identity], now.timeIntervalSince(first) < 30 * 60 {
+						if now.timeIntervalSince(first) < 20 {
+							Log.warn("[SecureLink] sign-in of \(identity) refused again in the same attempt, waiting")
+							return
+						}
+						Log.warn("[SecureLink] sign-in of \(identity) refused twice, phone signed out by the administrator")
+						self.firstSignInRefusal[identity] = nil
+						if accountFound.params?.registerEnabled == true, let params = accountFound.params?.clone() {
+							params.registerEnabled = false
+							accountFound.params = params
+							DispatchQueue.main.async {
+								NotificationCenter.default.post(name: NSNotification.Name("SecureLinkSignedOut"), object: nil)
+							}
+						}
+					} else {
+						Log.warn("[SecureLink] sign-in of \(identity) refused once, trying again later before signing out")
+						self.firstSignInRefusal[identity] = now
 					}
-					
-					self.digestAuthInfoPendingPasswordUpdate = authInfo
 				}
 			}, onMessagesReceived: { (core: Core, chatRoom: ChatRoom, messages: [ChatMessage]) in
 				// SecureLink: a message from a contact blocked on this phone is dropped at once (App Review 1.2).

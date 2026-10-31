@@ -733,3 +733,6 @@
 "securelink_message_waiting" = "Waiting for the recipient to sign in";
 "securelink_deletion_requested_on" = "Deletion requested on %@ – the account will be deleted within 7 days";
 "securelink_group_one_company_toast" = "A group can only have people from one circle – the name after each contact shows which one";
+"securelink_signed_out_title" = "This phone was signed out";
+"securelink_signed_out_message" = "Your administrator sent you a new invitation or blocked this phone. To sign in again, open the link from the invitation or scan the new code.";
+"securelink_signed_out_ok" = "I understand";

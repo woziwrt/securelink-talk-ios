@@ -91,6 +91,7 @@ struct ContentView: View {
 	@State var conversationInfoPopupText: String = ""
 	
 	@State var isShowUpdatePasswordPopup: Bool = false
+	@State var isShowSignedOutPopup: Bool = false   // SecureLink: the server refused this phone twice
 	@State var passwordUpdateAddress: String = ""
 	
 	@State var showLeaveConversationPopup: Bool = false
@@ -1963,6 +1964,23 @@ struct ContentView: View {
 						}
 					}
 					
+					if isShowSignedOutPopup {
+						PopupView(
+							isShowPopup: $isShowSignedOutPopup,
+							title: Text("securelink_signed_out_title"),
+							content: Text("securelink_signed_out_message"),
+							titleFirstButton: nil,
+							actionFirstButton: {},
+							titleSecondButton: Text("securelink_signed_out_ok"),
+							actionSecondButton: { self.isShowSignedOutPopup = false }
+						)
+						.background(.black.opacity(0.65))
+						.zIndex(3)
+						.onTapGesture {
+							self.isShowSignedOutPopup = false
+						}
+					}
+					
 					if isShowUpdatePasswordPopup {
 						PopupUpdatePassword(
 							isShowUpdatePasswordPopup: $isShowUpdatePasswordPopup,
@@ -2071,6 +2089,9 @@ struct ContentView: View {
 				if meetingsListViewModel != nil {
                     meetingsListViewModel = MeetingsListViewModel()
 				}
+			}
+			.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SecureLinkSignedOut"))) { _ in
+				isShowSignedOutPopup = true
 			}
 			.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("PasswordUpdate")).compactMap { $0.userInfo?["address"] as? String }) { address in
 				passwordUpdateAddress = address
