@@ -73,7 +73,7 @@ enum SecureLinkAccounts {
 		session.dataTask(with: URLRequest(url: url, timeoutInterval: 30)) { data, response, error in
 			let code = (response as? HTTPURLResponse)?.statusCode ?? 0
 			let xml = code == 200 ? data.flatMap { String(data: $0, encoding: .utf8) } : nil
-			if xml == nil { Log.error("[SecureLink Accounts] downloading the profile failed: \(code) \(error?.localizedDescription ?? "")") }
+			if xml == nil { Log.error("[SecureLink Accounts] downloading the profile failed: \(code) \(String(describing: error))") }
 			CoreContext.shared.doOnCoreQueue { core in
 				let added = xml.map { addAccount(core, $0) } ?? false
 				DispatchQueue.main.async { done(added) }
@@ -275,9 +275,11 @@ enum SecureLinkAccounts {
 			}
 			SecTrustSetAnchorCertificates(trust, anchors as CFArray)
 			SecTrustSetAnchorCertificatesOnly(trust, false)
-			if SecTrustEvaluateWithError(trust, nil) {
+			var failure: CFError?
+			if SecTrustEvaluateWithError(trust, &failure) {
 				completionHandler(.useCredential, URLCredential(trust: trust))
 			} else {
+				Log.error("[SecureLink Accounts] \(challenge.protectionSpace.host) not trusted (\(anchors.count) anchors): \(String(describing: failure))")
 				completionHandler(.cancelAuthenticationChallenge, nil)
 			}
 		}

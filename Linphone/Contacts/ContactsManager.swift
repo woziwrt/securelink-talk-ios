@@ -212,7 +212,8 @@ final class ContactsManager: ObservableObject {
 		let firstInitial = firstParts.first?.first.map(String.init) ?? ""
 		let secondInitial = firstParts.count > 1 ? firstParts[1].first.map(String.init) ?? "" : ""
 
-		let lastInitial = lastName?.first.map(String.init) ?? ""
+		// SecureLink: the second word of "Alice · Copservis" is the separator, not a surname
+		let lastInitial = lastName?.first.flatMap { $0.isLetter ? String($0) : nil } ?? ""
 
 		let textToDisplay: String
 
