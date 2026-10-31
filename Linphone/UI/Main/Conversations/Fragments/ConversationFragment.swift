@@ -1413,7 +1413,8 @@ struct ConversationFragment: View {
 												let msg = conversationViewModel.selectedMessage!.message
 												let content = msg.text.isEmpty ? msg.attachmentsNames : msg.text
 												conversationViewModel.selectedMessage = nil
-												SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportMessageDraft(senderAddress: msg.address, sent: msg.createdAt, text: content))
+												SecureLinkAdmin.openConversation(draft: SecureLinkAdmin.reportMessageDraft(senderAddress: msg.address, sent: msg.createdAt, text: content),
+																				 about: msg.address)
 											} label: {
 												HStack {
 													Text("securelink_report_message")

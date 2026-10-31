@@ -116,6 +116,13 @@ class URIHandler {
 		}
 		if autoRemoteProvisioningOnConfigUriHandler() {
 			CoreContext.shared.doOnCoreQueue { core in
+				// SecureLink: already signed in – a second server's link adds its account (one phone, two employers)
+				if SecureLinkAccounts.enabled && !core.accountList.isEmpty {
+					SecureLinkAccounts.addFromProvisioning(target) { added in
+						toast(added ? "Success_qr_code_validated" : "Failed_uri_handler_bad_config_address")
+					}
+					return
+				}
 				Log.info("[URIHandler] provisioning app with URI: \(url.resourceSpecifier)")
 				do {
 					addCoreDelegate()

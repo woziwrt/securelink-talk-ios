@@ -55,8 +55,8 @@ class ConversationsListViewModel: ObservableObject {
 	
 	func computeChatRoomsList() {
 		coreContext.doOnCoreQueue { core in
-			if let account = core.defaultAccount {
-				let conversationsListTmp = account.filterChatRooms(filter: self.currentFilter)
+			if core.defaultAccount != nil {
+				let conversationsListTmp = SecureLinkAccounts.chatRooms(core, filter: self.currentFilter)
 				var conversationsTmp: [ConversationModel] = []
 				conversationsListTmp.forEach { chatRoom in
 					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: blocked contact
@@ -324,7 +324,7 @@ class ConversationsListViewModel: ObservableObject {
 			}
 			// filtering asks the SDK too: back to the core queue, then insert on the main thread
 			self.coreContext.doOnCoreQueue { _ in
-				if defaultAccount!.filterChatRooms(filter: filter).contains(where: {$0.identifier == identifier}) {
+				if chatRoomAccount!.filterChatRooms(filter: filter).contains(where: {$0.identifier == identifier}) {
 					DispatchQueue.main.async {
 						self.insertConversation(model, identifier: identifier)
 					}
@@ -436,8 +436,8 @@ class ConversationsListViewModel: ObservableObject {
 	func filterConversations(filter: String) {
 		currentFilter = filter
 		coreContext.doOnCoreQueue { core in
-			if let account = core.defaultAccount {
-				let conversationsListTmp = account.filterChatRooms(filter: filter)
+			if core.defaultAccount != nil {
+				let conversationsListTmp = SecureLinkAccounts.chatRooms(core, filter: filter)
 				var conversationsTmp: [ConversationModel] = []
 				conversationsListTmp.forEach { chatRoom in
 					if SecureLinkAdmin.isBlockedRoom(core, chatRoom) { return }   // SecureLink: blocked contact
@@ -509,7 +509,7 @@ class ConversationsListViewModel: ObservableObject {
 	func createOneToOneChatRoomWith(remote: Address) {
 		CoreContext.shared.doOnCoreQueue { core in
 			if SecureLinkAdmin.refuseIfBlocked(core, remote) { return }   // SecureLink: unblock first
-			let account = core.defaultAccount
+			let account = SecureLinkAccounts.accountFor(core, remote)   // SecureLink: the remote's server
 			if account == nil {
 				Log.error(
 					"\(ConversationsListViewModel.TAG) No default account found, can't create conversation with \(remote.asStringUriOnly())"

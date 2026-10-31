@@ -19,6 +19,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import linphonesw
 
 // swiftlint:disable type_body_length
 struct AccountProfileFragment: View {
@@ -42,6 +43,12 @@ struct AccountProfileFragment: View {
 	// App Store reviewer looks exactly here for a clear confirmation (Petr 18. 10.)
 	@State private var deletionResult: Bool? = nil
 	@State private var deletionRequestedAt: Date? = nil
+
+	/// the account shown here – with two servers the deletion request and the notice go to its own server
+	private var profileAccount: Account? {
+		guard let index = accountProfileViewModel.accountModelIndex, CoreContext.shared.accounts.count > index else { return nil }
+		return CoreContext.shared.accounts[index].account
+	}
 	@State private var flag = true
 	
 	@FocusState var isDisplayNameFocused: Bool
@@ -687,7 +694,7 @@ struct AccountProfileFragment: View {
 						titleSecondButton: Text("securelink_request_deletion_confirm"),
 						actionSecondButton: {
 							isShowDeletionPopup = false
-							SecureLinkAdmin.requestDeletion { sent in
+							SecureLinkAdmin.requestDeletion(of: profileAccount) { sent in
 								DispatchQueue.main.async {
 									deletionResult = sent
 									if sent { deletionRequestedAt = Date() }
@@ -738,7 +745,7 @@ struct AccountProfileFragment: View {
 		}
 		.navigationViewStyle(StackNavigationViewStyle())
 		.onAppear {
-			SecureLinkAdmin.deletionRequested { deletionRequestedAt = $0 }
+			SecureLinkAdmin.deletionRequested(of: profileAccount) { deletionRequestedAt = $0 }
 		}
 		.alert(Text(LocalizedStringKey(deletionResult == true ? "securelink_deletion_requested_toast" : "securelink_deletion_request_failed_toast")),
 			   isPresented: Binding(get: { deletionResult != nil }, set: { if !$0 { deletionResult = nil } })) {
@@ -747,7 +754,8 @@ struct AccountProfileFragment: View {
 				// the request itself is on the server; the administrator also learns about it on the phone – after the
 				// confirmation, as this opens the administrator's conversation
 				if sent {
-					SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true)
+					SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true,
+													 about: profileAccount?.params?.identityAddress?.asStringUriOnly())
 				}
 			}
 		}

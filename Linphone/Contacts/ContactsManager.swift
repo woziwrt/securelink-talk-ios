@@ -203,7 +203,9 @@ final class ContactsManager: ObservableObject {
 	}
 	
 	func textToImage(firstName: String?, lastName: String?) -> UIImage {
+		// SecureLink: "Jan Novák · Copservis" (two servers) – the circle is the person's, not the company's
 		let firstParts = firstName?
+			.components(separatedBy: " · ")[0]
 			.split(separator: " ")
 			.map(String.init) ?? []
 
@@ -506,6 +508,101 @@ final class ContactsManager: ObservableObject {
 		return fallback
 	}
 	
+	/// a server directory (or CardDAV list) was downloaded: rebuild the contacts made from it; SecureLink also calls it
+	/// for the directories it downloads itself (two servers, SecureLinkAccounts)
+	func onDirectorySynchronized(_ friendList: FriendList) {
+        if friendList.displayName != self.nativeAddressBookFriendList && friendList.displayName != self.linphoneAddressBookFriendList {
+            if let tempRemoteFriendList = self.tempRemoteFriendList {
+				// SecureLink: the server directory is the only source of contacts – drop every copy, not only
+				// those it sent again: somebody who left it (signed out, deleted, blocked) stayed in the list for
+				// good, and calling or writing to them only flashed the call screen or spun (Petr 18. 10.)
+				let isDirectory = friendList.type == .VCard4
+				if isDirectory { self.rememberNames(friendList.friends) }
+				// two servers: one directory replaces only its own server's people, the other company stays
+				let domain = SecureLinkAccounts.directoryDomain(friendList)
+				tempRemoteFriendList.friends.forEach { friend in
+					if let friendAddress = friend.address,
+					   (isDirectory && (domain == nil || friendAddress.domain == domain))
+						|| friendList.friends.contains(where: { $0.address?.weakEqual(address2: friendAddress) == true }) {
+						_ = tempRemoteFriendList.removeFriend(linphoneFriend: friend)
+					}
+                }
+            }
+        }
+
+		// SecureLink: a call that woke the app rang before the directory loaded – give it the name now
+		TelecomManager.shared.refreshIncomingCallNames()
+        
+        let dispatchGroup = DispatchGroup()
+		friendList.friends.forEach { friend in
+            dispatchGroup.enter()
+			let addressTmp = friend.address?.clone()?.asStringUriOnly() ?? ""
+
+			// SecureLink: the server directory sends only the full name (FN), no given/family name – without
+			// this the copy made here was named "sip:eva@…", the nameless duplicate behind the addresses shown
+			// instead of names (cold-start calls, notifications)
+			let newContact = Contact(
+				identifier: UUID().uuidString,
+				firstName: friend.firstName ?? friend.name ?? addressTmp,
+				lastName: friend.firstName != nil ? (friend.lastName ?? "") : "",
+				organizationName: friend.organization ?? "",
+				jobTitle: friend.jobTitle ?? "",
+				displayName: friend.address?.displayName ?? "",
+				sipAddresses: friend.addresses.map { $0.asStringUriOnly() },
+				phoneNumbers: friend.phoneNumbersWithLabel.map { PhoneNumber(numLabel: $0.label ?? "", num: $0.phoneNumber)},
+				imageData: ""
+			)
+			
+			let image: UIImage?
+			
+			if let photo = friend.photo, !photo.isEmpty, friendList.type == .CardDAV {
+				if let imageTmp = self.imageFromBase64(photo) {
+					image = imageTmp
+					if let image = image {
+						self.saveImage(
+							image: image,
+							name: friend.name ?? addressTmp,
+							prefix: "",
+							contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
+								dispatchGroup.leave()
+							}
+					}
+				} else {
+					image = self.textToImage(firstName: friend.name ?? addressTmp, lastName: "")
+					if let image = image {
+						self.saveImage(
+							image: image,
+							name: friend.name ?? addressTmp,
+							prefix: "-default",
+							contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
+								dispatchGroup.leave()
+							}
+					}
+				}
+			} else {
+				image = self.textToImage(firstName: friend.name ?? addressTmp, lastName: "")
+				if let image = image {
+					self.saveImage(
+						image: image,
+						name: friend.name ?? addressTmp,
+						prefix: "-default",
+						contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
+							dispatchGroup.leave()
+						}
+				}
+			}
+		}
+        
+        dispatchGroup.notify(queue: .main) {
+			self.coreContext.doOnCoreQueue { _ in
+				MagicSearchSingleton.shared.searchForContacts()
+				if let linphoneFL = self.tempRemoteFriendList {
+					linphoneFL.updateSubscriptions()
+				}
+			}
+        }
+	}
+
 	func getFriendWithAddressInCoreQueue(address: Address?, completion: @escaping (Friend?) -> Void) {
 		self.coreContext.doOnCoreQueue { _ in
 			completion(self.getFriendWithAddress(address: address))
@@ -540,93 +637,7 @@ final class ContactsManager: ObservableObject {
 				onSyncStatusChanged: { (friendList: FriendList, status: FriendList.SyncStatus?, message: String?) in
 					Log.info("\(ContactsManager.TAG) FriendListDelegateStub onSyncStatusChanged \(friendList.displayName ?? "No Display Name") -- Status: \(status != nil ? String(describing: status!) : "No Status")")
 					if status == .Successful {
-                        if friendList.displayName != self.nativeAddressBookFriendList && friendList.displayName != self.linphoneAddressBookFriendList {
-                            if let tempRemoteFriendList = self.tempRemoteFriendList {
-								// SecureLink: the server directory is the only source of contacts – drop every copy, not only
-								// those it sent again: somebody who left it (signed out, deleted, blocked) stayed in the list for
-								// good, and calling or writing to them only flashed the call screen or spun (Petr 18. 10.)
-								let isDirectory = friendList.type == .VCard4
-								if isDirectory { self.rememberNames(friendList.friends) }
-								tempRemoteFriendList.friends.forEach { friend in
-									if let friendAddress = friend.address,
-									   isDirectory || friendList.friends.contains(where: { $0.address?.weakEqual(address2: friendAddress) == true }) {
-										_ = tempRemoteFriendList.removeFriend(linphoneFriend: friend)
-									}
-                                }
-                            }
-                        }
-
-						// SecureLink: a call that woke the app rang before the directory loaded – give it the name now
-						TelecomManager.shared.refreshIncomingCallNames()
-                        
-                        let dispatchGroup = DispatchGroup()
-						friendList.friends.forEach { friend in
-                            dispatchGroup.enter()
-							let addressTmp = friend.address?.clone()?.asStringUriOnly() ?? ""
-
-							// SecureLink: the server directory sends only the full name (FN), no given/family name – without
-							// this the copy made here was named "sip:eva@…", the nameless duplicate behind the addresses shown
-							// instead of names (cold-start calls, notifications)
-							let newContact = Contact(
-								identifier: UUID().uuidString,
-								firstName: friend.firstName ?? friend.name ?? addressTmp,
-								lastName: friend.firstName != nil ? (friend.lastName ?? "") : "",
-								organizationName: friend.organization ?? "",
-								jobTitle: friend.jobTitle ?? "",
-								displayName: friend.address?.displayName ?? "",
-								sipAddresses: friend.addresses.map { $0.asStringUriOnly() },
-								phoneNumbers: friend.phoneNumbersWithLabel.map { PhoneNumber(numLabel: $0.label ?? "", num: $0.phoneNumber)},
-								imageData: ""
-							)
-							
-							let image: UIImage?
-							
-							if let photo = friend.photo, !photo.isEmpty, friendList.type == .CardDAV {
-								if let imageTmp = self.imageFromBase64(photo) {
-									image = imageTmp
-									if let image = image {
-										self.saveImage(
-											image: image,
-											name: friend.name ?? addressTmp,
-											prefix: "",
-											contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
-												dispatchGroup.leave()
-											}
-									}
-								} else {
-									image = self.textToImage(firstName: friend.name ?? addressTmp, lastName: "")
-									if let image = image {
-										self.saveImage(
-											image: image,
-											name: friend.name ?? addressTmp,
-											prefix: "-default",
-											contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
-												dispatchGroup.leave()
-											}
-									}
-								}
-							} else {
-								image = self.textToImage(firstName: friend.name ?? addressTmp, lastName: "")
-								if let image = image {
-									self.saveImage(
-										image: image,
-										name: friend.name ?? addressTmp,
-										prefix: "-default",
-										contact: newContact, linphoneFriend: friendList.displayName ?? "No Display Name", existingFriend: friend.friendList?.type == .CardDAV ? friend : nil) {
-											dispatchGroup.leave()
-										}
-								}
-							}
-						}
-                        
-                        dispatchGroup.notify(queue: .main) {
-							self.coreContext.doOnCoreQueue { _ in
-								MagicSearchSingleton.shared.searchForContacts()
-								if let linphoneFL = self.tempRemoteFriendList {
-									linphoneFL.updateSubscriptions()
-								}
-							}
-                        }
+						self.onDirectorySynchronized(friendList)
 					}
 				},
 				onPresenceReceived: { (friendList: FriendList, friends: [Friend?]) in
@@ -822,6 +833,10 @@ final class ContactsManager: ObservableObject {
 
 	func refreshCardDavContacts() {
 		self.coreContext.doOnCoreQueue { core in
+			if SecureLinkAccounts.isMultiServer(core) { // two servers: each directory with its own account's password
+				SecureLinkAccounts.refreshDirectories(core)
+				return
+			}
 			core.friendsLists.forEach{ friendList in
 				if (friendList.type == .CardDAV || friendList.type == .VCard4) {   // SecureLink: the server directory (vCard list) too
 					Log.info("\(ContactsManager.TAG) Found CardDAV/vCard friend list \(friendList.displayName), starting update")

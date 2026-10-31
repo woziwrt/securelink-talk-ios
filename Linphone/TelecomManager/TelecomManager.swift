@@ -257,7 +257,11 @@ class TelecomManager: ObservableObject {
 			// lcallParams.recordFile = writablePath
 			
 			lcallParams.recordFile = makeRecordFilePath(address: addr.asStringUriOnly())
-			
+			// SecureLink: with two servers the callee's domain picks the account – each server knows only its own people
+			if lcallParams.account == nil || SecureLinkAccounts.isMultiServer(core) {
+				lcallParams.account = SecureLinkAccounts.accountFor(core, addr)
+			}
+
 			if isSas {
 				lcallParams.mediaEncryption = .ZRTP
 			}

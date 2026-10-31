@@ -46,13 +46,8 @@ class HistoryListViewModel: ObservableObject {
 	
 	func computeCallLogsList() {
 		coreContext.doOnCoreQueue { core in
-			let account = core.defaultAccount
-			
-			// Fetch all call logs if only one account to workaround no history issue
-			// TODO FIXME: remove workaround later
-			let logs = (core.accountList.count > 1)
-				? (account?.callLogs ?? core.callLogs)
-				: core.callLogs
+			// SecureLink: two servers (two employers) are one phone – the history of both, the name says the company
+			let logs = core.callLogs
 			
 			var callLogsBis: [HistoryModel] = []
 			var callLogsTmpBis: [HistoryModel] = []
@@ -78,8 +73,7 @@ class HistoryListViewModel: ObservableObject {
 			}
 			
 			self.callLogCoreDelegate = CoreDelegateStub(onCallLogUpdated: { (_: Core, _: CallLog) in
-				let account = core.defaultAccount
-				let logs = account?.callLogs != nil ? account!.callLogs : core.callLogs
+				let logs = core.callLogs // SecureLink: both servers' history
 				
 				var callLogsBis: [HistoryModel] = []
 				var callLogsTmpBis: [HistoryModel] = []
@@ -178,12 +172,7 @@ class HistoryListViewModel: ObservableObject {
 	func removeCallLogs() {
 		if callLogsAddressToDelete.isEmpty {
 			coreContext.doOnCoreQueue { core in
-				let account = core.defaultAccount
-				if account != nil {
-					account!.clearCallLogs()
-				} else {
-					core.clearCallLogs()
-				}
+				core.clearCallLogs() // SecureLink: the list shows both servers' history, so clearing clears both
 				
 				DispatchQueue.main.async {
 					self.callLogs.removeAll()
@@ -225,7 +214,7 @@ class HistoryListViewModel: ObservableObject {
 	func createOneToOneChatRoomWith(remote: Address) {
 		CoreContext.shared.doOnCoreQueue { core in
 			if SecureLinkAdmin.refuseIfBlocked(core, remote) { return }   // SecureLink: unblock first
-			let account = core.defaultAccount
+			let account = SecureLinkAccounts.accountFor(core, remote)   // SecureLink: the remote's server
 			if account == nil {
 				Log.error(
 					"\(ConversationForwardMessageViewModel.TAG) No default account found, can't create conversation with \(remote.asStringUriOnly())"

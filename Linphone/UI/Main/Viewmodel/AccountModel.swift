@@ -130,6 +130,8 @@ class AccountModel: ObservableObject {
 		}
 		let displayName = account.displayName()
 		let address = account.params?.identityAddress?.asString()
+		// SecureLink: with two servers the menu tells the companies apart
+		let company = account.core.map { SecureLinkAccounts.isMultiServer($0) } == true ? SecureLinkAccounts.setting(account, "org_name") : ""
 		
 		let displayNameTmp = account.params?.identityAddress?.displayName ?? displayName
 		let usernaneAvatarTmp = account.params?.identityAddress?.username ?? displayName
@@ -183,7 +185,8 @@ class AccountModel: ObservableObject {
 				isRegistrered = state == .Ok
 				isDefaultAccount = isDefault
 				// SecureLink: accounts are numbers and carry no name – the side menu says "My account" instead of the number
-				self.displayName = (displayNameTmp == displayName || displayNameTmp.isEmpty) ? NSLocalizedString("securelink_my_account", comment: "") : displayName
+				self.displayName = !company.isEmpty ? company
+					: (displayNameTmp == displayName || displayNameTmp.isEmpty) ? NSLocalizedString("securelink_my_account", comment: "") : displayName
 				address.map {self.address = $0}
 				
 				photoAvatarModel = photoAvatarModelTmp
@@ -309,7 +312,13 @@ class AccountModel: ObservableObject {
 			Log.info("Account \(self.account.displayName()) has been removed")
 			let wasLastAccount = core.accountList.count <= 1   // removal may complete later (unregister first)
 			let authInfo = self.account.findAuthInfo()
+			let directory = SecureLinkAccounts.setting(self.account, "dir_url")
 			core.removeAccountWithData(account: self.account)
+			// SecureLink, two servers: signing out of one company takes its people along, the other stays
+			if !wasLastAccount && !directory.isEmpty {
+				for list in core.friendsLists where list.uri == directory { core.removeFriendList(list: list) }
+				ContactsManager.shared.refreshCardDavContacts()
+			}
 			// SecureLink: the unregister is authenticated (digest). Credentials removed right away made it fail and the
 			// server kept the old binding for a year – the next account on this phone rang for the old one too (iPad,
 			// 17. 10.). They go once the unregister is done, or after 10 s (no network).

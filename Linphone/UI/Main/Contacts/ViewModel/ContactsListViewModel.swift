@@ -52,7 +52,7 @@ class ContactsListViewModel: ObservableObject {
 	func createOneToOneChatRoomWith(remote: Address) {
 		CoreContext.shared.doOnCoreQueue { core in
 			if SecureLinkAdmin.refuseIfBlocked(core, remote) { return }   // SecureLink: unblock first
-			let account = core.defaultAccount
+			let account = SecureLinkAccounts.accountFor(core, remote)   // SecureLink: the remote's server
 			if account == nil {
 				Log.error(
 					"\(Self.TAG) No default account found, can't create conversation with \(remote.asStringUriOnly())"
@@ -373,7 +373,7 @@ class ContactsListViewModel: ObservableObject {
 					return
 				}
 				
-				let account = core.defaultAccount
+				let account = SecureLinkAccounts.accountFor(core, remote)   // SecureLink: the remote's server
 				if account == nil {
 					Log.error(
 						"\(Self.TAG) No default account found, can't create conversation with \(remote.asStringUriOnly())"

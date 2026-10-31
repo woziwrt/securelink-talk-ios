@@ -228,7 +228,7 @@ enum SecureLinkAdmin {
 	static let disappearAfterSeconds = 7 * 24 * 3600
 
 	static func isAdminRoom(_ core: Core, _ room: ChatRoom) -> Bool {
-		let uri = setting(core, "admin_uri")
+		let uri = setting(core, "admin_uri", room.account)
 		guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri) else { return false }
 		// on the administrator's own phone every conversation is a report or a request: it must not disappear either
 		if room.localAddress?.weakEqual(address2: admin) == true { return true }
@@ -253,17 +253,21 @@ enum SecureLinkAdmin {
 	}
 	private static var creationDelegate: ChatRoomDelegateStub?
 
-	static func setting(_ core: Core?, _ key: String) -> String {
-		return core?.config?.getString(section: "app", key: key, defaultString: "") ?? ""
+	/// a server value: the account's own (two servers, SecureLinkAccounts) or, with one server, the phone-wide [app] one
+	static func setting(_ core: Core?, _ key: String, _ account: Account? = nil) -> String {
+		let own = SecureLinkAccounts.setting(account ?? core?.defaultAccount, key)
+		return !own.isEmpty ? own : (core?.config?.getString(section: "app", key: key, defaultString: "") ?? "")
 	}
 
 	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled;
 	/// with sendNow the text is sent at once and the user stays where they are (e.g. after an account deletion request)
-	static func openConversation(draft: String, sendNow: Bool = false) {
+	/// [about]: the person or message it concerns – with two servers the administrator of that server gets it
+	static func openConversation(draft: String, sendNow: Bool = false, about: String? = nil) {
 		CoreContext.shared.doOnCoreQueue { core in
-			let uri = setting(core, "admin_uri")
+			let account = SecureLinkAccounts.accountFor(core, about.flatMap { try? Factory.Instance.createAddress(addr: $0) })
+			let uri = setting(core, "admin_uri", account)
 			guard !uri.isEmpty, let admin = try? Factory.Instance.createAddress(addr: uri),
-				  let account = core.defaultAccount, let params = try? core.createConferenceParams(conference: nil) else {
+				  let account = account, let params = try? core.createConferenceParams(conference: nil) else {
 				Log.error("[SecureLink] no administrator address in the profile – cannot open the conversation")
 				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
 				return
@@ -368,10 +372,11 @@ enum SecureLinkAdmin {
 
 	// --- account deletion (App Review 5.1.1(v)): one tap sends a signed request to the server ([app] request_url,
 	// HTTP digest SHA-256 with the SIP account – the same check as attachments); the administrator deletes within 7 days
-	static func requestDeletion(done: @escaping (Bool) -> Void) {
+	static func requestDeletion(of account: Account? = nil, done: @escaping (Bool) -> Void) {
 		CoreContext.shared.doOnCoreQueue { core in
-			let link = setting(core, "request_url")
-			guard let url = URL(string: link), !link.isEmpty, let auth = core.defaultAccount?.findAuthInfo(),
+			let account = account ?? core.defaultAccount
+			let link = setting(core, "request_url", account)
+			guard let url = URL(string: link), !link.isEmpty, let auth = account?.findAuthInfo(),
 				  let user = auth.username, !user.isEmpty else {
 				Log.error("[SecureLink] deletion request: no request_url or no credentials")
 				DispatchQueue.main.async { done(false) }
@@ -390,9 +395,9 @@ enum SecureLinkAdmin {
 	}
 	
 	// when this account asked for its deletion (the button then says so instead of offering it again – Petr 18. 10.)
-	static func deletionRequested(done: @escaping (Date?) -> Void) {
+	static func deletionRequested(of account: Account? = nil, done: @escaping (Date?) -> Void) {
 		CoreContext.shared.doOnCoreQueue { core in
-			let user = core.defaultAccount?.findAuthInfo()?.username ?? ""
+			let user = (account ?? core.defaultAccount)?.findAuthInfo()?.username ?? ""
 			let time = user.isEmpty ? 0 : (core.config?.getInt(section: "securelink", key: "deletion_requested_\(user)", defaultValue: 0) ?? 0)
 			DispatchQueue.main.async { done(time > 0 ? Date(timeIntervalSince1970: TimeInterval(time)) : nil) }
 		}
@@ -482,8 +487,9 @@ enum SecureLinkAdmin {
 			}
 		}
 		Log.info("[SecureLink] \(uri) \(blocked ? "blocked" : "unblocked") on this phone")
-		if blocked && uri != blockKey(try? Factory.Instance.createAddress(addr: setting(core, "admin_uri"))) {
-			openConversation(draft: blockReportDraft(address), sendNow: true)
+		let account = SecureLinkAccounts.accountFor(core, address) // the administrator of the blocked one's server
+		if blocked && uri != blockKey(try? Factory.Instance.createAddress(addr: setting(core, "admin_uri", account))) {
+			openConversation(draft: blockReportDraft(address), sendNow: true, about: address.asStringUriOnly())
 		}
 		SharedMainViewModel.shared.updateUnreadMessagesCount()
 		DispatchQueue.main.async {

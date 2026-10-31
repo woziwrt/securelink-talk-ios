@@ -52,6 +52,7 @@
 		C65271062F87D3E600FF248C /* MDMManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65271052F87D3E600FF248C /* MDMManager.swift */; };
 		C67586AE2C09F23C002E77BF /* URLExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67586AD2C09F23C002E77BF /* URLExtension.swift */; };
 		C67586B02C09F247002E77BF /* URIHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67586AF2C09F247002E77BF /* URIHandler.swift */; };
+		DA77BB76C1DF88CA33E56068 /* SecureLinkAccounts.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6BAF53B3CF632B8FBF95DDD /* SecureLinkAccounts.swift */; };
 		C67586B52C09F617002E77BF /* SingleSignOnManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67586B22C09F617002E77BF /* SingleSignOnManager.swift */; };
 		C6A5A9412C10B5D50070FEA4 /* EncodableExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A5A9402C10B5D50070FEA4 /* EncodableExtension.swift */; };
 		C6A5A9432C10B5ED0070FEA4 /* DecodableExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6A5A9422C10B5ED0070FEA4 /* DecodableExtension.swift */; };
@@ -325,6 +326,7 @@
 		C652710C2F88D1CA00FF248C /* LinphoneAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LinphoneAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C67586AD2C09F23C002E77BF /* URLExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLExtension.swift; sourceTree = "<group>"; };
 		C67586AF2C09F247002E77BF /* URIHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URIHandler.swift; sourceTree = "<group>"; };
+		E6BAF53B3CF632B8FBF95DDD /* SecureLinkAccounts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecureLinkAccounts.swift; sourceTree = "<group>"; };
 		C67586B22C09F617002E77BF /* SingleSignOnManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SingleSignOnManager.swift; sourceTree = "<group>"; };
 		C6A5A9402C10B5D50070FEA4 /* EncodableExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodableExtension.swift; sourceTree = "<group>"; };
 		C6A5A9422C10B5ED0070FEA4 /* DecodableExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DecodableExtension.swift; sourceTree = "<group>"; };
@@ -720,6 +722,7 @@
 				D7B99E9A2B29F7C200BE7BF2 /* ActivityIndicator.swift */,
 				D7173EBD2B7A5C0A00BCC481 /* LinphoneUtils.swift */,
 				C67586AF2C09F247002E77BF /* URIHandler.swift */,
+				E6BAF53B3CF632B8FBF95DDD /* SecureLinkAccounts.swift */,
 				C6A5A9462C10B64A0070FEA4 /* SingleSignOn */,
 				D79F2D092C47F4BF0038FA07 /* TouchFeedback.swift */,
 			);
@@ -1647,6 +1650,7 @@
 				D7C500422D2BE98100DD53EC /* AccountSettingsViewModel.swift in Sources */,
 				D79622342B1DFE600037EACD /* DialerBottomSheet.swift in Sources */,
 				C67586B02C09F247002E77BF /* URIHandler.swift in Sources */,
+				DA77BB76C1DF88CA33E56068 /* SecureLinkAccounts.swift in Sources */,
 				C62817282C1B389700DBA646 /* SideMenuAccountRow.swift in Sources */,
 				C60E8F192C0F649200A06DB8 /* UIApplicationExtension.swift in Sources */,
 				D78290BB2ADD40B2004AA85C /* ContactsListViewModel.swift in Sources */,

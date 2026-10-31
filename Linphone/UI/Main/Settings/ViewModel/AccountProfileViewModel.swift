@@ -189,21 +189,9 @@ class AccountProfileViewModel: ObservableObject {
 	
 	func computeNonDefaultAccountNotificationsCount() {
 		CoreContext.shared.doOnCoreQueue { core in
-			var count = 0
-			core.accountList.forEach { accountTmp in
-				if let defaultAccount = core.defaultAccount?.params?.identityAddress, let accountAddress = accountTmp.params?.identityAddress,  !defaultAccount.equal(address2: accountAddress) {
-					count += accountTmp.unreadChatMessageCount + accountTmp.missedCallsCount
-				}
-			}
-			
-			if count > 0 {
-				Log.info("\(AccountProfileViewModel.TAG) Found \(count) pending notifications for other account(s)")
-			} else {
-				Log.info("\(AccountProfileViewModel.TAG) No pending notification found for other account(s)")
-			}
-			
+			// SecureLink: two servers (two employers) share one history and one conversation list – nothing is "elsewhere"
 			DispatchQueue.main.async {
-				self.nonDefaultAccountNotificationsCount = count
+				self.nonDefaultAccountNotificationsCount = 0
 			}
 		}
 	}

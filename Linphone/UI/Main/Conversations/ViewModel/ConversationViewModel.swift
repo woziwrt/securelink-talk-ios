@@ -142,7 +142,8 @@ class ConversationViewModel: ObservableObject {
 	func addConversationDelegate(chatRoom: ChatRoom) {
 		let chatRoomDelegate = ChatRoomDelegateStub( onIsComposingReceived: { (_: ChatRoom, _: Address, _: Bool) in
 			self.computeComposingLabel()
-		}, onChatMessagesReceived: { (_: ChatRoom, eventLogs: [EventLog]) in
+		}, onChatMessagesReceived: { (chatRoom: ChatRoom, eventLogs: [EventLog]) in
+			self.updatePeerHasNoDevice(chatRoom: chatRoom) // SecureLink: an answer means a signed-in phone
 			// SecureLink: a blocked contact's messages are dropped by CoreContext – an open conversation must not show
 			// them either (this delegate may run first)
 			let core = CoreContext.shared.mCore!
@@ -2220,7 +2221,9 @@ class ConversationViewModel: ObservableObject {
 	
 	func sendMessage(messageText: String, audioRecorder: AudioRecorder? = nil) {
 		if self.sharedMainViewModel.displayedConversation != nil {
-			coreContext.doOnCoreQueue { _ in
+			coreContext.doOnCoreQueue { core in
+				// SecureLink, two servers: attachments go to the server of this conversation's account
+				if let room = self.sharedMainViewModel.displayedConversation?.chatRoom { SecureLinkAccounts.useUploadServerOf(core, room) }
 				do {
 					var message: ChatMessage?
 					if self.messageToReply != nil {
