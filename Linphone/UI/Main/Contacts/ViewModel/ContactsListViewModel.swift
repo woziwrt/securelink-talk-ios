@@ -74,7 +74,7 @@ class ContactsListViewModel: ObservableObject {
 				guard let chatParams = params.chatParams else { return }
 				chatParams.ephemeralLifetime = SecureLinkAdmin.disappearAfterSeconds // SecureLink: messages disappear 7 days after they are read
 				
-				let sameDomain = remote.domain == AppServices.corePreferences.defaultDomain && remote.domain == account!.params?.domain
+				let sameDomain = remote.domain == account!.params?.domain // SecureLink: the account chosen for this remote (several servers possible)
 				if account!.params != nil && (account!.params!.instantMessagingEncryptionMandatory && sameDomain) {
 					Log.info("\(ConversationForwardMessageViewModel.TAG) Account is in secure mode & domain matches, creating an E2E encrypted conversation")
 					chatParams.backend = ChatRoom.Backend.FlexisipChat
@@ -391,7 +391,7 @@ class ContactsListViewModel: ObservableObject {
 					guard let chatParams = params.chatParams else { return }
 					chatParams.ephemeralLifetime = SecureLinkAdmin.disappearAfterSeconds // SecureLink: messages disappear 7 days after they are read
 					
-					let sameDomain = remote.domain == AppServices.corePreferences.defaultDomain && remote.domain == account!.params?.domain
+					let sameDomain = remote.domain == account!.params?.domain // SecureLink: the account chosen for this remote (several servers possible)
 					if account!.params != nil && (account!.params!.instantMessagingEncryptionMandatory && sameDomain) {
 						Log.info("\(ConversationForwardMessageViewModel.TAG) Account is in secure mode & domain matches, creating an E2E encrypted conversation")
 						chatParams.backend = ChatRoom.Backend.FlexisipChat
