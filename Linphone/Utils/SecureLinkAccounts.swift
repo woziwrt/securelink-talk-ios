@@ -124,7 +124,7 @@ enum SecureLinkAccounts {
 			  let server = try? factory.createAddress(addr: profile.getString(section: "proxy_0", key: "reg_proxy", defaultString: "")),
 			  let username = Optional(profile.getString(section: "auth_info_0", key: "username", defaultString: "")), !username.isEmpty,
 			  let password = Optional(profile.getString(section: "auth_info_0", key: "passwd", defaultString: "")), !password.isEmpty,
-			  let params = try? core.createAccountParams() else {
+			  let newParams = try? core.createAccountParams() else {
 			Log.error("[SecureLink Accounts] the profile has an incomplete account")
 			return false
 		}
@@ -149,6 +149,11 @@ enum SecureLinkAccounts {
 		let first = core.defaultAccount?.params
 		core.accountList.forEach { adoptPhoneWideValues(core, $0) }
 
+		// the same person keeps everything the account has (push, contact parameters…) and only takes the profile's
+		// values (as Android). Brand new parameters made liblinphone drop the conversations' device-list subscriptions:
+		// every message in an existing conversation failed with "subscription … terminated" until the app was reopened
+		let params = samePerson?.params?.clone() ?? newParams
+
 		try? params.setIdentityaddress(newValue: identity)
 		try? params.setServeraddress(newValue: server)
 		let route = profile.getString(section: "proxy_0", key: "reg_route", defaultString: "")
@@ -161,10 +166,12 @@ enum SecureLinkAccounts {
 		params.limeServerUrl = profile.getString(section: "proxy_0", key: "lime_server_url", defaultString: "")
 		params.limeAlgo = profile.getString(section: "proxy_0", key: "lime_algo", defaultString: "")
 		params.instantMessagingEncryptionMandatory = true
-		// push as the first account has it (the app sets it up at the first sign-in)
-		params.pushNotificationAllowed = first?.pushNotificationAllowed ?? true
-		params.remotePushNotificationAllowed = first?.remotePushNotificationAllowed ?? true
-		if let push = first?.pushNotificationConfig?.clone() { params.pushNotificationConfig = push }
+		if samePerson == nil {
+			// push as the first account has it (the app sets it up at the first sign-in)
+			params.pushNotificationAllowed = first?.pushNotificationAllowed ?? true
+			params.remotePushNotificationAllowed = first?.remotePushNotificationAllowed ?? true
+			if let push = first?.pushNotificationConfig?.clone() { params.pushNotificationConfig = push }
+		}
 		if profile.hasSection(section: section) != 0 {
 			for key in keys {
 				params.addCustomParam(key: paramPrefix + key, value: profile.getString(section: section, key: key, defaultString: ""))
