@@ -672,4 +672,4 @@
 "securelink_peer_no_device" = "Kontakt teď nemá přihlášený telefon. Zprávy počkají a doručí se, až se znovu přihlásí.";
 "securelink_message_waiting" = "Čeká, až se příjemce přihlásí";
 "securelink_deletion_requested_on" = "O smazání požádáno %@ – účet bude smazán do 7 dní";
-"securelink_group_one_company_toast" = "Skupina může mít jen lidi z jedné firmy";
+"securelink_group_one_company_toast" = "Skupina může mít jen lidi z jednoho okruhu – kam kdo patří, je vidět za jeho jménem";
