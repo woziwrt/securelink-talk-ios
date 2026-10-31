@@ -253,6 +253,7 @@ class CoreContext: ObservableObject {
 				Log.error("[SecureLink] securelink-ca.pem missing from the bundle – TLS to the server will fail")
 			}
 			try? cfg.sync()
+			SecureLinkAdmin.wipeZrtpCacheIfScheduled(AppServices.config)
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
 			// SecureLink: core-level push config – liblinphone builds the accounts' pn-param from here at registration
 			if let push = self.mCore.pushNotificationConfig {
@@ -369,6 +370,7 @@ class CoreContext: ObservableObject {
 					let pushEnvironment = CoreContext.pushEnvironment   // SecureLink: from the signing profile, not the build type
 
 					SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: heals default_proxy=-1 left by an older build
+					SecureLinkAdmin.enforceEncryption(core)
 					if MagicSearchSingleton.shared.magicSearch == nil {
 						MagicSearchSingleton.shared.recreateMagicSearch(core: core)
 					}
@@ -560,6 +562,7 @@ class CoreContext: ObservableObject {
 				}
 			}, onAccountAdded: { (core: Core, acc: Account) in
 				self.forceRemotePushToMatchVoipPushSettings(account: acc)
+				SecureLinkAdmin.enforceEncryption(core)   // SecureLink: also an account a profile has just brought
 				SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: an added account may be the only one
 				
 				var accountModels: [AccountModel] = []

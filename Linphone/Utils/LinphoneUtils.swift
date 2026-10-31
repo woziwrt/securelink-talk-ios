@@ -253,6 +253,42 @@ enum SecureLinkAdmin {
 	}
 	private static var creationDelegate: ChatRoomDelegateStub?
 
+	/// ZRTP remembers whose security word was confirmed. After "sign out and delete everything" a new account on this
+	/// phone must not inherit that – the cache file (open while the core runs) goes before the next core is created (as Android)
+	static func scheduleZrtpCacheWipe(_ core: Core) {
+		guard let config = core.config, let file = core.zrtpSecretsFile, !file.isEmpty else { return }
+		// the running core switches to a fresh cache at once (liblinphone closes the old one), so an account signed in
+		// before the app restarts starts clean; the old file goes now, or at the next start if that fails
+		let fresh = (file as NSString).deletingLastPathComponent + "/zrtp-secrets-\(Int(Date().timeIntervalSince1970)).db"
+		config.setString(section: "storage", key: "zrtp_secrets_db_uri", value: fresh)
+		config.setString(section: "securelink", key: "wipe_zrtp_cache_file", value: file)
+		try? config.sync()
+		core.zrtpSecretsFile = fresh
+		wipeZrtpCacheIfScheduled(config)
+	}
+
+	/// call before the core is created
+	static func wipeZrtpCacheIfScheduled(_ config: Config) {
+		let file = config.getString(section: "securelink", key: "wipe_zrtp_cache_file", defaultString: "")
+		guard !file.isEmpty else { return }
+		for suffix in ["", "-journal", "-wal", "-shm"] { try? FileManager.default.removeItem(atPath: file + suffix) }
+		config.cleanEntry(section: "securelink", key: "wipe_zrtp_cache_file")
+		try? config.sync()
+		Log.info("[SecureLink] ZRTP cache wiped after sign-out – no confirmed security word is inherited")
+	}
+
+	/// what no profile may switch off: encrypted messaging of every account, and a call never goes back to clear
+	/// (ZRTP GoClear, RFC 6189 5.11 – the SDK is built with it, off only by default)
+	static func enforceEncryption(_ core: Core) {
+		core.config?.setBool(section: "sip", key: "enable_go_clear", value: false)
+		for account in core.accountList where account.params?.instantMessagingEncryptionMandatory == false {
+			guard let params = account.params?.clone() else { continue }
+			params.instantMessagingEncryptionMandatory = true
+			account.params = params
+			Log.info("[SecureLink] encrypted messaging made mandatory for \(params.identityAddress?.asStringUriOnly() ?? "")")
+		}
+	}
+
 	/// a server value: the account's own (two servers, SecureLinkAccounts) or, with one server, the phone-wide [app] one
 	static func setting(_ core: Core?, _ key: String, _ account: Account? = nil) -> String {
 		let acc = account ?? core?.defaultAccount

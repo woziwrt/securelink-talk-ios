@@ -326,6 +326,7 @@ class AccountModel: ObservableObject {
 			// SecureLink: "Smazat vše" promises that the contacts go too. The old account's directory stayed in the phone
 			// and its people were listed next to the new account's directory after a fresh QR (15. 10.)
 			if wasLastAccount {
+				SecureLinkAdmin.scheduleZrtpCacheWipe(core)   // no confirmed security word for the next account
 				// no credentials and no directory address may survive: right after the logout the core fetched the
 				// directory again with a leftover auth info and brought the old people back (6s log, 15. 10.)
 				if let cfg = core.config {
