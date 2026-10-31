@@ -119,15 +119,19 @@ enum SecureLinkAccounts {
 		}
 		let domain = identity.domain ?? ""
 
-		// the same server again (a new invitation): the old login of that server goes, the other server's stays. As a
-		// sign-out: unregistered first (with its credentials), else the server keeps ringing this phone for the old number
-		for old in core.accountList where old.params?.identityAddress?.domain == domain {
+		// the same person again (a new QR of the same number): updated in place below. Removing and adding it again let
+		// the old account's unregister delete the binding the new one had just made – signed in, never rang (Android, 31. 10.)
+		let samePerson = core.accountList.first {
+			$0.params?.identityAddress?.domain == domain && $0.params?.identityAddress?.username == identity.username
+		}
+		// another number of the same server (a new invitation): the old login of that server goes, the other server's
+		// stays. As a sign-out: unregistered first with its credentials, else the server keeps ringing for the old number
+		for old in core.accountList where old.params?.identityAddress?.domain == domain
+			&& old.params?.identityAddress?.username != identity.username {
 			Log.warn("[SecureLink Accounts] replacing the account \(old.params?.identityAddress?.asStringUriOnly() ?? "")")
-			// the same number (a new QR of the same account): the new credentials replace these, removing them later
-			// would remove the new ones (an auth info is found by user name and domain)
 			let oldAuth = old.findAuthInfo()
 			core.removeAccountWithData(account: old)
-			AccountModel.removeCredentialsAfterUnregister(core: core, account: old, authInfo: oldAuth?.username == username ? nil : oldAuth)
+			AccountModel.removeCredentialsAfterUnregister(core: core, account: old, authInfo: oldAuth)
 		}
 
 		// the first account came by remote provisioning: its server values are in the phone-wide sections
@@ -167,8 +171,19 @@ enum SecureLinkAccounts {
 		let realm = profile.getString(section: "auth_info_0", key: "realm", defaultString: domain)
 		let algorithm = profile.getString(section: "auth_info_0", key: "algorithm", defaultString: "SHA-256")
 		guard let auth = try? factory.createAuthInfo(username: username, userid: nil, passwd: password, ha1: nil, realm: realm,
-													 domain: domain, algorithm: algorithm),
-			  let account = try? core.createAccount(params: params) else {
+													 domain: domain, algorithm: algorithm) else {
+			Log.error("[SecureLink Accounts] the account could not be created")
+			return false
+		}
+		if let same = samePerson {
+			core.addAuthInfo(info: auth)   // replaces the old password (same user name and domain)
+			same.params = params
+			core.refreshRegisters()
+			Log.info("[SecureLink Accounts] signed in again as \(identity.asStringUriOnly())")
+			refreshDirectories(core)
+			return true
+		}
+		guard let account = try? core.createAccount(params: params) else {
 			Log.error("[SecureLink Accounts] the account could not be created")
 			return false
 		}
