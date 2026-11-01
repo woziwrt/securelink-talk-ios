@@ -244,11 +244,18 @@ enum SecureLinkAdmin {
 			Log.info("[SecureLink] disappearing messages switched off in an administrator conversation")
 		}
 		for room in core.chatRooms where !isAdminRoom(core, room) {
-			if !room.ephemeralEnabled || room.ephemeralLifetime <= 0 || room.ephemeralLifetime > disappearAfterSeconds {
-				room.ephemeralLifetime = disappearAfterSeconds
-				room.ephemeralEnabled = true
-				Log.info("[SecureLink] disappearing messages (7 days) switched on in a conversation")
-			}
+			enforceDisappearing(core, room)
+		}
+	}
+
+	/// one conversation – also called when a conversation is created while the app runs (a new one, or one the other
+	/// side started again after deleting it), so it does not wait for the next foreground (as Android)
+	static func enforceDisappearing(_ core: Core, _ room: ChatRoom) {
+		if isAdminRoom(core, room) { return }
+		if !room.ephemeralEnabled || room.ephemeralLifetime <= 0 || room.ephemeralLifetime > disappearAfterSeconds {
+			room.ephemeralLifetime = disappearAfterSeconds
+			room.ephemeralEnabled = true
+			Log.info("[SecureLink] disappearing messages (7 days) switched on in a conversation")
 		}
 	}
 	private static var creationDelegate: ChatRoomDelegateStub?

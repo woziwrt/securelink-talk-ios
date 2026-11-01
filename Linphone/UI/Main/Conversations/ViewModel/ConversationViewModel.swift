@@ -457,6 +457,19 @@ class ConversationViewModel: ObservableObject {
 						}
 						return
 					}
+					// SecureLink: a message that fails before it was ever shown (queued while the conversation was being set
+					// up, then refused) never fired "sending" – show it now with its error mark, not after the next reload
+					let noRows = self.conversationMessagesSection.isEmpty || self.conversationMessagesSection[0].rows.isEmpty
+					if msgState == .NotDelivered,
+					   noRows || !self.conversationMessagesSection[0].rows.contains(where: { !message.messageId.isEmpty && $0.eventModel.eventLogId == message.messageId }),
+					   self.firstSighting(message) {
+						if let eventLog = message.eventLog {
+							if noRows { self.sendFirstMessage(eventLog: eventLog) } else { self.getNewMessages(eventLogs: [eventLog]) }
+						} else {
+							self.reloadAfterQueuedSent()
+						}
+						return
+					}
 					// SecureLink: queued messages leaving now – their rows were added without an id, so reload the list
 					if self.hadQueuedMessages {
 						self.reloadAfterQueuedSent()

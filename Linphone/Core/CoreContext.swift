@@ -70,6 +70,7 @@ class CoreContext: ObservableObject {
 	var networkStatusIsConnected: Bool = true // updated on core queue
 	
 	private var mCoreDelegate: CoreDelegate!
+	private var mDisappearingDelegate: CoreDelegate!
 	private var actionsToPerformOnCoreQueueWhenCoreIsStarted: [((Core) -> Void)] = []
 	private var callStateCallBacks: [((Call.State) -> Void)] = []
 	private var configuringStateCallBacks: [((ConfiguringState) -> Void)] = []
@@ -623,7 +624,12 @@ class CoreContext: ObservableObject {
 			})
 			
 			self.mCore.addDelegate(delegate: self.mCoreDelegate)
-			
+			// SecureLink: a conversation created while the app runs gets the 7-day disappearing time at once
+			self.mDisappearingDelegate = CoreDelegateStub(onChatRoomStateChanged: { (core: Core, chatRoom: ChatRoom, state: ChatRoom.State) in
+				if state == .Created { SecureLinkAdmin.enforceDisappearing(core, chatRoom) }
+			})
+			self.mCore.addDelegate(delegate: self.mDisappearingDelegate)
+
 			self.mCore.autoIterateEnabled = true
 			
 			try? self.mCore.start()
