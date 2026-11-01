@@ -135,6 +135,8 @@ class AccountModel: ObservableObject {
 		let address = account.params?.identityAddress?.asString()
 		// SecureLink: with two servers the menu tells the companies apart
 		let company = account.core.map { SecureLinkAccounts.isMultiServer($0) } == true ? SecureLinkAccounts.setting(account, "org_name") : ""
+		// SecureLink: the account itself is a number, but the server directory knows this person's name
+		let ownName = account.params?.identityAddress.flatMap { account.core?.findFriend(address: $0)?.name } ?? ""
 		
 		let displayNameTmp = account.params?.identityAddress?.displayName ?? displayName
 		let usernaneAvatarTmp = account.params?.identityAddress?.username ?? displayName
@@ -187,8 +189,10 @@ class AccountModel: ObservableObject {
 				
 				isRegistrered = state == .Ok
 				isDefaultAccount = isDefault
-				// SecureLink: accounts are numbers and carry no name – the side menu says "My account" instead of the number
+				// SecureLink: accounts are numbers and carry no name – the side menu shows the circle (two servers), else the
+				// person's name from the server directory, else "My account" instead of the number
 				self.displayName = !company.isEmpty ? company
+					: !ownName.isEmpty ? ownName
 					: (displayNameTmp == displayName || displayNameTmp.isEmpty) ? NSLocalizedString("securelink_my_account", comment: "") : displayName
 				address.map {self.address = $0}
 				

@@ -3068,7 +3068,16 @@ class ConversationViewModel: ObservableObject {
 			list.append(selectedAddr)
 			Log.info("\(ConversationViewModel.TAG) Added participant \(selectedAddr.address.asStringUriOnly())")
 		}
-		
+
+		// SecureLink, two servers: a group lives on one server and lets in only its own people – as when it was created
+		// (StartConversationViewModel), nobody from another circle joins an existing group either; nothing changes then
+		let groupDomain = self.sharedMainViewModel.displayedConversation!.chatRoom.localAddress?.domain
+		if list.contains(where: { $0.address.domain != groupDomain }) {
+			Log.warn("\(ConversationViewModel.TAG) Some of the people belong to another circle than this group, no change")
+			DispatchQueue.main.async { ToastViewModel.shared.show("Failed_securelink_group_one_company", duration: 4.0) }
+			return
+		}
+
 		let participantsAddress = self.sharedMainViewModel.displayedConversation!.chatRoom.participants.map { $0.address?.asStringUriOnly() }
 		let listAddress = list.map { $0.address.asStringUriOnly() }
 		

@@ -657,9 +657,25 @@ struct SecureLinkAccountSection: View {
 			.background(Color.gray100)
 			
 			VStack(spacing: 14) {
-				row("Jméno", account?.displayName ?? "–")
-				row("Účet", account?.address ?? "–")
-				row("Stav", account?.humanReadableRegistrationState ?? NSLocalizedString("žádný účet", comment: ""))
+				if coreContext.accounts.count <= 1 {
+					row("Jméno", account?.displayName ?? "–")
+					row("Účet", account?.address ?? "–")
+					row("Stav", account?.humanReadableRegistrationState ?? NSLocalizedString("žádný účet", comment: ""))
+				} else {
+					// SecureLink: two servers (circles) – every account with its own name and state, not only the first
+					ForEach(coreContext.accounts.indices, id: \.self) { index in
+						let model = coreContext.accounts[index]
+						VStack(spacing: 8) {
+							Text(circleName(model))
+								.default_text_style_700(styleSize: 15)
+								.foregroundStyle(Color.orangeMain500)
+								.frame(maxWidth: .infinity, alignment: .leading)
+							row("Jméno", model.displayName)
+							row("Účet", model.address)
+							row("Stav", model.humanReadableRegistrationState)
+						}
+					}
+				}
 				
 				Button(action: { runCheck() }, label: {
 					Text(checking ? LocalizedStringKey("Kontroluji…") : LocalizedStringKey("Zkontrolovat spojení"))
@@ -724,31 +740,48 @@ struct SecureLinkAccountSection: View {
 		}
 	}
 	
+	func circleName(_ model: AccountModel) -> String {
+		let name = SecureLinkAccounts.setting(model.account, "org_name")
+		return name.isEmpty ? (model.account.params?.domain ?? model.address) : name
+	}
+	
 	func runCheck() {
 		checking = true
-		let regLine = ((account?.isRegistrered ?? false) ? "✓" : "✗") + " " + NSLocalizedString("Přihlášení k serveru:", comment: "") + " " + (account?.humanReadableRegistrationState ?? NSLocalizedString("žádný účet", comment: ""))
+		// SecureLink: two servers (circles) – sign-in and server of each account, named by its circle
+		let models = coreContext.accounts
+		let several = models.count > 1
+		let regLines = models.isEmpty
+			? ["✗ " + NSLocalizedString("Přihlášení k serveru:", comment: "") + " " + NSLocalizedString("žádný účet", comment: "")]
+			: models.map { model in
+				(model.isRegistrered ? "✓" : "✗") + " " + NSLocalizedString("Přihlášení k serveru:", comment: "") + " "
+					+ (several ? circleName(model) + " – " : "") + model.humanReadableRegistrationState
+			}
 		let micLine = NSLocalizedString(AVAudioSession.sharedInstance().recordPermission == .granted ? "✓ Mikrofon povolen" : "✗ Mikrofon nepovolen – hovory nepůjdou", comment: "")
 		let version = NSLocalizedString("Verze", comment: "") + " " + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?")
 		coreContext.doOnCoreQueue { core in
-			var host = ""
-			var port = 5061
-			if let addr = core.defaultAccount?.params?.serverAddress, let d = addr.domain, !d.isEmpty {
-				host = d
-				if addr.port > 0 { port = addr.port }
+			// every different server of this phone's accounts (one per circle), in account order
+			var servers: [(host: String, port: Int)] = []
+			for account in core.accountList {
+				if let addr = account.params?.serverAddress, let d = addr.domain, !d.isEmpty {
+					let port = addr.port > 0 ? addr.port : 5061
+					if !servers.contains(where: { $0.host == d && $0.port == port }) { servers.append((d, port)) }
+				}
 			}
-			var serverLine = NSLocalizedString("✗ Server: adresa účtu neznámá", comment: "")
+			var serverLines = servers.isEmpty ? [NSLocalizedString("✗ Server: adresa účtu neznámá", comment: "")] : Array(repeating: "", count: servers.count)
 			var notifLine = NSLocalizedString("✗ Oznámení: stav neznámý", comment: "")
 			let group = DispatchGroup()
-			if !host.isEmpty {
+			let lock = NSLock()   // one lock for all connections – they all write into serverLines
+			for (index, server) in servers.enumerated() {
+				let host = server.host
+				let port = server.port
 				group.enter()
-				let lock = NSLock()
 				var done = false
 				let conn = NWConnection(host: NWEndpoint.Host(host), port: NWEndpoint.Port(integerLiteral: UInt16(port)), using: .tcp)
 				let finish: (String) -> Void = { text in
 					lock.lock(); defer { lock.unlock() }
 					if done { return }
 					done = true
-					serverLine = text
+					serverLines[index] = text
 					conn.cancel()
 					group.leave()
 				}
@@ -769,7 +802,7 @@ struct SecureLinkAccountSection: View {
 				group.leave()
 			}
 			group.notify(queue: .main) {
-				self.checkLines = [regLine, serverLine, notifLine, micLine, version]
+				self.checkLines = regLines + serverLines + [notifLine, micLine, version]
 				self.checking = false
 			}
 		}

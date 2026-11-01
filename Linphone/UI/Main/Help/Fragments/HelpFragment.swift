@@ -26,6 +26,22 @@ struct HelpFragment: View {
 	@Binding var isShowHelpFragment: Bool
 	
 	@State var clickCounter: Int = 0
+	// SecureLink: two circles with different terms / privacy / support – which one to open
+	@State private var circleChoices: [(circle: String, value: String)] = []
+	@State private var circleChoiceOpen: ((String) -> Void)?
+	@State private var showCircleChoice = false
+
+	/// one circle (or the same value everywhere) opens at once, otherwise asks which circle
+	private func openPerCircle(_ key: String, _ open: @escaping (String) -> Void) {
+		let choices = SecureLinkAdmin.perCircle(CoreContext.shared.mCore, key)
+		if choices.count <= 1 {
+			open(choices.first?.value ?? SecureLinkAdmin.setting(CoreContext.shared.mCore, key))
+			return
+		}
+		circleChoices = choices
+		circleChoiceOpen = open
+		showCircleChoice = true
+	}
 	
 	var showAssistant: Bool {
 		(CoreContext.shared.codeScannerIsOpen && CoreContext.shared.accounts.isEmpty)
@@ -139,9 +155,11 @@ struct HelpFragment: View {
 								// SecureLink: our privacy policy and terms, addresses from the server profile (App Review 5.1.1(i), 1.2)
 								ForEach([("privacy_url", "securelink_privacy_policy", "detective"), ("terms_url", "securelink_terms", "file-text")], id: \.0) { key, title, icon in
 									let link = SecureLinkAdmin.setting(CoreContext.shared.mCore, key)
-									if let url = URL(string: link), !link.isEmpty {
+									if URL(string: link) != nil, !link.isEmpty {
 										Button {
-											UIApplication.shared.open(url)
+											openPerCircle(key) { value in
+												if let url = URL(string: value) { UIApplication.shared.open(url) }
+											}
 										} label: {
 											HStack {
 												Image(icon)
@@ -165,11 +183,13 @@ struct HelpFragment: View {
 								}
 								
 								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile
-								// (two servers: the default account's company – as privacy and terms)
+								// (two servers: a tap asks which circle's support – as privacy and terms)
 								let supportEmail = SecureLinkAdmin.setting(CoreContext.shared.mCore, "support_email")
-								if !supportEmail.isEmpty, let mail = URL(string: "mailto:\(supportEmail)?subject=SecureLink") {
+								if !supportEmail.isEmpty {
 									Button {
-										UIApplication.shared.open(mail)
+										openPerCircle("support_email") { email in
+											if let mail = URL(string: "mailto:\(email)?subject=SecureLink") { UIApplication.shared.open(mail) }
+										}
 									} label: {
 										HStack {
 											Image("envelope-simple")
@@ -357,5 +377,11 @@ struct HelpFragment: View {
 		.navigationViewStyle(StackNavigationViewStyle())
 		.navigationTitle("")
 		.navigationBarHidden(true)
+		.confirmationDialog(LocalizedStringKey("securelink_pick_circle"), isPresented: $showCircleChoice, titleVisibility: .visible) {
+			ForEach(circleChoices.indices, id: \.self) { index in
+				Button(circleChoices[index].circle) { circleChoiceOpen?(circleChoices[index].value) }
+			}
+			Button(LocalizedStringKey("dialog_cancel"), role: .cancel) {}
+		}
 	}
 }

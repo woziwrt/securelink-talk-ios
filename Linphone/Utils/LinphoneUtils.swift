@@ -304,6 +304,17 @@ enum SecureLinkAdmin {
 		return core?.config?.getString(section: "app", key: key, defaultString: "") ?? ""
 	}
 
+	/// two servers (circles): each has its own terms, privacy policy and support – (circle, value), one per different value
+	static func perCircle(_ core: Core?, _ key: String) -> [(circle: String, value: String)] {
+		var seen = Set<String>()
+		return (core?.accountList ?? []).compactMap { account in
+			let value = setting(core, key, account)
+			guard !value.isEmpty, seen.insert(value).inserted else { return nil }
+			let name = SecureLinkAccounts.setting(account, "org_name")
+			return (name.isEmpty ? (account.params?.domain ?? "") : name, value)
+		}
+	}
+
 	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled;
 	/// with sendNow the text is sent at once and the user stays where they are (e.g. after an account deletion request)
 	/// [about]: the person or message it concerns – with two servers the administrator of that server gets it
@@ -404,8 +415,16 @@ enum SecureLinkAdmin {
 			SharedMainViewModel.shared.changeIndexView(indexViewInt: 2)
 			SharedMainViewModel.shared.displayedFriend = nil
 			SharedMainViewModel.shared.displayedCall = nil
-			SharedMainViewModel.shared.displayedConversation = model
-			// reporting a message from an open conversation keeps the same screen: onAppear does not run again;
+			// reporting a message from an open conversation: swapping the model alone changed only the header, the list
+			// kept the old conversation's messages – close it first, so the conversation screen is built (and loaded) anew
+			let switching = SharedMainViewModel.shared.displayedConversation != nil
+				&& SharedMainViewModel.shared.displayedConversation?.id != model.id
+			if switching {
+				SharedMainViewModel.shared.displayedConversation = nil
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { SharedMainViewModel.shared.displayedConversation = model }
+			} else {
+				SharedMainViewModel.shared.displayedConversation = model
+			}
 			// a slow phone switches later, so ask again (takeDraft hands the draft over once, to this conversation only)
 			for delay in [0.3, 1.0, 2.5] {
 				DispatchQueue.main.asyncAfter(deadline: .now() + delay) {

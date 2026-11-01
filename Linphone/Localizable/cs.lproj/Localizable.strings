@@ -661,6 +661,7 @@
 "securelink_request_deletion_message" = "Žádost o smazání účtu odejde správci. Do 7 dnů smaže váš účet, vaše klíče a zprávy uložené na serveru a dá vám vědět.";
 "securelink_request_deletion_draft" = "Prosím o smazání mého účtu SecureLink.";
 "securelink_privacy_policy" = "Zásady ochrany osobních údajů";
+"securelink_pick_circle" = "Který okruh?";
 "securelink_terms" = "Podmínky používání";
 "securelink_terms_title" = "Podmínky používání";
 "securelink_terms_text" = "SecureLink je určený jen pro pozvané dospělé uživatele (18+). Používáním souhlasíte, že nebudete posílat nezákonný, urážlivý ani obtěžující obsah a nebudete nikoho obtěžovat. Za takové chování správce účet zablokuje. Nevhodnou zprávu nebo uživatele můžete kdykoli nahlásit správci (podržte zprávu nebo otevřete kontakt); správce na hlášení reaguje do 24 hodin.";
