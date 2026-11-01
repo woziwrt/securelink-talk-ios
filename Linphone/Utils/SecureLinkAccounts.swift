@@ -18,7 +18,7 @@ enum SecureLinkAccounts {
 	private static let section = "securelink_account"
 	private static let paramPrefix = "sl_"
 	private static let keys = ["domain", "org_name", "dir_url", "upload_url", "admin_uri", "support_email", "privacy_url",
-							   "terms_url", "request_url"]
+							   "terms_url", "request_url", "my_name"]
 
 	/// debug and TestFlight builds only until the whole feature is done; the App Store app keeps one account
 	static var enabled: Bool {
@@ -32,6 +32,19 @@ enum SecureLinkAccounts {
 	/// the server value [key] of the account (securelink_account in its profile), "" when it has none
 	static func setting(_ account: Account?, _ key: String) -> String {
 		return account?.params?.getCustomParam(key: paramPrefix + key) ?? ""
+	}
+
+	/// the person's own name: the directory leaves everyone out of their own list, so the server sends it in the
+	/// profile (my_name, 1. 11. 2026); an account signed in through remote provisioning finds it in the phone-wide section
+	static func ownName(_ core: Core?, _ account: Account) -> String {
+		if let identity = account.params?.identityAddress, let name = core?.findFriend(address: identity)?.name, !name.isEmpty {
+			return name
+		}
+		let mine = setting(account, "my_name")
+		if !mine.isEmpty { return mine }
+		guard let config = core?.config, let domain = account.params?.identityAddress?.domain,
+			  config.getString(section: section, key: "domain", defaultString: "") == domain else { return "" }
+		return config.getString(section: section, key: "my_name", defaultString: "")
 	}
 
 	/// more than one server: directories are downloaded by the app (liblinphone cannot pick the right password)

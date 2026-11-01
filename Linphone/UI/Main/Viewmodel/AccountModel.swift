@@ -40,6 +40,7 @@ class AccountModel: ObservableObject {
 	@Published var avatarModel: ContactAvatarModel?
 	@Published var photoAvatarModel: String?
 	@Published var displayNameAvatar: String = ""
+	@Published var ownName: String = ""   // SecureLink: the person's name from the server (read-only in the profile)
 	@Published var usernaneAvatar: String = ""
 	@Published var imagePathAvatar: URL?
 	
@@ -136,7 +137,7 @@ class AccountModel: ObservableObject {
 		// SecureLink: with two servers the menu tells the companies apart
 		let company = account.core.map { SecureLinkAccounts.isMultiServer($0) } == true ? SecureLinkAccounts.setting(account, "org_name") : ""
 		// SecureLink: the account itself is a number, but the server directory knows this person's name
-		let ownName = account.params?.identityAddress.flatMap { account.core?.findFriend(address: $0)?.name } ?? ""
+		let ownName = SecureLinkAccounts.ownName(account.core, account)
 		
 		let displayNameTmp = account.params?.identityAddress?.displayName ?? displayName
 		let usernaneAvatarTmp = account.params?.identityAddress?.username ?? displayName
@@ -198,6 +199,7 @@ class AccountModel: ObservableObject {
 				
 				photoAvatarModel = photoAvatarModelTmp
 				displayNameAvatar = displayNameTmp
+				self.ownName = ownName
 				usernaneAvatar = usernaneAvatarTmp
 				imagePathAvatar = getImagePath()
 			}

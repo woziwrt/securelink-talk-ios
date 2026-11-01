@@ -308,6 +308,18 @@ struct AccountProfileFragment: View {
 														}
 													}
 													
+													// SecureLink: the name others see, from the administrator's directory – read-only
+													if !accountModel.ownName.isEmpty {
+														VStack(alignment: .leading) {
+															Text("sip_address_display_name")
+																.default_text_style_700(styleSize: 15)
+																.padding(.bottom, -5)
+															Text(accountModel.ownName)
+																.default_text_style(styleSize: 14)
+														}
+														.frame(maxWidth: .infinity, alignment: .leading)
+													}
+
 													if false {   // SecureLink: the account has no name of its own (accounts are numbers) – the field only showed the number
 													VStack(alignment: .leading) {
 														Text("sip_address_display_name")
