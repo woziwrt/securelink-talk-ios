@@ -2335,6 +2335,7 @@ class ConversationViewModel: ObservableObject {
 						
 						self.addChatMessageDelegate(message: message)
 						message.send()
+						SecureLinkAccounts.retryIfRefused(core, message)
 						
 						self.sharedMainViewModel.displayedConversation!.chatRoom.stopComposing()
 					}

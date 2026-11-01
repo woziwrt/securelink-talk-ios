@@ -34,6 +34,25 @@ enum SecureLinkAccounts {
 		return account?.params?.getCustomParam(key: paramPrefix + key) ?? ""
 	}
 
+	/// A conversation whose record the chat server dropped (fewer metadata, securelink-metadata-cleanup) and the other side
+	/// started again: liblinphone keeps its subscription to that conversation's events as "terminated" and refuses the
+	/// message at once (NotDelivered) until the conference list is subscribed again – what entering the background and the
+	/// foreground does. So: resubscribe, then send the same message once more (as the robot and Android, 1. 11. 2026).
+	static func retryIfRefused(_ core: Core, _ message: ChatMessage) {
+		guard message.state == .NotDelivered, message.chatRoom?.hasCapability(mask: ChatRoom.Capabilities.Encrypted.rawValue) == true else { return }
+		Log.warn("[SecureLink Accounts] message refused at once – subscribing to the conversations again, then sending it once more")
+		core.enterBackground()
+		core.enterForeground()
+		DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+			CoreContext.shared.doOnCoreQueue { _ in
+				if message.state == .NotDelivered {
+					Log.info("[SecureLink Accounts] sending the refused message once more")
+					message.send()
+				}
+			}
+		}
+	}
+
 	/// the person's own name: the directory leaves everyone out of their own list, so the server sends it in the
 	/// profile (my_name, 1. 11. 2026); an account signed in through remote provisioning finds it in the phone-wide section
 	static func ownName(_ core: Core?, _ account: Account) -> String {
