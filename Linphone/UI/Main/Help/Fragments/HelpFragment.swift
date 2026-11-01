@@ -31,6 +31,12 @@ struct HelpFragment: View {
 	@State private var circleChoiceOpen: ((String) -> Void)?
 	@State private var showCircleChoice = false
 
+	/// the default account's value, else the first circle that has one
+	private func shownValue(_ key: String) -> String {
+		let own = SecureLinkAdmin.setting(CoreContext.shared.mCore, key)
+		return own.isEmpty ? (SecureLinkAdmin.perCircle(CoreContext.shared.mCore, key).first?.value ?? "") : own
+	}
+
 	/// one circle (or the same value everywhere) opens at once, otherwise asks which circle
 	private func openPerCircle(_ key: String, _ open: @escaping (String) -> Void) {
 		let choices = SecureLinkAdmin.perCircle(CoreContext.shared.mCore, key)
@@ -154,7 +160,8 @@ struct HelpFragment: View {
 								
 								// SecureLink: our privacy policy and terms, addresses from the server profile (App Review 5.1.1(i), 1.2)
 								ForEach([("privacy_url", "securelink_privacy_policy", "detective"), ("terms_url", "securelink_terms", "file-text")], id: \.0) { key, title, icon in
-									let link = SecureLinkAdmin.setting(CoreContext.shared.mCore, key)
+									// shown when ANY circle has it – the default account (e.g. a lab server) may have none
+									let link = shownValue(key)
 									if URL(string: link) != nil, !link.isEmpty {
 										Button {
 											openPerCircle(key) { value in
@@ -184,7 +191,7 @@ struct HelpFragment: View {
 								
 								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile
 								// (two servers: a tap asks which circle's support – as privacy and terms)
-								let supportEmail = SecureLinkAdmin.setting(CoreContext.shared.mCore, "support_email")
+								let supportEmail = shownValue("support_email")
 								if !supportEmail.isEmpty {
 									Button {
 										openPerCircle("support_email") { email in
