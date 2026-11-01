@@ -1,0 +1,34 @@
+From 393013924d8c18f35d0c284c9e1f9f7850fda1c9 Mon Sep 17 00:00:00 2001
+From: Simon Morlat <simon.morlat@linphone.org>
+Date: Mon, 22 Dec 2025 10:37:43 +0100
+Subject: [PATCH 8/9] Add compilation flag required for SHA256 hardware
+ accelerated on armv8-a.
+
+(cherry picked from commit 7cbc810e5645e16206555343deb2e9263c0f3750)
+---
+ library/CMakeLists.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index 485a124c7..b67c70dba 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -204,11 +204,14 @@ endif()
+ 
+ if(CMAKE_COMPILER_IS_GNUCC)
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-declarations")
++    if(UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
++        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+crypto")
++    endif()
+ endif(CMAKE_COMPILER_IS_GNUCC)
+ 
+ if(CMAKE_COMPILER_IS_CLANG)
+     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-declarations -Wdocumentation -Wno-documentation-deprecated-sync -Wunreachable-code")
+-    if(ANDROID AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
++    if(UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv8-a+crypto")
+     endif()
+ endif(CMAKE_COMPILER_IS_CLANG)
+-- 
+2.50.1 (Apple Git-155)
+

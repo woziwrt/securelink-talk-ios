@@ -1,0 +1,47 @@
+From b2942b937829bd1f4696eebc7e4ada7477d18825 Mon Sep 17 00:00:00 2001
+From: Ghislain MARY <ghislain.mary@belledonne-communications.com>
+Date: Fri, 27 Sep 2024 16:55:21 +0000
+Subject: [PATCH 6/9] Fix static build, setting the MBEDTLS_STATIC definition
+ correctly and building...
+
+(cherry picked from commit 945d804283f150ecf804f0f58f2bf72b3e0f990a)
+---
+ library/CMakeLists.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index 33f5f7915..4179f7fbd 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -267,6 +267,7 @@ set(mbedx509_target   ${mbedx509_target}   PARENT_SCOPE)
+ set(mbedcrypto_target ${mbedcrypto_target} PARENT_SCOPE)
+ 
+ if (USE_STATIC_MBEDTLS_LIBRARY)
++    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+     set(mbedtls_static_target    ${mbedtls_target})
+     set(mbedx509_static_target   ${mbedx509_target})
+     set(mbedcrypto_static_target ${mbedcrypto_target})
+@@ -292,6 +293,7 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
+     add_library(${mbedcrypto_static_target} STATIC ${src_crypto})
+     set_target_properties(${mbedcrypto_static_target} PROPERTIES OUTPUT_NAME mbedcrypto VERSION 3.6.1)
+     target_link_libraries(${mbedcrypto_static_target} PUBLIC ${libs})
++    target_compile_definitions(${mbedcrypto_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+     if(TARGET ${everest_target})
+         target_link_libraries(${mbedcrypto_static_target} PUBLIC ${everest_target})
+@@ -304,10 +306,12 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
+     add_library(${mbedx509_static_target} STATIC ${src_x509})
+     set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509 VERSION 3.6.1)
+     target_link_libraries(${mbedx509_static_target} PUBLIC ${libs} ${mbedcrypto_static_target})
++    target_compile_definitions(${mbedx509_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+     add_library(${mbedtls_static_target} STATIC ${src_tls})
+     set_target_properties(${mbedtls_static_target} PROPERTIES OUTPUT_NAME mbedtls VERSION 3.6.1)
+     target_link_libraries(${mbedtls_static_target} PUBLIC ${libs} ${mbedx509_static_target})
++    target_compile_definitions(${mbedtls_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+     if(GEN_FILES)
+         add_dependencies(${mbedcrypto_static_target}
+-- 
+2.50.1 (Apple Git-155)
+

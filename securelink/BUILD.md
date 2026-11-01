@@ -16,12 +16,25 @@ git checkout 80bf7c1d269a185dbe30248271c6590887637e4f
 git submodule update --init --recursive
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-developer-dir.patch
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-no-secrets-in-log.patch
+git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-conference-list-account.patch   # from build-20
+# mbedtls 3.6.7 instead of 3.6.1 (from build-22): official Mbed TLS v3.6.7 + Belledonne's own commits
+git -C external/mbedtls fetch https://github.com/Mbed-TLS/mbedtls.git tag v3.6.7
+git -C external/mbedtls checkout 068ff080b369adfac81509f9b57b2afabaf82dc5   # v3.6.7
+git -C external/mbedtls submodule update --init                             # framework dde0c4a0
+git -C external/mbedtls am ../../../linphone-iphone/securelink/mbedtls-3.6.7/*.patch
 cmake --preset=ios-sdk -G Ninja -B build-ios \
   -DLINPHONESDK_IOS_ARCHS=arm64 -DLINPHONESDK_IOS_PLATFORM=Iphone \
   -DENABLE_PQCRYPTO=ON -DENABLE_NON_FREE_FEATURES=ON -DENABLE_VIDEO=OFF
 cmake --build build-ios
 ```
 
+- `conference-list-account` (build-20 and later): the subscription to the list of group chats goes through the
+  account it is for. With accounts on two servers it took the default account's route and the other server refused it.
+- `mbedtls-3.6.7` (build-22 and later): linphone-sdk 5.5.29 comes with mbedtls 3.6.1; 3.6.2–3.6.7 fix about 30 CVEs
+  (X.509 basicConstraints, TLS). The series is official v3.6.7 with the eight commits Belledonne keeps on top of 3.6.1
+  in their mbedtls fork (build fixes, DTLS-SRTP, threading alt, armv8 SHA-256, static and framework builds), plus the
+  static library version number. Check the result: `strings` on `mbedcrypto.framework/mbedcrypto` must show
+  `Mbed TLS 3.6.7`.
 - `no-secrets-in-log`: remote provisioning logged every entry with its value, the account password included; the
   password, digest hash, keys and tokens are now logged as `***`.
 - The patch passes `DEVELOPER_DIR` to the per-architecture build, which runs under `env -i`

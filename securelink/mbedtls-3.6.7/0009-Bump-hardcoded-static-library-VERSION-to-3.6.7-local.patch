@@ -1,0 +1,41 @@
+From 5ab1bbc701f1e726c9c93db5e467a7286c40c5e6 Mon Sep 17 00:00:00 2001
+From: Petr Wozniak <petr.wozniak@gmail.com>
+Date: Sun, 1 Nov 2026 12:13:55 +0100
+Subject: [PATCH 9/9] Bump hardcoded static library VERSION to 3.6.7 (local
+ rebase fixup)
+
+---
+ library/CMakeLists.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index b67c70dba..59c2b6533 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -294,7 +294,7 @@ set(everest_target "${MBEDTLS_TARGET_PREFIX}everest")
+ 
+ if(USE_STATIC_MBEDTLS_LIBRARY)
+     add_library(${mbedcrypto_static_target} STATIC ${src_crypto})
+-    set_target_properties(${mbedcrypto_static_target} PROPERTIES OUTPUT_NAME mbedcrypto VERSION 3.6.1)
++    set_target_properties(${mbedcrypto_static_target} PROPERTIES OUTPUT_NAME mbedcrypto VERSION 3.6.7)
+     target_link_libraries(${mbedcrypto_static_target} PUBLIC ${libs})
+     target_compile_definitions(${mbedcrypto_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+@@ -307,12 +307,12 @@ if(USE_STATIC_MBEDTLS_LIBRARY)
+     endif()
+ 
+     add_library(${mbedx509_static_target} STATIC ${src_x509})
+-    set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509 VERSION 3.6.1)
++    set_target_properties(${mbedx509_static_target} PROPERTIES OUTPUT_NAME mbedx509 VERSION 3.6.7)
+     target_link_libraries(${mbedx509_static_target} PUBLIC ${libs} ${mbedcrypto_static_target})
+     target_compile_definitions(${mbedx509_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+     add_library(${mbedtls_static_target} STATIC ${src_tls})
+-    set_target_properties(${mbedtls_static_target} PROPERTIES OUTPUT_NAME mbedtls VERSION 3.6.1)
++    set_target_properties(${mbedtls_static_target} PROPERTIES OUTPUT_NAME mbedtls VERSION 3.6.7)
+     target_link_libraries(${mbedtls_static_target} PUBLIC ${libs} ${mbedx509_static_target})
+     target_compile_definitions(${mbedtls_static_target} PUBLIC "MBEDTLS_STATIC")
+ 
+-- 
+2.50.1 (Apple Git-155)
+

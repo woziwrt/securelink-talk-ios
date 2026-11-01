@@ -1,0 +1,26 @@
+From bec87bf79ee16d3ebb7301c0e377dc6a159e6600 Mon Sep 17 00:00:00 2001
+From: Johan Pascal <johan.pascal@belledonne-communications.com>
+Date: Wed, 30 Dec 2020 09:40:45 +0100
+Subject: [PATCH 2/9] Configure (enable DTLS-SRTP)
+
+(cherry picked from commit fff835a163fbf029cb32fc617d2e0a0a818de6fa)
+---
+ include/mbedtls/mbedtls_config.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/mbedtls/mbedtls_config.h b/include/mbedtls/mbedtls_config.h
+index f68434751..03a88f0f1 100644
+--- a/include/mbedtls/mbedtls_config.h
++++ b/include/mbedtls/mbedtls_config.h
+@@ -2052,7 +2052,7 @@
+  *
+  * Uncomment this to enable support for use_srtp extension.
+  */
+-//#define MBEDTLS_SSL_DTLS_SRTP
++#define MBEDTLS_SSL_DTLS_SRTP
+ 
+ /**
+  * \def MBEDTLS_SSL_DTLS_CLIENT_PORT_REUSE
+-- 
+2.50.1 (Apple Git-155)
+

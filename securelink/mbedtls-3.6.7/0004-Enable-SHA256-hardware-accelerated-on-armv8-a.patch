@@ -1,0 +1,26 @@
+From fbe89c4b7b9c444976a3a45f5b72e5e04af0574b Mon Sep 17 00:00:00 2001
+From: johan pascal <johan.pascal@belledonne-communications.com>
+Date: Thu, 12 Sep 2024 12:38:34 +0200
+Subject: [PATCH 4/9] Enable SHA256 hardware accelerated on armv8-a
+
+(cherry picked from commit 208034c00f6c44f4bdcd5ff6642eb0cbf5a0dbad)
+---
+ include/mbedtls/mbedtls_config.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/mbedtls/mbedtls_config.h b/include/mbedtls/mbedtls_config.h
+index a81751746..dc2d8f0ac 100644
+--- a/include/mbedtls/mbedtls_config.h
++++ b/include/mbedtls/mbedtls_config.h
+@@ -3507,7 +3507,7 @@
+  * Uncomment to have the library check for the Armv8-A SHA-256 crypto extensions
+  * and use them if available.
+  */
+-//#define MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT
++#define MBEDTLS_SHA256_USE_ARMV8_A_CRYPTO_IF_PRESENT
+ 
+ /**
+  * \def MBEDTLS_SHA256_USE_A64_CRYPTO_IF_PRESENT
+-- 
+2.50.1 (Apple Git-155)
+

@@ -1,0 +1,220 @@
+From f0f5af53e1b5af0ab24d4ead16a3bbfa7b9049d3 Mon Sep 17 00:00:00 2001
+From: Simon Morlat <simon.morlat@linphone.org>
+Date: Mon, 11 Aug 2025 16:41:59 +0200
+Subject: [PATCH 7/9] Build as MacOS/iOS frameworks.
+
+(cherry picked from commit 1d452d3852321cb55c07307cb506b25759134b76)
+---
+ CMakeLists.txt         |  2 ++
+ library/CMakeLists.txt | 18 ++++++++++++++++++
+ mbedcrypto.plist.in    | 43 ++++++++++++++++++++++++++++++++++++++++++
+ mbedtls.plist.in       | 43 ++++++++++++++++++++++++++++++++++++++++++
+ mbedx509.plist.in      | 43 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 149 insertions(+)
+ create mode 100644 mbedcrypto.plist.in
+ create mode 100644 mbedtls.plist.in
+ create mode 100644 mbedx509.plist.in
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 01cd3cb84..5feff962e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -20,6 +20,8 @@
+ # until our infrastructure catches up.
+ cmake_minimum_required(VERSION 3.5.1)
+ 
++set(MBEDTLS_VERSION "3.6")
++
+ include(CMakePackageConfigHelpers)
+ 
+ # Include convenience functions for printing properties and variables, like
+diff --git a/library/CMakeLists.txt b/library/CMakeLists.txt
+index 4179f7fbd..485a124c7 100644
+--- a/library/CMakeLists.txt
++++ b/library/CMakeLists.txt
+@@ -326,6 +326,13 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
+     add_library(${mbedcrypto_target} SHARED ${src_crypto})
+     set_target_properties(${mbedcrypto_target} PROPERTIES VERSION 3.6.7 SOVERSION 16 WINDOWS_EXPORT_ALL_SYMBOLS 1)
+     target_link_libraries(${mbedcrypto_target} PUBLIC ${libs})
++    
++    set_target_properties(${mbedcrypto_target} PROPERTIES
++		FRAMEWORK TRUE
++		MACOSX_FRAMEWORK_IDENTIFIER org.linphone.mbedcrypto
++		MACOSX_FRAMEWORK_INFO_PLIST "${PROJECT_SOURCE_DIR}/mbedcrypto.plist.in"
++	)
++
+ 
+     if(TARGET ${everest_target})
+         target_link_libraries(${mbedcrypto_target} PUBLIC ${everest_target})
+@@ -338,10 +345,21 @@ if(USE_SHARED_MBEDTLS_LIBRARY)
+     add_library(${mbedx509_target} SHARED ${src_x509})
+     set_target_properties(${mbedx509_target} PROPERTIES VERSION 3.6.7 SOVERSION 7 WINDOWS_EXPORT_ALL_SYMBOLS 1)
+     target_link_libraries(${mbedx509_target} PUBLIC ${libs} ${mbedcrypto_target})
++    
++	set_target_properties(${mbedx509_target} PROPERTIES
++		FRAMEWORK TRUE
++		MACOSX_FRAMEWORK_IDENTIFIER org.linphone.mbedx509
++		MACOSX_FRAMEWORK_INFO_PLIST "${PROJECT_SOURCE_DIR}/mbedx509.plist.in"
++	)
+ 
+     add_library(${mbedtls_target} SHARED ${src_tls})
+     set_target_properties(${mbedtls_target} PROPERTIES VERSION 3.6.7 SOVERSION 21 WINDOWS_EXPORT_ALL_SYMBOLS 1)
+     target_link_libraries(${mbedtls_target} PUBLIC ${libs} ${mbedx509_target})
++	set_target_properties(${mbedtls_target} PROPERTIES
++		FRAMEWORK TRUE
++		MACOSX_FRAMEWORK_IDENTIFIER org.linphone.mbedtls
++		MACOSX_FRAMEWORK_INFO_PLIST "${PROJECT_SOURCE_DIR}/mbedtls.plist.in"
++	)
+ 
+     if(GEN_FILES)
+         add_dependencies(${mbedcrypto_target}
+diff --git a/mbedcrypto.plist.in b/mbedcrypto.plist.in
+new file mode 100644
+index 000000000..818fe5598
+--- /dev/null
++++ b/mbedcrypto.plist.in
+@@ -0,0 +1,43 @@
++
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>English</string>
++	<key>CFBundleExecutable</key>
++	<string>mbedcrypto</string>
++	<key>CFBundleGetInfoString</key>
++	<string>mbedcrypto</string>
++	<key>CFBundleIconFile</key>
++	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
++	<key>CFBundleIdentifier</key>
++	<string>org.linphone.mbedcrypto</string>
++	<key>LSMinimumSystemVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>MinimumOSVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleLongVersionString</key>
++	<string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
++	<key>CFBundleName</key>
++	<string>mbedcrypto</string>
++	<key>CFBundlePackageType</key>
++	<string>FMWK</string>
++	<key>CFBundleShortVersionString</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CFBundleSignature</key>
++	<string>????</string>
++	<key>CFBundleVersion</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CSResourcesFileMapped</key>
++	<true/>
++	<key>NSHumanReadableCopyright</key>
++	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
++	<key>NSPrincipalClass</key>
++	<string>NSApplication</string>
++	<key>NSHighResolutionCapable</key>
++	<string>True</string>
++</dict>
++</plist>
+diff --git a/mbedtls.plist.in b/mbedtls.plist.in
+new file mode 100644
+index 000000000..b31851eed
+--- /dev/null
++++ b/mbedtls.plist.in
+@@ -0,0 +1,43 @@
++
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>English</string>
++	<key>CFBundleExecutable</key>
++	<string>mbedtls</string>
++	<key>CFBundleGetInfoString</key>
++	<string>mbedtls</string>
++	<key>CFBundleIconFile</key>
++	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
++	<key>CFBundleIdentifier</key>
++	<string>org.linphone.mbedtls</string>
++	<key>LSMinimumSystemVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>MinimumOSVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleLongVersionString</key>
++	<string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
++	<key>CFBundleName</key>
++	<string>mbedtls</string>
++	<key>CFBundlePackageType</key>
++	<string>FMWK</string>
++	<key>CFBundleShortVersionString</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CFBundleSignature</key>
++	<string>????</string>
++	<key>CFBundleVersion</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CSResourcesFileMapped</key>
++	<true/>
++	<key>NSHumanReadableCopyright</key>
++	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
++	<key>NSPrincipalClass</key>
++	<string>NSApplication</string>
++	<key>NSHighResolutionCapable</key>
++	<string>True</string>
++</dict>
++</plist>
+diff --git a/mbedx509.plist.in b/mbedx509.plist.in
+new file mode 100644
+index 000000000..96a30e4f7
+--- /dev/null
++++ b/mbedx509.plist.in
+@@ -0,0 +1,43 @@
++
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>English</string>
++	<key>CFBundleExecutable</key>
++	<string>mbedx509</string>
++	<key>CFBundleGetInfoString</key>
++	<string>mbedx509</string>
++	<key>CFBundleIconFile</key>
++	<string>${MACOSX_BUNDLE_ICON_FILE}</string>
++	<key>CFBundleIdentifier</key>
++	<string>org.linphone.mbedx509</string>
++	<key>LSMinimumSystemVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>MinimumOSVersion</key>
++	<string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleLongVersionString</key>
++	<string>${MACOSX_BUNDLE_LONG_VERSION_STRING}</string>
++	<key>CFBundleName</key>
++	<string>mbedx509</string>
++	<key>CFBundlePackageType</key>
++	<string>FMWK</string>
++	<key>CFBundleShortVersionString</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CFBundleSignature</key>
++	<string>????</string>
++	<key>CFBundleVersion</key>
++	<string>${MBEDTLS_VERSION}</string>
++	<key>CSResourcesFileMapped</key>
++	<true/>
++	<key>NSHumanReadableCopyright</key>
++	<string>${MACOSX_BUNDLE_COPYRIGHT}</string>
++	<key>NSPrincipalClass</key>
++	<string>NSApplication</string>
++	<key>NSHighResolutionCapable</key>
++	<string>True</string>
++</dict>
++</plist>
+-- 
+2.50.1 (Apple Git-155)
+

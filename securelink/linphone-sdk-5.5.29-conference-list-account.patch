@@ -1,0 +1,17 @@
+diff --git a/liblinphone/src/conference/handlers/client-conference-list-event-handler.cpp b/liblinphone/src/conference/handlers/client-conference-list-event-handler.cpp
+index d8fc5becba..1e3bc71155 100644
+--- a/liblinphone/src/conference/handlers/client-conference-list-event-handler.cpp
++++ b/liblinphone/src/conference/handlers/client-conference-list-event-handler.cpp
+@@ -161,8 +161,11 @@ bool ClientConferenceListEventHandler::subscribe(const shared_ptr<Account> &acco
+ 
+ 	const int eventSubscribeExpire = linphone_config_get_int(linphone_core_get_config(getCore()->getCCore()), "sip",
+ 	                                                         "conference_subscribe_expires", 600);
++	// SecureLink: the account the list is for, not a guessed one – with two accounts on two servers the guess took the
++	// default account's route and contact, and the other server refused the subscription (403), so its chat rooms
++	// stopped getting their state and messages were not delivered
+ 	auto evSub = dynamic_pointer_cast<EventSubscribe>(
+-	    (new EventSubscribe(getCore(), factoryUri, "conference", eventSubscribeExpire))->toSharedPtr());
++	    (new EventSubscribe(getCore(), factoryUri, account, "conference", eventSubscribeExpire))->toSharedPtr());
+ 	evSub->getOp()->setFromAddress(from->getImpl());
+ 	evSub->setInternal(true);
+ 	evSub->addCustomHeader("Require", "recipient-list-subscribe");
