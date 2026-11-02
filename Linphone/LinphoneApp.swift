@@ -289,6 +289,7 @@ struct AppView: View {
 		}
 		.onAppear {
 			appLock.lockNow()
+			CaptureShield.shared.start()
 			requestPermissionsIfLoggedIn()
 		}
 		.onChange(of: coreContext.loggedIn) { _ in
@@ -919,6 +920,51 @@ enum SecureLinkPin {
 /// Emergency PIN: every account goes with its data (conversations, calls, directory, LIME identity), then the app's data
 /// files are deleted – on iOS every file has its own key, discarded with the file, so what was deleted cannot be read
 /// back. The app then looks freshly installed (no account, no PIN). Core queue for the core, main queue for `done`.
+/// Screen recording, mirroring or AirPlay: the app's content is covered while the screen is captured (iOS cannot forbid
+/// screenshots – Android can and does). Panel 2, 2. 11. 2026.
+final class CaptureShield {
+	static let shared = CaptureShield()
+	private var window: UIWindow?
+	private var started = false
+
+	func start() {
+		guard !started else { return }
+		started = true
+		NotificationCenter.default.addObserver(forName: UIScreen.capturedDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.update()
+		}
+		update()
+	}
+
+	private func update() {
+		let captured = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+			.contains { $0.screen.isCaptured }
+		if captured {
+			guard window == nil,
+				  let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first else { return }
+			Log.info("[CaptureShield] screen is captured – content covered")
+			let w = UIWindow(windowScene: scene)
+			w.windowLevel = .alert + 2
+			w.rootViewController = UIHostingController(rootView: CaptureShieldView())
+			w.isHidden = false
+			window = w
+		} else if window != nil {
+			Log.info("[CaptureShield] capture ended")
+			window?.isHidden = true
+			window = nil
+		}
+	}
+}
+
+struct CaptureShieldView: View {
+	var body: some View {
+		ZStack {
+			Color(red: 0.12, green: 0.37, blue: 0.75).ignoresSafeArea()
+			Text("SecureLink").font(.system(size: 28, weight: .semibold)).foregroundColor(.white)
+		}
+	}
+}
+
 enum EmergencyWipe {
 	static func run(done: @escaping () -> Void) {
 		CoreContext.shared.doOnCoreQueue { core in

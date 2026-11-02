@@ -288,6 +288,16 @@ enum SecureLinkAdmin {
 	/// (ZRTP GoClear, RFC 6189 5.11 – the SDK is built with it, off only by default)
 	static func enforceEncryption(_ core: Core) {
 		core.config?.setBool(section: "sip", key: "enable_go_clear", value: false)
+		// calls too (Panel 2, 2. 11. 2026): ZRTP mandatory and only the post-quantum hybrid key agreements, whatever a
+		// (compromised) server's profile says – a profile could otherwise offer a classic exchange
+		if let cfg = core.config {
+			let pq = ["MS_ZRTP_KEY_AGREEMENT_K448_MLK1024", "MS_ZRTP_KEY_AGREEMENT_K255_MLK512"]
+			let offered = cfg.getString(section: "sip", key: "zrtp_key_agreements_suites", defaultString: "")
+				.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { pq.contains($0) }
+			cfg.setString(section: "sip", key: "zrtp_key_agreements_suites", value: (offered.isEmpty ? pq : offered).joined(separator: ","))
+			cfg.setString(section: "sip", key: "media_encryption", value: "zrtp")
+			cfg.setBool(section: "sip", key: "media_encryption_mandatory", value: true)
+		}
 		for account in core.accountList where account.params?.instantMessagingEncryptionMandatory == false {
 			guard let params = account.params?.clone() else { continue }
 			params.instantMessagingEncryptionMandatory = true
