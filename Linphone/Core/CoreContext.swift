@@ -475,8 +475,16 @@ class CoreContext: ObservableObject {
 						if accountFound.params?.registerEnabled == true, let params = accountFound.params?.clone() {
 							params.registerEnabled = false
 							accountFound.params = params
-							DispatchQueue.main.async {
-								NotificationCenter.default.post(name: NSNotification.Name("SecureLinkSignedOut"), object: nil)
+							// "block and wipe": only when the server says so for this very account (v2, 1. 11. 2026, as Android)
+							SecureLinkAccounts.wipeIfAsked(core, accountFound) { wiped in
+								DispatchQueue.main.async {
+									if wiped {
+										// the last account gone switches to the assistant at once – an alert above everything
+										SecureLinkAccounts.showWipedNotice()
+									} else {
+										NotificationCenter.default.post(name: NSNotification.Name("SecureLinkSignedOut"), object: nil)
+									}
+								}
 							}
 						}
 					} else {

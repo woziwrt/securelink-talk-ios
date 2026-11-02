@@ -6,6 +6,7 @@
  */
 
 import Foundation
+import UIKit
 import CryptoKit
 import linphonesw
 
@@ -282,6 +283,83 @@ enum SecureLinkAccounts {
 				guard let body = body else { return }
 				CoreContext.shared.doOnCoreQueue { core in fillDirectory(core, link, name, body) }
 			}
+		}
+	}
+
+	/// "Block and wipe" (v2, 1. 11. 2026, as Android): the server refused this account's sign-in. Ask the server (/wipe next
+	/// to the directory, with the account's own login – a blocked account may still ask there) whether the administrator
+	/// wants the phone wiped. Only an explicit "wipe" answer counts: a plain block, a new invitation or a server fault never
+	/// deletes anything. [done] gets true on the core queue when the account and its data are gone.
+	static func wipeIfAsked(_ core: Core, _ account: Account, done: @escaping (Bool) -> Void) {
+		var dir = setting(account, "dir_url")
+		if dir.isEmpty { dir = core.config?.getString(section: "misc", key: "contacts-vcard-list", defaultString: "") ?? "" }
+		guard dir.hasSuffix("/dir"), let url = secureURL(String(dir.dropLast(4)) + "/wipe"), let auth = account.findAuthInfo() else {
+			done(false)
+			return
+		}
+		let identity = account.params?.identityAddress?.asStringUriOnly() ?? ""
+		let user = auth.username ?? ""
+		let ha1 = (auth.algorithm ?? "").uppercased() == "SHA-256" ? (auth.ha1 ?? "") : ""
+		let password = auth.password ?? ""
+		getWithDigest(url: url, user: user, storedHa1: ha1, password: password, authorization: nil) { body in
+			CoreContext.shared.doOnCoreQueue { core in
+				let answer = body?.trimmingCharacters(in: .whitespacesAndNewlines)
+				guard answer == "wipe",
+					  let current = core.accountList.first(where: { $0.params?.identityAddress?.asStringUriOnly() == identity }) else {
+					done(false)
+					return
+				}
+				Log.warn("[SecureLink Accounts] the administrator blocked \(identity) to be wiped – deleting the account and its data")
+				wipeAccount(core, current)
+				done(true)
+			}
+		}
+	}
+
+	/// The account, its conversations, call logs and directory go; the last account takes the rest along (as "sign out
+	/// and delete everything" in AccountModel.logout). Blocked: no unregister will come, so the credentials go at once.
+	static func wipeAccount(_ core: Core, _ account: Account) {
+		let wasLastAccount = core.accountList.count <= 1
+		let authInfo = account.findAuthInfo()
+		let directory = setting(account, "dir_url")
+		core.removeAccountWithData(account: account)
+		if let authInfo = authInfo { core.removeAuthInfo(info: authInfo) }
+		if !directory.isEmpty {
+			for list in core.friendsLists where list.uri == directory { core.removeFriendList(list: list) }
+		}
+		if wasLastAccount {
+			core.clearAllAuthInfo()
+			SecureLinkAdmin.scheduleZrtpCacheWipe(core)
+			if let cfg = core.config {
+				cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
+				cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
+				cfg.cleanSection(section: ContactsManager.rememberedNamesSection)
+				try? cfg.sync()
+			}
+			core.friendsLists.forEach { list in
+				if list.type == .VCard4 || list.type == .CardDAV {
+					core.removeFriendList(list: list)
+				} else {
+					list.friends.forEach { _ = list.removeFriend(linphoneFriend: $0) }
+				}
+			}
+			MagicSearchSingleton.shared.magicSearch?.resetSearchCache()
+			MagicSearchSingleton.shared.searchForContacts()
+		} else {
+			ContactsManager.shared.refreshCardDavContacts()
+		}
+		SharedMainViewModel.shared.updateUnreadMessagesCount()
+		SharedMainViewModel.shared.updateMissedCallsCount()
+	}
+
+	/// "This phone was wiped" – told once, above whatever screen the app switched to (the assistant when no account is left)
+	static func showWipedNotice() {
+		let alert = UIAlertController(title: NSLocalizedString("securelink_wiped_title", comment: ""),
+									  message: NSLocalizedString("securelink_wiped_message", comment: ""), preferredStyle: .alert)
+		alert.addAction(UIAlertAction(title: NSLocalizedString("securelink_signed_out_ok", comment: ""), style: .default))
+		// the view switch may still be on its way – present once it has settled
+		DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+			UIApplication.getTopMostViewController()?.present(alert, animated: true)
 		}
 	}
 

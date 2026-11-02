@@ -679,3 +679,5 @@
 "securelink_signed_out_title" = "Tento telefon byl odhlášen";
 "securelink_signed_out_message" = "Správce vám poslal novou pozvánku nebo tento telefon zablokoval. Pro nové přihlášení otevřete odkaz z pozvánky nebo naskenujte nový kód.";
 "securelink_signed_out_ok" = "Rozumím";
+"securelink_wiped_title" = "Tento telefon byl vymazán";
+"securelink_wiped_message" = "Správce tento telefon zablokoval a nechal vymazat: tento účet, jeho konverzace a kontakty z něj byly smazány.";

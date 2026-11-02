@@ -739,3 +739,5 @@
 "securelink_signed_out_title" = "This phone was signed out";
 "securelink_signed_out_message" = "Your administrator sent you a new invitation or blocked this phone. To sign in again, open the link from the invitation or scan the new code.";
 "securelink_signed_out_ok" = "I understand";
+"securelink_wiped_title" = "This phone was wiped";
+"securelink_wiped_message" = "Your administrator blocked this phone and asked for it to be wiped: this account, its conversations and contacts have been deleted from it.";
