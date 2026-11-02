@@ -98,7 +98,11 @@ class NotificationService: UNNotificationServiceExtension {
         self.contentHandler = contentHandler
         bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
         
+        #if DEBUG
         LoggingService.Instance.logLevel = LogLevel.Debug
+        #else
+        LoggingService.Instance.logLevel = LogLevel.Error   // SecureLink: no names, addresses or profiles in release logs
+        #endif
         Factory.Instance.logCollectionPath = Factory.Instance.getDataDir(context: UnsafeMutablePointer<Int8>(mutating: (appGroupName as NSString).utf8String))
         Factory.Instance.enableLogCollection(state: LogCollectionState.Enabled)
         

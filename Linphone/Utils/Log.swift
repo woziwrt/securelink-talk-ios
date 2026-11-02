@@ -34,7 +34,13 @@ class Log: LoggingServiceDelegate {
 	
 	static let instance = Log()
 		
-	var debugEnabled = true // Todo : bind to app parameters
+	// SecureLink: release builds log errors only – debug level wrote the downloaded profile (with the account's password),
+	// names and addresses into linphone*.log (Panel 2, 2. 11. 2026)
+	#if DEBUG
+	var debugEnabled = true
+	#else
+	var debugEnabled = false
+	#endif
 	var service = LoggingService.Instance
 	
 	let appGroupName: String = {
@@ -57,7 +63,7 @@ class Log: LoggingServiceDelegate {
 		if debugEnabled {
 			LoggingService.Instance.logLevelMask = UInt(LogLevel.Fatal.rawValue + LogLevel.Error.rawValue + LogLevel.Warning.rawValue + LogLevel.Message.rawValue + LogLevel.Trace.rawValue + LogLevel.Debug.rawValue)
 		} else {
-			LoggingService.Instance.logLevelMask = UInt(LogLevel.Fatal.rawValue +  LogLevel.Error.rawValue +  LogLevel.Warning.rawValue)
+			LoggingService.Instance.logLevelMask = UInt(LogLevel.Fatal.rawValue +  LogLevel.Error.rawValue)
 		}
 	}
 	

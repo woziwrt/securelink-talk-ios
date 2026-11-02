@@ -216,9 +216,21 @@ class CoreContext: ObservableObject {
 		monitor.start(queue: coreQueue)
 		
 		coreQueue.async {
+			// SecureLink: release builds log errors only (debug level wrote the profile with the password, names and
+			// addresses to the log file – Panel 2, 2. 11. 2026); the log files written by earlier builds go once
+			#if DEBUG
 			LoggingService.Instance.logLevel = LogLevel.Debug
+			#else
+			LoggingService.Instance.logLevel = LogLevel.Error
+			#endif
 			Factory.Instance.logCollectionPath = Factory.Instance.getDataDir(context: UnsafeMutablePointer<Int8>(mutating: (SharedMainViewModel.appGroupName as NSString).utf8String))
 			Factory.Instance.enableLogCollection(state: LogCollectionState.Enabled)
+			#if !DEBUG
+			if !UserDefaults.standard.bool(forKey: "securelink_old_logs_removed") {
+				Core.resetLogCollection()
+				UserDefaults.standard.set(true, forKey: "securelink_old_logs_removed")
+			}
+			#endif
 
 			MDMManager.shared.loadXMLConfigFromMdm(config: AppServices.config)
 

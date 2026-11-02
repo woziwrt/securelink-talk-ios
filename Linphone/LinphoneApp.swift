@@ -372,8 +372,15 @@ final class AppLock: ObservableObject {
 	// emergency PIN that quietly wipes everything and leaves an empty app (SecureLinkPin, EmergencyWipe)
 	@Published var pinMode = false
 	@Published var pinWrong = false
-	private var wrongPins = 0
-	private var pinBlockedUntil: Date?
+	// kept across restarts: closing and reopening the app used to clear the one-minute block (Panel 2, 2. 11. 2026)
+	private var wrongPins: Int {
+		get { UserDefaults.standard.integer(forKey: "securelink_pin_wrong") }
+		set { UserDefaults.standard.set(newValue, forKey: "securelink_pin_wrong") }
+	}
+	private var pinBlockedUntil: Date? {
+		get { UserDefaults.standard.object(forKey: "securelink_pin_blocked_until") as? Date }
+		set { UserDefaults.standard.set(newValue, forKey: "securelink_pin_blocked_until") }
+	}
 	private var backgroundSince: Date?
 	private var authenticating = false
 	private let graceSeconds: TimeInterval = 30
@@ -516,9 +523,13 @@ final class AppLock: ObservableObject {
 
 	/// the PIN pad's answer: the normal PIN opens the app, the emergency PIN wipes everything and opens an empty app,
 	/// a wrong one counts – five in a row block the pad for a minute
+	/// The emergency PIN works also while the pad is blocked (Panel 2: five wrong PINs used to disable it); the normal PIN
+	/// does not, so the block still slows down guessing.
 	func submitPin(_ pin: String) {
-		if let until = pinBlockedUntil, until > Date() { pinWrong = true; return }
-		switch SecureLinkPin.check(pin) {
+		let blocked = (pinBlockedUntil ?? .distantPast) > Date()
+		let result = SecureLinkPin.check(pin)
+		if blocked && result != .emergency { pinWrong = true; return }
+		switch result {
 		case .normal:
 			wrongPins = 0
 			pinWrong = false
@@ -934,8 +945,15 @@ enum EmergencyWipe {
 				try? cfg.sync()
 			}
 			SecureLinkPin.disable()
-			UserDefaults.standard.removeObject(forKey: "securelink_terms_accepted")
-			Log.warn("[EmergencyWipe] done: accounts removed, \(removed) data files deleted")
+			// logs and the app's settings too: they held account names, numbers and addresses (Panel 2, 2. 11. 2026)
+			Core.resetLogCollection()
+			let groupDir = Factory.Instance.getDataDir(context: UnsafeMutablePointer<Int8>(mutating: (SharedMainViewModel.appGroupName as NSString).utf8String))
+			for name in (try? FileManager.default.contentsOfDirectory(atPath: groupDir)) ?? [] where name.hasSuffix(".log") {
+				if (try? FileManager.default.removeItem(atPath: (groupDir as NSString).appendingPathComponent(name))) != nil { removed += 1 }
+			}
+			if let id = Bundle.main.bundleIdentifier { UserDefaults.standard.removePersistentDomain(forName: id) }
+			UserDefaults(suiteName: SharedMainViewModel.appGroupName)?.removePersistentDomain(forName: SharedMainViewModel.appGroupName)
+			UserDefaults.standard.set(true, forKey: "securelink_old_logs_removed")
 			DispatchQueue.main.async { done() }
 		}
 	}
