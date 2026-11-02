@@ -393,6 +393,10 @@ class TelecomManager: ObservableObject {
 						if let addressFriend = friendResult, let name = addressFriend.name, !name.isEmpty,
 						   !name.lowercased().hasPrefix("sip") {
 							completion(name)
+						} else if let remembered = ContactsManager.shared.rememberedName(call.remoteAddress) {
+							// SecureLink: woken by the call's push the app has no directory yet – the name it remembered from the
+							// directory, not the bare account number (Petr 2. 11. 2026: "only numbers")
+							completion(remembered)
 						} else if let remoteAddress = call.remoteAddress {
 							if remoteAddress.displayName != nil {
 								completion(remoteAddress.displayName!)
