@@ -87,7 +87,7 @@ Co držíme co nejmenší:
 
 - Správce okruhu spravuje účty ve webu správy na serveru zákazníka (HTTPS s klientským certifikátem + heslo, na každém
   serveru jiné).
-- Podpora (Copservis) se na server dostane **SSH klíčem vyrobeným jen pro tohoto zákazníka** (chráněným heslem).
+- Podpora se na server dostane jen **SSH klíči vyrobenými pro tohoto zákazníka** (každý pod svým jménem, v záznamu přihlášení je vidět, kdo to byl).
   Univerzální klíč ke všem zákazníkům neexistuje. Zákazník může **přístup podpory kdykoli vypnout** ve webu správy.
 - Zálohy serveru jsou šifrované (age) klíčem podpory a na přání i vlastním klíčem zákazníka.
 - Správce může účet okamžitě zablokovat na serveru (heslo i klíče pro zprávy přestanou platit) a **vzdáleně ho

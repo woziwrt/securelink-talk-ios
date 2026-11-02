@@ -97,7 +97,8 @@ Limits we keep small:
 
 - The circle's administrator manages accounts in a web console on the customer's server (HTTPS with a client certificate,
   plus a password of its own on every server).
-- Our support partner can reach the server with an **SSH key made for that one customer** (passphrase-protected).
+- Support can reach the server only with **SSH keys made for that one customer** (each under its own name – the login
+  record shows who it was).
   There is no universal key for all customers. The customer can **switch support access off** in the web console at any time.
 - Server backups are encrypted with **age** for the support partner's backup key and, when the customer wants it, also for
   the customer's own key.
