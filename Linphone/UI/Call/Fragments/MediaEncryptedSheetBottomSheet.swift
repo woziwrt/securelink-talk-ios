@@ -83,7 +83,14 @@ struct MediaEncryptedSheetBottomSheet: View {
 			
 			Text(callViewModel.callMediaEncryptionModel.zrtpAuthSas)
 				.default_text_style_white(styleSize: 15)
-				.padding(.bottom, 10)
+
+			// SecureLink: messages with this person – end-to-end, post-quantum (LIME), not part of the call
+			if !callViewModel.callMediaEncryptionModel.messagesEncryption.isEmpty {
+				Spacer()
+				Text(callViewModel.callMediaEncryptionModel.messagesEncryption)
+					.default_text_style_white(styleSize: 15)
+			}
+			Spacer().frame(height: 10)
 			
 			Spacer()
 			

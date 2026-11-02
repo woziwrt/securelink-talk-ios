@@ -32,9 +32,12 @@ class CallMediaEncryptionModel: ObservableObject {
 	@Published var zrtpHash = ""
 	@Published var zrtpAuthTag = ""
 	@Published var zrtpAuthSas = ""
+	@Published var messagesEncryption = ""   // SecureLink: what protects the messages with this person (LIME)
 	
 	func update(call: Call) {
-		coreContext.doOnCoreQueue { _ in
+		coreContext.doOnCoreQueue { core in
+			let messagesTmp = CallMediaEncryptionModel.messagesLine(call.params?.account ?? core.defaultAccount)
+			DispatchQueue.main.async { self.messagesEncryption = messagesTmp }
 			let stats = call.getStats(type: StreamType.Audio)
 			if stats != nil {
 				// ZRTP stats are only available when authentication token isn't null !
@@ -43,29 +46,29 @@ class CallMediaEncryptionModel: ObservableObject {
 					
 					var mediaEncryptionTmp = ""
 					if stats!.isZrtpKeyAgreementAlgoPostQuantum {
-						mediaEncryptionTmp = "Media encryption: " + "Post Quantum ZRTP"
+						mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + NSLocalizedString("securelink_enc_pq_zrtp", comment: "")
 					} else {
 						switch call.currentParams!.mediaEncryption {
 						case .None:
-							mediaEncryptionTmp = "Media encryption: " + "None"
+							mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + "None"
 						case .SRTP:
-							mediaEncryptionTmp = "Media encryption: " + "SRTP"
+							mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + "SRTP"
 						case .ZRTP:
-							mediaEncryptionTmp = "Media encryption: " + "ZRTP"
+							mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + "ZRTP"
 						case .DTLS:
-							mediaEncryptionTmp = "Media encryption: " + "DTLS"
+							mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + "DTLS"
 						}
 					}
 					
-					let zrtpCipherTmp = "Cipher algorithm: " + stats!.zrtpCipherAlgo
+					let zrtpCipherTmp = CallMediaEncryptionModel.label("securelink_enc_cipher") + stats!.zrtpCipherAlgo
 					
-					let zrtpKeyAgreementTmp = "Key agreement algorithm: " + stats!.zrtpKeyAgreementAlgo
+					let zrtpKeyAgreementTmp = CallMediaEncryptionModel.label("securelink_enc_key") + stats!.zrtpKeyAgreementAlgo
 					
-					let zrtpHashTmp = "Hash algorithm: " + stats!.zrtpHashAlgo
+					let zrtpHashTmp = CallMediaEncryptionModel.label("securelink_enc_hash") + stats!.zrtpHashAlgo
 					
-					let zrtpAuthTagTmp = "Authentication algorithm: " + stats!.zrtpAuthTagAlgo
+					let zrtpAuthTagTmp = CallMediaEncryptionModel.label("securelink_enc_auth") + stats!.zrtpAuthTagAlgo
 					
-					let zrtpAuthSasTmp = "SAS algorithm: " + stats!.zrtpSasAlgo
+					let zrtpAuthSasTmp = CallMediaEncryptionModel.label("securelink_enc_sas") + stats!.zrtpSasAlgo
 					
 					DispatchQueue.main.async {
 						self.isMediaEncryptionZrtp = isMediaEncryptionZrtpTmp
@@ -83,7 +86,7 @@ class CallMediaEncryptionModel: ObservableObject {
 						self.zrtpAuthSas = zrtpAuthSasTmp
 					}
 				} else {
-					let mediaEncryptionTmp = "Media encryption: " + call.currentParams!.mediaEncryption.rawValue.description // call.currentParams.mediaEncryption
+					let mediaEncryptionTmp = CallMediaEncryptionModel.label("securelink_enc_media") + call.currentParams!.mediaEncryption.rawValue.description // call.currentParams.mediaEncryption
 					
 					DispatchQueue.main.async {
 						self.mediaEncryption = mediaEncryptionTmp
@@ -92,5 +95,24 @@ class CallMediaEncryptionModel: ObservableObject {
 				
 			}
 		}
+	}
+
+	// SecureLink: the encryption window in Czech/English (it was English only)
+	private static func label(_ key: String) -> String {
+		return NSLocalizedString(key, comment: "") + ": "
+	}
+
+	/// the account's LIME algorithm (first = the one new conversations use) in words
+	private static func messagesLine(_ account: Account?) -> String {
+		let algo = (account?.params?.limeAlgo ?? "").split(separator: ",").first.map(String.init) ?? ""
+		let name: String
+		switch algo {
+		case "c448mlk1024": name = "X448 + ML-KEM-1024 (" + NSLocalizedString("securelink_enc_pq", comment: "") + ")"
+		case "c25519mlk512": name = "X25519 + ML-KEM-512 (" + NSLocalizedString("securelink_enc_pq", comment: "") + ")"
+		case "c25519k512": name = "X25519 + Kyber-512 (" + NSLocalizedString("securelink_enc_pq", comment: "") + ")"
+		case "": return ""
+		default: name = algo
+		}
+		return label("securelink_enc_messages") + name
 	}
 }
