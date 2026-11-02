@@ -748,5 +748,6 @@
 "securelink_enc_sas" = "Security word";
 "securelink_enc_messages" = "Messages";
 "securelink_enc_pq" = "post-quantum";
+"securelink_circles_not_allowed" = "Another circle cannot be added on this phone: %@ does not allow it. Ask your administrator.";
 "securelink_wiped_title" = "This phone was wiped";
 "securelink_wiped_message" = "Your administrator blocked this phone and asked for it to be wiped: this account, its conversations and contacts have been deleted from it.";

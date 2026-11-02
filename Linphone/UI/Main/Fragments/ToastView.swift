@@ -539,7 +539,8 @@ struct ToastView: View {
 							.padding(8)
 					
 					default:
-						Text("Error")
+						// SecureLink: "SL:" + a ready (translated) sentence, e.g. why another circle was refused
+						Text(toast.message.hasPrefix("SL:") ? String(toast.message.dropFirst(3)) : "Error")
 							.multilineTextAlignment(.center)
 							.foregroundStyle(Color.redDanger500)
 							.default_text_style(styleSize: 15)

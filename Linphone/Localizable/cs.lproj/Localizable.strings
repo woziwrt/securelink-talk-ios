@@ -688,5 +688,6 @@
 "securelink_enc_sas" = "Bezpečnostní slovo";
 "securelink_enc_messages" = "Zprávy";
 "securelink_enc_pq" = "postkvantové";
+"securelink_circles_not_allowed" = "Další okruh v tomto telefonu nejde přidat: %@ to nepovoluje. Zeptejte se svého správce.";
 "securelink_wiped_title" = "Tento telefon byl vymazán";
 "securelink_wiped_message" = "Správce tento telefon zablokoval a nechal vymazat: tento účet, jeho konverzace a kontakty z něj byly smazány.";

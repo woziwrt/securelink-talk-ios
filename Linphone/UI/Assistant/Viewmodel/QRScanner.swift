@@ -92,7 +92,8 @@ class Coordinator: NSObject, AVCaptureMetadataOutputObjectsDelegate {
 							if SecureLinkAccounts.enabled && !core.accountList.isEmpty {
 								SecureLinkAccounts.addFromProvisioning(result) { added in
 									DispatchQueue.main.async {
-										ToastViewModel.shared.show(added ? "Success_qr_code_validated" : "Failed_uri_handler_bad_config_address")
+										ToastViewModel.shared.show(added ? "Success_qr_code_validated" : (SecureLinkAccounts.lastRefusal ?? "Failed_uri_handler_bad_config_address"),
+															   duration: SecureLinkAccounts.lastRefusal == nil ? 2 : 7)
 									}
 									// closes the sign-in screen and the side menu, reloads the lists (ContentView)
 									NotificationCenter.default.post(name: NSNotification.Name("DefaultAccountChanged"), object: nil)

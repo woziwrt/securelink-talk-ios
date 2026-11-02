@@ -19,7 +19,10 @@ enum SecureLinkAccounts {
 	private static let section = "securelink_account"
 	private static let paramPrefix = "sl_"
 	private static let keys = ["domain", "org_name", "dir_url", "upload_url", "admin_uri", "support_email", "privacy_url",
-							   "terms_url", "request_url", "my_name"]
+							   "terms_url", "request_url", "my_name", "allow_other_circles"]
+
+	/// why the last sign-in link was refused, for the message the user sees (nil = a plain failure)
+	static var lastRefusal: String?
 
 	/// debug and TestFlight builds only until the whole feature is done; the App Store app keeps one account
 	static var enabled: Bool {
@@ -130,6 +133,7 @@ enum SecureLinkAccounts {
 
 	/// downloads the profile behind a sign-in link and adds (or, for the same server, replaces) its account
 	static func addFromProvisioning(_ link: String, done: @escaping (Bool) -> Void) {
+		lastRefusal = nil
 		guard let url = secureURL(link) else {
 			Log.error("[SecureLink Accounts] not an https link, refused: \(link)")
 			done(false)
@@ -162,6 +166,22 @@ enum SecureLinkAccounts {
 			return false
 		}
 		let domain = identity.domain ?? ""
+
+		// SecureLink: each circle's administrator decides whether its phones may also hold other circles
+		// (allow_other_circles, Petr 2. 11. 2026). Another circle is refused when this phone already has one and either
+		// the new circle or one already here forbids it. A missing value (older servers) allows it.
+		let others = core.accountList.filter { $0.params?.identityAddress?.domain != domain }
+		if !others.isEmpty {
+			core.accountList.forEach { adoptPhoneWideValues(core, $0) }
+			let newAllows = profile.getString(section: section, key: "allow_other_circles", defaultString: "1") != "0"
+			let forbidding = others.first { setting($0, "allow_other_circles") == "0" }
+			if !newAllows || forbidding != nil {
+				let who = forbidding.map { setting($0, "org_name") } ?? profile.getString(section: section, key: "org_name", defaultString: domain)
+				Log.warn("[SecureLink Accounts] another circle refused: \(who) does not allow other circles on the phone")
+				lastRefusal = "SL:" + String(format: NSLocalizedString("securelink_circles_not_allowed", comment: ""), who)
+				return false
+			}
+		}
 
 		// the same person again (a new QR of the same number): updated in place below. Removing and adding it again let
 		// the old account's unregister delete the binding the new one had just made – signed in, never rang (Android, 31. 10.)
