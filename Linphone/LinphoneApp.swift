@@ -23,6 +23,8 @@ import linphonesw
 import UserNotifications
 import Intents
 import PushKit
+import CommonCrypto
+import Security
 
 let accountTokenNotification = Notification.Name("AccountCreationTokenReceived")
 var displayedChatroomPeerAddr: String?
@@ -361,9 +363,17 @@ final class AppLock: ObservableObject {
 		return true
 		#endif
 	}()
-	@Published var locked = AppLock.enabled { didSet { updateWindow() } }
+	@Published var locked = AppLock.enabled || SecureLinkPin.isEnabled { didSet { updateWindow() } }
+	/// the lock works when the build allows it (Release) or when the user chose the SecureLink PIN (also in development builds)
+	static var active: Bool { enabled || SecureLinkPin.isEnabled }
 	@Published var failed = false
 	@Published var noPasscode = false          // the device has no passcode: a warning, then the app opens unprotected
+	// SecureLink PIN lock (optional, Petr 2. 11. 2026): the user's own PIN instead of Face ID / the device passcode, plus an
+	// emergency PIN that quietly wipes everything and leaves an empty app (SecureLinkPin, EmergencyWipe)
+	@Published var pinMode = false
+	@Published var pinWrong = false
+	private var wrongPins = 0
+	private var pinBlockedUntil: Date?
 	private var backgroundSince: Date?
 	private var authenticating = false
 	private let graceSeconds: TimeInterval = 30
@@ -444,7 +454,7 @@ final class AppLock: ObservableObject {
 	}
 	
 	func lockNow() {
-		guard AppLock.enabled else { return }
+		guard AppLock.active else { return }
 		locked = true
 		failed = false
 		updateWindow()
@@ -459,7 +469,7 @@ final class AppLock: ObservableObject {
 		let away = backgroundSince.map { Date().timeIntervalSince($0) } ?? -1
 		Log.info("[AppLock] entered foreground after \(Int(away)) s in background, locked=\(locked)")
 		if away >= graceSeconds {
-			locked = AppLock.enabled
+			locked = AppLock.active
 		}
 		backgroundSince = nil
 		if locked {
@@ -469,6 +479,12 @@ final class AppLock: ObservableObject {
 	}
 	
 	func authenticate() {
+		if SecureLinkPin.isEnabled {
+			pinMode = true
+			failed = false
+			return
+		}
+		pinMode = false
 		guard !authenticating else { return }
 		authenticating = true
 		failed = false
@@ -495,6 +511,32 @@ final class AppLock: ObservableObject {
 					Log.warn("[AppLock] authentication failed: \(err?.localizedDescription ?? "?")")
 				}
 			}
+		}
+	}
+
+	/// the PIN pad's answer: the normal PIN opens the app, the emergency PIN wipes everything and opens an empty app,
+	/// a wrong one counts – five in a row block the pad for a minute
+	func submitPin(_ pin: String) {
+		if let until = pinBlockedUntil, until > Date() { pinWrong = true; return }
+		switch SecureLinkPin.check(pin) {
+		case .normal:
+			wrongPins = 0
+			pinWrong = false
+			lastActivity = Date()
+			locked = false
+		case .emergency:
+			Log.warn("[AppLock] emergency PIN")
+			EmergencyWipe.run {
+				self.wrongPins = 0
+				self.pinWrong = false
+				self.pinMode = false
+				self.lastActivity = Date()
+				self.locked = false
+			}
+		case .wrong:
+			wrongPins += 1
+			pinWrong = true
+			if wrongPins >= 5 { pinBlockedUntil = Date().addingTimeInterval(60); wrongPins = 0 }
 		}
 	}
 
@@ -571,7 +613,12 @@ struct AppLockView: View {
 					.default_text_style_white_700(styleSize: 26)
 				Text("Zamčeno")
 					.default_text_style_white_600(styleSize: 16)
-				if appLock.noPasscode {
+				if appLock.pinMode {
+					PinPadView(title: NSLocalizedString("securelink_pin_enter", comment: ""),
+							   error: appLock.pinWrong ? NSLocalizedString("securelink_pin_wrong", comment: "") : nil) { pin in
+						appLock.submitPin(pin)
+					}
+				} else if appLock.noPasscode {
 					Text("Toto zařízení nemá nastavený kód zámku. Bez něj si vaše konverzace přečte každý, kdo ho vezme do ruky. Kód nastavíte v Nastavení → Face ID a kód (nebo Touch ID a kód).")
 						.default_text_style_white(styleSize: 15)
 						.multilineTextAlignment(.center)
@@ -589,7 +636,7 @@ struct AppLockView: View {
 					.cornerRadius(60)
 					.padding(.top, 20)
 				}
-				if appLock.failed && !appLock.noPasscode {
+				if appLock.failed && !appLock.noPasscode && !appLock.pinMode {
 					Button(action: { appLock.authenticate() }, label: {
 						Text("Odemknout")
 							.default_text_style_600(styleSize: 18)
@@ -782,5 +829,254 @@ struct SecureLinkTermsView: View {
 		.padding(24)
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 		.background(Color.white)
+	}
+}
+
+
+// MARK: - SecureLink PIN (optional lock + emergency PIN, Petr 2. 11. 2026)
+
+/// The user's own PIN for the app lock and an emergency PIN. Only salted PBKDF2-SHA256 hashes are kept, in the Keychain
+/// (this device only, after the first unlock) – never the PINs.
+enum SecureLinkPin {
+	enum Result { case normal, emergency, wrong }
+	private static let service = "cc.securelink.talk.pin"
+	private static let rounds: UInt32 = 200_000
+
+	static var isEnabled: Bool { read("normal") != nil }
+
+	static func set(normal: String, emergency: String) -> Bool {
+		guard normal != emergency, valid(normal), valid(emergency) else { return false }
+		return store("normal", hash(normal)) && store("emergency", hash(emergency))
+	}
+
+	static func disable() {
+		for account in ["normal", "emergency"] {
+			SecItemDelete([kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account] as CFDictionary)
+		}
+	}
+
+	static func valid(_ pin: String) -> Bool { (4...8).contains(pin.count) && pin.allSatisfy { $0.isASCII && $0.isNumber } }
+
+	static func check(_ pin: String) -> Result {
+		if matches(pin, read("normal")) { return .normal }
+		if matches(pin, read("emergency")) { return .emergency }
+		return .wrong
+	}
+
+	private static func matches(_ pin: String, _ stored: Data?) -> Bool {
+		guard let stored = stored, stored.count == 48 else { return false }
+		let salt = stored.prefix(16), expected = stored.suffix(32)
+		let got = derive(pin, salt: Data(salt))
+		return got.count == 32 && zip(got, expected).reduce(0) { $0 | ($1.0 ^ $1.1) } == 0
+	}
+
+	private static func hash(_ pin: String) -> Data {
+		var salt = Data(count: 16)
+		_ = salt.withUnsafeMutableBytes { SecRandomCopyBytes(kSecRandomDefault, 16, $0.baseAddress!) }
+		return salt + derive(pin, salt: salt)
+	}
+
+	private static func derive(_ pin: String, salt: Data) -> Data {
+		var out = Data(count: 32)
+		let pw = Array(pin.utf8).map { Int8(bitPattern: $0) }
+		let status = out.withUnsafeMutableBytes { o in
+			salt.withUnsafeBytes { s in
+				CCKeyDerivationPBKDF(CCPBKDFAlgorithm(kCCPBKDF2), pw, pw.count, s.bindMemory(to: UInt8.self).baseAddress, salt.count,
+									 CCPseudoRandomAlgorithm(kCCPRFHmacAlgSHA256), rounds, o.bindMemory(to: UInt8.self).baseAddress, 32)
+			}
+		}
+		return status == kCCSuccess ? out : Data()
+	}
+
+	private static func store(_ account: String, _ value: Data) -> Bool {
+		let query: [CFString: Any] = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account]
+		SecItemDelete(query as CFDictionary)
+		var add = query
+		add[kSecValueData] = value
+		add[kSecAttrAccessible] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+		return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
+	}
+
+	private static func read(_ account: String) -> Data? {
+		let query: [CFString: Any] = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account,
+									  kSecReturnData: true, kSecMatchLimit: kSecMatchLimitOne]
+		var item: CFTypeRef?
+		return SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess ? item as? Data : nil
+	}
+}
+
+/// Emergency PIN: every account goes with its data (conversations, calls, directory, LIME identity), then the app's data
+/// files are deleted – on iOS every file has its own key, discarded with the file, so what was deleted cannot be read
+/// back. The app then looks freshly installed (no account, no PIN). Core queue for the core, main queue for `done`.
+enum EmergencyWipe {
+	static func run(done: @escaping () -> Void) {
+		CoreContext.shared.doOnCoreQueue { core in
+			for account in core.accountList { SecureLinkAccounts.wipeAccount(core, account) }
+			core.clearAllAuthInfo()
+			let dataDir = (core.config?.getString(section: "storage", key: "uri", defaultString: "") ?? "")
+			let dirs = Set([dataDir, core.callLogsDatabasePath ?? "", core.friendsDatabasePath ?? "", core.zrtpSecretsFile ?? ""]
+				.filter { !$0.isEmpty }.map { ($0 as NSString).deletingLastPathComponent })
+			var removed = 0
+			for dir in dirs {
+				for name in (try? FileManager.default.contentsOfDirectory(atPath: dir)) ?? [] where name != "securelink-ca.pem" {
+					if (try? FileManager.default.removeItem(atPath: (dir as NSString).appendingPathComponent(name))) != nil { removed += 1 }
+				}
+			}
+			for url in [FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first,
+						FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
+						URL(fileURLWithPath: NSTemporaryDirectory())].compactMap({ $0 }) {
+				for item in (try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)) ?? [] {
+					if (try? FileManager.default.removeItem(at: item)) != nil { removed += 1 }
+				}
+			}
+			if let cfg = core.config {
+				for section in ["securelink_account", "securelink_names", "app"] { cfg.cleanSection(section: section) }
+				try? cfg.sync()
+			}
+			SecureLinkPin.disable()
+			UserDefaults.standard.removeObject(forKey: "securelink_terms_accepted")
+			Log.warn("[EmergencyWipe] done: accounts removed, \(removed) data files deleted")
+			DispatchQueue.main.async { done() }
+		}
+	}
+}
+
+/// Digits, delete and OK – used by the lock screen and when setting the PIN up
+struct PinPadView: View {
+	let title: String
+	let error: String?
+	let onSubmit: (String) -> Void
+	@State private var pin = ""
+
+	var body: some View {
+		VStack(spacing: 14) {
+			Text(title).default_text_style_white_600(styleSize: 17)
+			Text(String(repeating: "●", count: pin.count) + String(repeating: "○", count: max(0, 4 - pin.count)))
+				.font(.system(size: 28)).foregroundColor(.white).frame(height: 36)
+			if let error = error { Text(error).default_text_style_white(styleSize: 14) }
+			ForEach([["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], ["⌫", "0", "OK"]], id: \.self) { row in
+				HStack(spacing: 22) {
+					ForEach(row, id: \.self) { key in
+						Button(action: { press(key) }, label: {
+							Text(key).font(.system(size: 26, weight: .semibold)).foregroundColor(Color.orangeMain500)
+								.frame(width: 72, height: 72).background(Color.white).clipShape(Circle())
+						})
+					}
+				}
+			}
+		}
+		.padding(.top, 10)
+	}
+
+	private func press(_ key: String) {
+		switch key {
+		case "⌫": if !pin.isEmpty { pin.removeLast() }
+		case "OK": if !pin.isEmpty { onSubmit(pin); pin = "" }
+		default: if pin.count < 8 { pin += key }
+		}
+	}
+}
+
+
+/// Turning the SecureLink PIN lock on (normal PIN twice, emergency PIN twice) or off (normal PIN) – from About
+struct PinSetupView: View {
+	@Environment(\.dismiss) private var dismiss
+	@State private var step = 0          // 0 intro, 1 normal, 2 normal again, 3 emergency, 4 emergency again; 10 = turning off
+	@State private var normal = ""
+	@State private var emergency = ""
+	@State private var error: String?
+	let turningOff: Bool
+
+	var body: some View {
+		ZStack {
+			Color.orangeMain500.ignoresSafeArea()
+			VStack(spacing: 16) {
+				if step == 0 && !turningOff {
+					Text("securelink_pin_setup_title").default_text_style_white_700(styleSize: 22)
+					Text("securelink_pin_setup_text").default_text_style_white(styleSize: 15)
+						.multilineTextAlignment(.leading).padding(.horizontal, 24)
+					Button(action: { step = 1 }, label: {
+						Text("securelink_pin_setup_start").default_text_style_600(styleSize: 18).frame(height: 35).frame(maxWidth: 240)
+					}).padding(.vertical, 8).background(Color.white).cornerRadius(60)
+				} else {
+					PinPadView(title: NSLocalizedString(titleKey, comment: ""), error: error) { pin in submit(pin) }
+				}
+				Button(action: { dismiss() }, label: {
+					Text("Zrušit").default_text_style_white_600(styleSize: 16)
+				}).padding(.top, 8)
+			}
+		}
+		.onAppear { if turningOff { step = 10 } }
+	}
+
+	private var titleKey: String {
+		switch step {
+		case 1: return "securelink_pin_new"
+		case 2: return "securelink_pin_new_again"
+		case 3: return "securelink_pin_emergency"
+		case 4: return "securelink_pin_emergency_again"
+		default: return "securelink_pin_enter"
+		}
+	}
+
+	private func submit(_ pin: String) {
+		error = nil
+		switch step {
+		case 1:
+			guard SecureLinkPin.valid(pin) else { error = NSLocalizedString("securelink_pin_rules", comment: ""); return }
+			normal = pin; step = 2
+		case 2:
+			guard pin == normal else { error = NSLocalizedString("securelink_pin_mismatch", comment: ""); step = 1; return }
+			step = 3
+		case 3:
+			guard SecureLinkPin.valid(pin) else { error = NSLocalizedString("securelink_pin_rules", comment: ""); return }
+			guard pin != normal else { error = NSLocalizedString("securelink_pin_same", comment: ""); return }
+			emergency = pin; step = 4
+		case 4:
+			guard pin == emergency else { error = NSLocalizedString("securelink_pin_mismatch", comment: ""); step = 3; return }
+			if SecureLinkPin.set(normal: normal, emergency: emergency) {
+				Log.info("[AppLock] SecureLink PIN lock switched on")
+				dismiss()
+			} else { error = NSLocalizedString("securelink_pin_rules", comment: ""); step = 1 }
+		default:   // turning off: the normal PIN only (the emergency PIN here would be a trap – it is refused)
+			if SecureLinkPin.check(pin) == .normal {
+				SecureLinkPin.disable()
+				Log.info("[AppLock] SecureLink PIN lock switched off")
+				dismiss()
+			} else { error = NSLocalizedString("securelink_pin_wrong", comment: "") }
+		}
+	}
+}
+
+
+/// "SecureLink PIN lock: on/off" in About – a view of its own (About's body was already too big for the type checker)
+struct PinLockRow: View {
+	@State private var showSetup = false
+	@State private var on = SecureLinkPin.isEnabled
+
+	var body: some View {
+		Button {
+			showSetup = true
+		} label: {
+			HStack {
+				Image("password")
+					.renderingMode(.template)
+					.resizable()
+					.foregroundStyle(Color.orangeMain500)
+					.frame(width: 30, height: 30)
+				VStack {
+					Text("securelink_pin_row_title")
+						.default_text_style_700(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+					Text(LocalizedStringKey(on ? "securelink_pin_row_on" : "securelink_pin_row_off"))
+						.default_text_style(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+				}
+				.padding(.horizontal, 5)
+			}
+		}
+		.sheet(isPresented: $showSetup, onDismiss: { on = SecureLinkPin.isEnabled }) {
+			PinSetupView(turningOff: on)
+		}
 	}
 }

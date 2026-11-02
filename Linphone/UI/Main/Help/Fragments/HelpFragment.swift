@@ -256,6 +256,9 @@ struct HelpFragment: View {
 								.background(Color.gray100)
 								// SecureLink: tapping the version does nothing (no hidden developer mode)
 
+								// SecureLink PIN lock (optional): own PIN instead of Face ID + emergency PIN (Petr 2. 11. 2026)
+								PinLockRow()
+
 								// SecureLink: what protects calls, messages and the connection – in one place (Petr 2. 11. 2026: the
 								// call's encryption window is opened by few). Calls are fixed by the app; messages per circle (LIME)
 								HStack(alignment: .top) {
