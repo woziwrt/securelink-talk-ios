@@ -1,7 +1,7 @@
 # How SecureLink Talk protects calls and messages
 
 How SecureLink Talk protects calls and messages, what the server can and cannot see, and where the limits are.
-State of 2 November 2026 (iOS 1.1 build 30, Android `67b29a3ca`, server installer v2 – customer servers are being moved to v2). Czech version: [`SECURITY-DESIGN.cs.md`](SECURITY-DESIGN.cs.md). Components and versions: [`SBOM.md`](SBOM.md).
+State of 2 November 2026 (iOS 1.1 build 31 – submitted for review; **version 1.0 in the App Store does not have these changes yet**; Android `67b29a3ca`, server installer v2 – customer servers are being moved to v2). Czech version: [`SECURITY-DESIGN.cs.md`](SECURITY-DESIGN.cs.md). Components and versions: [`SBOM.md`](SBOM.md).
 Reporting vulnerabilities: [`../SECURITY.md`](../SECURITY.md). Every App Store build is tagged `build-N` in this
 repository and can be rebuilt with [`BUILD.md`](BUILD.md).
 
@@ -17,8 +17,8 @@ and the server installer (github.com/woziwrt/securelink-server).
 - An account joins a phone with an **invitation**: a link plus a 6-digit code sent another way (phone, SMS, in person),
   valid 48 hours, 5 attempts; a new invitation cancels the older ones. The administrator can also hand over a single-use QR
   code (7 days). Profiles are fetched only over HTTPS from a server whose certificate our CA signed.
-- The App Store app keeps **one circle per phone**. Test builds can hold accounts of more circles, and only when both
-  circles allow it (`allow_other_circles`).
+- A phone can hold accounts of **several circles** (e.g. an administrator of several companies), only when **both** circles
+  allow it – the administrator switches it in the web console (`allow_other_circles`).
 - Upstream components: Linphone SDK 5.5.29 (Belledonne Communications), Flexisip 2.6 (SIP proxy, push gateway,
   conference server for chats), lime-server (key server for messages), Kamailio 6.0 in front of Flexisip.
 
@@ -47,7 +47,8 @@ and the server installer (github.com/woziwrt/securelink-server).
   anywhere and the push said only "New message".
 - Push notifications (Apple / Google) carry **no message content and no sender name** – only a wake-up for the app.
   The notification on the phone says only "SecureLink – Message received" (no sender, no text; missed calls without
-  the caller's name) – iOS and Android keep delivered notifications, so nothing in them may outlive a deleted message.
+  the caller's name). The notification data keeps the conversation's address (a tap opens the right conversation); the
+  emergency PIN removes delivered notifications.
 - Disappearing messages are on by default (one week) in every conversation.
 
 ## 4. What the server sees – and what it does not

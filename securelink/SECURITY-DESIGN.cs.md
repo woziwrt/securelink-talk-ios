@@ -1,6 +1,6 @@
 # Jak SecureLink Talk chrání hovory a zprávy
 
-Co SecureLink Talk šifruje, co vidí server a kde jsou hranice ochrany. Stav k 2. 11. 2026 (iOS 1.1 build 30, Android v2,
+Co SecureLink Talk šifruje, co vidí server a kde jsou hranice ochrany. Stav k 2. 11. 2026 (iOS 1.1 build 31 – ke schválení, Android v2; **verze 1.0 v App Storu tyto změny ještě nemá**,
 instalátor serveru v2; zákaznické servery se na v2 právě převádějí). Anglická verze:
 [`SECURITY-DESIGN.md`](SECURITY-DESIGN.md).
 
@@ -16,7 +16,8 @@ a instalátor serveru (github.com/woziwrt/securelink-server).
 - Telefon se k účtu připojí **pozvánkou**: odkaz + šestimístný kód poslaný jinou cestou (telefonem, SMS, osobně), platí
   48 hodin, 5 pokusů; nová pozvánka zruší starší. Správce může předat i jednorázový QR kód (7 dní). Nastavení se stahuje
   jen přes HTTPS ze serveru, jehož certifikát podepsala naše certifikační autorita.
-- Aplikace z App Storu má v telefonu **vždy jen jeden okruh**. (Testovací verze umí víc okruhů, a jen když to oba okruhy povolí.)
+- Telefon může mít účty **víc okruhů** (třeba správce několika firem), ale jen když to **oba** okruhy povolí – správce to přepíná
+  ve webu správy („Jiné okruhy v telefonu“). Okruh, který to nepovolí, zůstane v telefonu sám.
 - Na čem stavíme: Linphone SDK 5.5.29 (Belledonne Communications), Flexisip 2.6 (SIP server, push, server pro skupinové
   zprávy), lime-server (klíče pro zprávy), před ním Kamailio 6.0.
 
@@ -41,7 +42,8 @@ a instalátor serveru (github.com/woziwrt/securelink-server).
 - **Šifrování nejde vypnout.** Nešifrované zprávy odmítá přímo kód aplikace, ne jen nastavení serveru. Vyzkoušeno 2. 11. 2026:
   nešifrovaná zpráva podstrčená přímo do serveru (jako by ho někdo ovládl) – telefon ji odmítl a její text se nikde neukázal.
 - Push (Apple / Google) nenese **žádný obsah ani jméno odesílatele**, jen probudí aplikaci. Oznámení v telefonu ukazuje
-  jen „SecureLink – Zpráva přijata“ (bez odesílatele a textu; zmeškaný hovor bez jména volajícího).
+  jen „SecureLink – Zpráva přijata“ (bez odesílatele a textu; zmeškaný hovor bez jména volajícího). V datech oznámení zůstává
+  adresa konverzace (aby klepnutí otevřelo správný rozhovor); nouzový PIN doručená oznámení smaže.
 - Mizející zprávy jsou zapnuté v každé konverzaci (výchozí doba týden).
 
 ## 4. Co vidí server – a co ne
