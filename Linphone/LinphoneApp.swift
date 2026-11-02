@@ -352,7 +352,16 @@ extension AppView {
 
 final class AppLock: ObservableObject {
 	static let shared = AppLock()
-	@Published var locked = true { didSet { updateWindow() } }
+	/// SecureLink: development builds (installed from the Mac by cable for testing) never lock – Release builds (TestFlight,
+	/// App Store) always do; the switch is compiled out of them, so it cannot be forgotten (Petr 2. 11. 2026)
+	static let enabled: Bool = {
+		#if DEBUG
+		return false
+		#else
+		return true
+		#endif
+	}()
+	@Published var locked = AppLock.enabled { didSet { updateWindow() } }
 	@Published var failed = false
 	@Published var noPasscode = false          // the device has no passcode: a warning, then the app opens unprotected
 	private var backgroundSince: Date?
@@ -435,6 +444,7 @@ final class AppLock: ObservableObject {
 	}
 	
 	func lockNow() {
+		guard AppLock.enabled else { return }
 		locked = true
 		failed = false
 		updateWindow()
@@ -449,7 +459,7 @@ final class AppLock: ObservableObject {
 		let away = backgroundSince.map { Date().timeIntervalSince($0) } ?? -1
 		Log.info("[AppLock] entered foreground after \(Int(away)) s in background, locked=\(locked)")
 		if away >= graceSeconds {
-			locked = true
+			locked = AppLock.enabled
 		}
 		backgroundSince = nil
 		if locked {
