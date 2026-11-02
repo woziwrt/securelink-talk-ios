@@ -38,6 +38,12 @@ EU Cyber Resilience Act (Regulation (EU) 2024/2847, Article 14).
 
 Older versions get no fixes – please update.
 
+## How it is protected
+
+[`securelink/SECURITY-DESIGN.md`](securelink/SECURITY-DESIGN.md) (Czech: [`SECURITY-DESIGN.cs.md`](securelink/SECURITY-DESIGN.cs.md))
+describes the encryption, what the server can and cannot see, the protection on the phone and the limits. The server
+installer is public too: https://github.com/woziwrt/securelink-server
+
 ## What is in the app
 
 The list of components and their versions is in [`securelink/SBOM.md`](securelink/SBOM.md);
