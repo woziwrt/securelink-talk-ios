@@ -8,7 +8,7 @@ Update this file with every App Store build and every installer change of a comp
 
 | component | version | note |
 |---|---|---|
-| SecureLink Talk (modified linphone-iphone) | version 1.1, build 28 (submitted for review) | this repository, tag `build-28` |
+| SecureLink Talk (modified linphone-iphone) | version 1.1, build 29 (for review) | this repository, tag `build-29` |
 | linphone-sdk (liblinphone, mediastreamer2, ortp, belle-sip, bctoolbox, bzrtp, lime, postquantumcryptoengine, belr, belcard) | 5.5.29 (`80bf7c1d`) + `linphone-sdk-5.5.29-*.patch` | built from source, `BUILD.md` |
 | bcmatroska2 | 5.4.126 | |
 | Mbed TLS | 3.6.7 (`068ff080`) + Belledonne commits + `mbedtls-3.6.7/0001–0009` | TLS 1.3 to the server |
