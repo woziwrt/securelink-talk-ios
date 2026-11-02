@@ -998,6 +998,8 @@ enum EmergencyWipe {
 				if (try? FileManager.default.removeItem(atPath: (groupDir as NSString).appendingPathComponent(name))) != nil { removed += 1 }
 			}
 			if let id = Bundle.main.bundleIdentifier { UserDefaults.standard.removePersistentDomain(forName: id) }
+			// delivered notifications stay on the phone (lock screen, Notification Centre) – they go too (Panel 3)
+			UNUserNotificationCenter.current().removeAllDeliveredNotifications()
 			UserDefaults(suiteName: SharedMainViewModel.appGroupName)?.removePersistentDomain(forName: SharedMainViewModel.appGroupName)
 			UserDefaults.standard.set(true, forKey: "securelink_old_logs_removed")
 			DispatchQueue.main.async { done() }

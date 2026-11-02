@@ -24,14 +24,9 @@ enum SecureLinkAccounts {
 	/// why the last sign-in link was refused, for the message the user sees (nil = a plain failure)
 	static var lastRefusal: String?
 
-	/// debug and TestFlight builds only until the whole feature is done; the App Store app keeps one account
-	static var enabled: Bool {
-		#if DEBUG
-		return true
-		#else
-		return Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
-		#endif
-	}
+	/// more circles on one phone – in every build since 1.1 (Petr 2. 11. 2026: Martin supports several customers from one
+	/// phone; App Review must see what customers get). Each server decides with allow_other_circles.
+	static var enabled: Bool { true }
 
 	/// the server value [key] of the account (securelink_account in its profile), "" when it has none
 	static func setting(_ account: Account?, _ key: String) -> String {
