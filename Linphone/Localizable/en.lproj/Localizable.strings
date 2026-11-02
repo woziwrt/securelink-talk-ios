@@ -749,5 +749,10 @@
 "securelink_enc_messages" = "Messages";
 "securelink_enc_pq" = "post-quantum";
 "securelink_circles_not_allowed" = "Another circle cannot be added on this phone: %@ does not allow it. Ask your administrator.";
+"securelink_about_encryption_title" = "Encryption";
+"securelink_about_encryption_calls" = "Calls: X448 + ML-KEM-1024 (post-quantum), voice AES-256-GCM, security word.";
+"securelink_about_encryption_messages" = "Messages (post-quantum, end-to-end):\n%@";
+"securelink_about_encryption_connection" = "Connection to the server: TLS 1.3.";
+"securelink_about_encryption_always" = "Encryption cannot be switched off.";
 "securelink_wiped_title" = "This phone was wiped";
 "securelink_wiped_message" = "Your administrator blocked this phone and asked for it to be wiped: this account, its conversations and contacts have been deleted from it.";

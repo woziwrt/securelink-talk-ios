@@ -255,6 +255,32 @@ struct HelpFragment: View {
 								}
 								.background(Color.gray100)
 								// SecureLink: tapping the version does nothing (no hidden developer mode)
+
+								// SecureLink: what protects calls, messages and the connection – in one place (Petr 2. 11. 2026: the
+								// call's encryption window is opened by few). Calls are fixed by the app; messages per circle (LIME)
+								HStack(alignment: .top) {
+									Image("lock-key")
+										.renderingMode(.template)
+										.resizable()
+										.foregroundStyle(Color.orangeMain500)
+										.frame(width: 30, height: 30)
+
+									VStack(alignment: .leading, spacing: 6) {
+										Text("securelink_about_encryption_title")
+											.default_text_style_700(styleSize: 14)
+										Text("securelink_about_encryption_calls")
+											.default_text_style(styleSize: 14)
+										Text(String(format: NSLocalizedString("securelink_about_encryption_messages", comment: ""), helpViewModel.messagesEncryption))
+											.default_text_style(styleSize: 14)
+										Text("securelink_about_encryption_connection")
+											.default_text_style(styleSize: 14)
+										Text("securelink_about_encryption_always")
+											.default_text_style_700(styleSize: 14)
+									}
+									.frame(maxWidth: .infinity, alignment: .leading)
+									.multilineTextAlignment(.leading)
+									.padding(.horizontal, 5)
+								}
 								
 								Button {
 									// SecureLink: GPLv3 – the source of this exact version is public (tag = build)

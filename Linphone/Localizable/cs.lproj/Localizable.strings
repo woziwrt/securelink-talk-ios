@@ -689,5 +689,10 @@
 "securelink_enc_messages" = "Zprávy";
 "securelink_enc_pq" = "postkvantové";
 "securelink_circles_not_allowed" = "Další okruh v tomto telefonu nejde přidat: %@ to nepovoluje. Zeptejte se svého správce.";
+"securelink_about_encryption_title" = "Šifrování";
+"securelink_about_encryption_calls" = "Hovory: X448 + ML-KEM-1024 (postkvantové), hlas AES-256-GCM, bezpečnostní slovo.";
+"securelink_about_encryption_messages" = "Zprávy (postkvantové, koncové):\n%@";
+"securelink_about_encryption_connection" = "Spojení se serverem: TLS 1.3.";
+"securelink_about_encryption_always" = "Šifrování nejde vypnout.";
 "securelink_wiped_title" = "Tento telefon byl vymazán";
 "securelink_wiped_message" = "Správce tento telefon zablokoval a nechal vymazat: tento účet, jeho konverzace a kontakty z něj byly smazány.";

@@ -34,6 +34,8 @@ class HelpViewModel: ObservableObject {
 	@Published var logsUploadInProgress: Bool = false
 	@Published var versionAvailable: String = ""
 	@Published var urlVersionAvailable: String = ""
+	// SecureLink: what protects messages in each circle (the account's LIME algorithm), for "Encryption" in About
+	@Published var messagesEncryption: String = ""
 	
 	private var coreDelegate: CoreDelegate?
 
@@ -59,6 +61,23 @@ class HelpViewModel: ObservableObject {
 			firebaseProjectId = projectID
 		}
 		
+		CoreContext.shared.doOnCoreQueue { core in
+			let lines = core.accountList.map { account -> String in
+				let name = SecureLinkAccounts.setting(account, "org_name")
+				let circle = name.isEmpty ? (account.params?.identityAddress?.domain ?? "") : name
+				let algo = (account.params?.limeAlgo ?? "").split(separator: ",").first.map(String.init) ?? ""
+				let words: String
+				switch algo {
+				case "c448mlk1024": words = "X448 + ML-KEM-1024"
+				case "c25519mlk512": words = "X25519 + ML-KEM-512"
+				case "c25519k512": words = "X25519 + Kyber-512"
+				default: words = algo.isEmpty ? "–" : algo
+				}
+				return core.accountList.count > 1 ? "\(circle): \(words)" : words
+			}
+			DispatchQueue.main.async { self.messagesEncryption = lines.joined(separator: "\n") }
+		}
+
 		CoreContext.shared.doOnCoreQueue { core in
 			self.coreDelegate = CoreDelegateStub(
 				onLogCollectionUploadStateChanged: {(
