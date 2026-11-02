@@ -1,0 +1,81 @@
+diff --git a/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.cpp b/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.cpp
+index df75702f28..25ff39464d 100644
+--- a/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.cpp
++++ b/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.cpp
+@@ -667,6 +667,43 @@ ChatMessageModifier::Result LimeX3dhEncryptionEngine::processIncomingMessage(con
+ 	return ChatMessageModifier::Result::Done;
+ }
+ 
++// SecureLink (2. 11. 2026): an account removed with its data takes its local LIME identity along. Otherwise the same
++// phone signed in again (block then unblock, or wipe then a new invitation) keeps the old identity while the server no
++// longer knows it (blocking deletes the keys): only the daily update republishes it, so the person stays unreachable
++// for up to 24 h. LimeManager::delete_user removes the local user first, then asks the server (already gone: fine).
++// The device id is built as Account::update() builds it when the account has no contact address (not registered).
++void LimeX3dhEncryptionEngine::deleteLimeUser(const std::shared_ptr<Account> &account) {
++	if (!limeManager || !account) return;
++	std::string localDeviceId;
++	const auto &contact = account->getContactAddress();
++	if (contact && contact->hasUriParam("gr")) {
++		localDeviceId = contact->asStringUriOnly();
++	} else {
++		const auto &identity = account->getAccountParams()->getIdentityAddress();
++		const auto gr = getCore()->getCCore()->sal->getUuid();
++		if (!identity || gr.empty()) return;
++		auto addr = identity->clone()->toSharedPtr();
++		addr->setUriParam("gr", "urn:uuid:" + gr);
++		localDeviceId = addr->asStringUriOnly();
++	}
++	for (const auto curve : {lime::CurveId::c25519, lime::CurveId::c448, lime::CurveId::c25519k512,
++	                         lime::CurveId::c25519mlk512, lime::CurveId::c448mlk1024}) {
++		try {
++			const lime::DeviceId deviceId(localDeviceId, curve);
++			if (!limeManager->is_user(deviceId)) continue;
++			lInfo() << "[LIME] removing the local LIME user " << localDeviceId << " ["
++			        << lime::CurveId2String(curve) << "] with its account";
++			limeManager->delete_user(deviceId, [localDeviceId](lime::CallbackReturn returnCode, std::string info) {
++				lInfo() << "[LIME] server deletion of " << localDeviceId << ": "
++				        << (returnCode == lime::CallbackReturn::success ? "done" : "not needed or failed (" + info + ")");
++			});
++		} catch (const std::exception &e) {
++			lWarning() << "[LIME] cannot remove the local LIME user " << localDeviceId << ": " << e.what();
++		}
++	}
++	usersAlgos.erase(localDeviceId);
++}
++
+ void LimeX3dhEncryptionEngine::update(const std::string localDeviceId) {
+ 	lime::limeCallback callback = [localDeviceId](lime::CallbackReturn returnCode, string anythingToSay) {
+ 		if (returnCode == lime::CallbackReturn::success) {
+diff --git a/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.h b/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.h
+index 8c9ee58bf1..969bdb9317 100644
+--- a/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.h
++++ b/liblinphone/src/chat/encryption/lime-x3dh-encryption-engine.h
+@@ -120,6 +120,9 @@ public:
+ 
+ 	void createLimeUser(std::shared_ptr<Account> &account, const std::string &gruu) override;
+ 
++	// SecureLink: forget the account's local LIME identity (all algorithms) – called by Core::removeAccountWithData
++	void deleteLimeUser(const std::shared_ptr<Account> &account);
++
+ 	bool participantListRequired() const override;
+ 
+ private:
+diff --git a/liblinphone/src/core/core.cpp b/liblinphone/src/core/core.cpp
+index 9aa667b71c..98313b74ae 100644
+--- a/liblinphone/src/core/core.cpp
++++ b/liblinphone/src/core/core.cpp
+@@ -3347,6 +3347,14 @@ void Core::removeAccountWithData(const std::shared_ptr<Account> &account) {
+ 	lInfo() << "removeAccountWithData: " << (nbCallLogs - bctbx_list_size(getCCore()->call_logs))
+ 	        << " call logs removed";
+ 
++#ifdef HAVE_LIME_X3DH
++	// SecureLink: the account's LIME identity goes too (see LimeX3dhEncryptionEngine::deleteLimeUser)
++	auto *engine = getEncryptionEngine();
++	if (engine && engine->getEngineType() == EncryptionEngine::EngineType::LimeX3dh) {
++		static_cast<LimeX3dhEncryptionEngine *>(engine)->deleteLimeUser(account);
++	}
++#endif // HAVE_LIME_X3DH
++
+ 	// Flag account to ask for auth info deletion after registration is cleared
+ 	account->setRemoveAuthInfoOnRegistrationCleared(true);
+ 

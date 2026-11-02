@@ -17,6 +17,7 @@ git submodule update --init --recursive
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-developer-dir.patch
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-no-secrets-in-log.patch
 git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-conference-list-account.patch   # from build-20
+git apply ../linphone-iphone/securelink/linphone-sdk-5.5.29-lime-user-on-account-removal.patch   # from build-26
 # mbedtls 3.6.7 instead of 3.6.1 (from build-22): official Mbed TLS v3.6.7 + Belledonne's own commits
 git -C external/mbedtls fetch https://github.com/Mbed-TLS/mbedtls.git tag v3.6.7
 git -C external/mbedtls checkout 068ff080b369adfac81509f9b57b2afabaf82dc5   # v3.6.7
