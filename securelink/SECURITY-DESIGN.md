@@ -62,9 +62,9 @@ and the server installer (github.com/woziwrt/securelink-server).
 | sizes and times of encrypted messages | |
 
 Limits we keep small:
-- A **nightly cleanup** deletes conversations of deleted accounts and leftover records from the chat server
-  (`securelink-metadata-cleanup`). Live conversations stay: removing them breaks message delivery in the current
-  Linphone SDK.
+- A **cleanup tool** (`securelink-metadata-cleanup`) finds conversations of deleted accounts and leftover records on the
+  chat server. Every night it only lists them in the server log; support deletes them on command (the chat server stops
+  for a few seconds). Live conversations stay: removing them breaks message delivery in the current Linphone SDK.
 - Release builds log **errors only** (from iOS build 29 / Android `efa66e48d`). Earlier builds logged in detail, including
   the downloaded profile with the account's password; the update removes those log files once. Logs stay on the phone.
 

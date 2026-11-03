@@ -57,8 +57,9 @@ a instalátor serveru (github.com/woziwrt/securelink-server).
 | velikost a čas šifrovaných zpráv | |
 
 Co držíme co nejmenší:
-- **Noční úklid** maže ze serveru konverzace smazaných účtů a zbytky záznamů. Živé konverzace zůstávají (jejich smazání
-  by v současném Linphone SDK rozbilo doručování).
+- **Nástroj na úklid** (`securelink-metadata-cleanup`) najde na chatovém serveru konverzace smazaných účtů a zbytky záznamů.
+  Každou noc je jen vypíše do logu serveru; smaže je podpora na pokyn (chatový server se na pár sekund zastaví).
+  Živé konverzace zůstávají (jejich smazání by v současném Linphone SDK rozbilo doručování).
 - Ostré verze aplikace zapisují do logu **jen chyby** (od iOS buildu 29 a Androidu v2). Starší verze zapisovaly podrobně,
   včetně staženého nastavení s heslem účtu – aktualizace staré logy jednou smaže. Logy zůstávají v telefonu.
 
