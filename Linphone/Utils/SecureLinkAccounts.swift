@@ -19,7 +19,9 @@ enum SecureLinkAccounts {
 	private static let section = "securelink_account"
 	private static let paramPrefix = "sl_"
 	private static let keys = ["domain", "org_name", "dir_url", "upload_url", "admin_uri", "support_email", "privacy_url",
-							   "terms_url", "request_url", "my_name", "allow_other_circles"]
+							   "terms_url", "request_url", "my_name", "allow_other_circles",
+							   // the administrator to call when the phone is lost (B6, server v2 7. 11. 2026)
+							   "emergency_name", "emergency_phone", "emergency_email"]
 
 	/// why the last sign-in link was refused, for the message the user sees (nil = a plain failure)
 	static var lastRefusal: String?
@@ -229,7 +231,7 @@ enum SecureLinkAccounts {
 			params.addCustomParam(key: paramPrefix + "org_name", value: domain)
 			params.addCustomParam(key: paramPrefix + "dir_url", value: profile.getString(section: "misc", key: "contacts-vcard-list", defaultString: ""))
 			params.addCustomParam(key: paramPrefix + "upload_url", value: profile.getString(section: "misc", key: "file_transfer_server_url", defaultString: ""))
-			for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url"] {
+			for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url", "emergency_name", "emergency_phone", "emergency_email"] {
 				params.addCustomParam(key: paramPrefix + key, value: profile.getString(section: "app", key: key, defaultString: ""))
 			}
 		}
@@ -273,7 +275,7 @@ enum SecureLinkAccounts {
 			params.addCustomParam(key: paramPrefix + "org_name", value: domain)
 			params.addCustomParam(key: paramPrefix + "dir_url", value: config.getString(section: "misc", key: "contacts-vcard-list", defaultString: ""))
 			params.addCustomParam(key: paramPrefix + "upload_url", value: core.fileTransferServer ?? "")
-			for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url"] {
+			for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url", "emergency_name", "emergency_phone", "emergency_email"] {
 				params.addCustomParam(key: paramPrefix + key, value: config.getString(section: "app", key: key, defaultString: ""))
 			}
 		}

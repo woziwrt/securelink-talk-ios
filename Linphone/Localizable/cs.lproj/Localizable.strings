@@ -722,3 +722,7 @@
 "securelink_wiped_circle_message" = "Správce okruhu %@ ho z tohoto telefonu odebral a smazal jeho zprávy a kontakty. Ostatní okruhy fungují dál.";
 "securelink_wiped_last_message" = "Správce okruhu %@ tento telefon vymazal. Pro nové přihlášení požádejte správce o pozvánku.";
 "securelink_deletion_signed_out" = "Žádost odešla správci. Tento okruh se teď z telefonu odhlásí – jeho zprávy a kontakty z telefonu zmizí.";
+"securelink_emergency_title" = "Ztratíte telefon? Volejte správci";
+"securelink_emergency_title_circle" = "Ztratíte telefon? Volejte správci okruhu %@";
+"securelink_emergency_call" = "Zavolat";
+"securelink_emergency_write" = "Napsat e-mail";

@@ -787,3 +787,7 @@
 "Odhlásit jen okruh %@" = "Sign out only the circle %@";
 "Smazat VŠECHNY okruhy (%d)" = "Erase ALL circles (%d)";
 "Odhlášený okruh zmizí z telefonu i se zprávami, kontakty a klíči; zpátky se do něj dostanete jen novou pozvánkou od jeho správce. Ostatní okruhy fungují dál." = "A circle you sign out leaves the phone with its messages, contacts and keys; you get back in only with a new invitation from its administrator. The other circles go on working.";
+"securelink_emergency_title" = "Lost your phone? Call your administrator";
+"securelink_emergency_title_circle" = "Lost your phone? Call the administrator of %@";
+"securelink_emergency_call" = "Call";
+"securelink_emergency_write" = "Write an e-mail";

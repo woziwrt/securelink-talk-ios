@@ -189,6 +189,9 @@ struct HelpFragment: View {
 									}
 								}
 								
+								// SecureLink: whom to call when the phone is lost – outside SecureLink, by the phone's own dialler (B6)
+								EmergencyContactRows()
+
 								// SecureLink: support goes by e-mail only (users do not see the administrator); address from the server profile
 								// (two servers: a tap asks which circle's support – as privacy and terms)
 								let supportEmail = shownValue("support_email")
@@ -419,5 +422,77 @@ struct HelpFragment: View {
 			}
 			Button(LocalizedStringKey("dialog_cancel"), role: .cancel) {}
 		}
+	}
+}
+
+/// SecureLink (B6, 7. 11. 2026): "Lost your phone? Call your administrator" – the emergency contact the server sends in the
+/// profile (emergency_name / emergency_phone / emergency_email, securelink_account or [app]), one row per circle that has
+/// one. It is read here so the person knows it before the phone is gone; the call goes through the phone network (tel:),
+/// as a lost SecureLink is exactly when SecureLink cannot be used.
+struct EmergencyContactRows: View {
+	struct Entry: Hashable {
+		let circle: String
+		let name: String
+		let phone: String
+		let email: String
+	}
+
+	private var entries: [Entry] {
+		guard let core = CoreContext.shared.mCore else { return [] }
+		var seen = Set<String>()
+		return core.accountList.compactMap { account in
+			let phone = SecureLinkAdmin.setting(core, "emergency_phone", account)
+			let email = SecureLinkAdmin.setting(core, "emergency_email", account)
+			guard !(phone.isEmpty && email.isEmpty), seen.insert(phone + "|" + email).inserted else { return nil }
+			return Entry(circle: SecureLinkAccounts.circleName(core, account), name: SecureLinkAdmin.setting(core, "emergency_name", account),
+						 phone: phone, email: email)
+		}
+	}
+
+	var body: some View {
+		let list = entries
+		ForEach(list, id: \.self) { entry in
+			HStack(alignment: .top) {
+				Image("phone")
+					.renderingMode(.template)
+					.resizable()
+					.foregroundStyle(Color.orangeMain500)
+					.frame(width: 30, height: 30)
+				VStack(alignment: .leading, spacing: 4) {
+					Text(list.count > 1 ? String(format: NSLocalizedString("securelink_emergency_title_circle", comment: ""), entry.circle)
+						 : NSLocalizedString("securelink_emergency_title", comment: ""))
+						.default_text_style_700(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+					Text([entry.name, entry.phone, entry.email].filter { !$0.isEmpty }.joined(separator: "\n"))
+						.default_text_style(styleSize: 14)
+						.frame(maxWidth: .infinity, alignment: .leading)
+					HStack(spacing: 10) {
+						if let url = telURL(entry.phone) {
+							Button(action: { UIApplication.shared.open(url) }, label: {
+								Text("securelink_emergency_call").default_text_style_white_600(styleSize: 14)
+									.padding(.horizontal, 14).padding(.vertical, 6)
+									.background(Color.orangeMain500).cornerRadius(60)
+							})
+						}
+						if !entry.email.isEmpty, let mail = URL(string: "mailto:\(entry.email)?subject=SecureLink") {
+							Button(action: { UIApplication.shared.open(mail) }, label: {
+								Text("securelink_emergency_write").default_text_style_orange_500(styleSize: 14)
+									.padding(.horizontal, 14).padding(.vertical, 6)
+									.background(Color.orangeMain100).cornerRadius(60)
+							})
+						}
+					}
+				}
+				.padding(.horizontal, 5)
+			}
+		}
+	}
+
+	/// "+420 723 676 989" → tel:+420723676989; nil when there are no digits
+	private func telURL(_ phone: String) -> URL? {
+		var digits = phone.filter { $0.isNumber }
+		guard !digits.isEmpty else { return nil }
+		if phone.trimmingCharacters(in: .whitespaces).hasPrefix("+") { digits = "+" + digits }
+		return URL(string: "tel:" + digits)
 	}
 }
