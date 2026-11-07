@@ -110,7 +110,13 @@ class ConversationModel: ObservableObject, Identifiable {
 		} else if self.isAdminConversation, let core = CoreContext.shared.mCore,
 				  let admin = try? Factory.Instance.createAddress(addr: SecureLinkAdmin.setting(core, "admin_uri", chatRoom.account)),
 				  chatRoomParticipants.first?.address?.weakEqual(address2: admin) == true {
-			subjectTmp = NSLocalizedString("securelink_admin_title", comment: "")   // SecureLink: nobody has the administrator in contacts
+			// SecureLink: the support line by the name the directory gives it (Copservis: the person who answers, #29,
+			// 7. 11. 2026); "SecureLink Support" only when the directory does not list it
+			if let name = addressFriend?.name, !name.isEmpty, !name.lowercased().hasPrefix("sip") {
+				subjectTmp = name
+			} else {
+				subjectTmp = NSLocalizedString("securelink_admin_title", comment: "")
+			}
 		} else if addressFriend != nil {
 			subjectTmp = addressFriend!.name!
 		} else {
