@@ -77,6 +77,27 @@ class CoreContext: ObservableObject {
 	
 	var digestAuthInfoPendingPasswordUpdate: AuthInfo?
 	private var firstSignInRefusal: [String: Date] = [:]   // SecureLink: identity → first refused sign-in (core queue)
+	private var lastWipeCheck: [String: Date] = [:]   // SecureLink A3: identity → last /wipe question (core queue)
+
+	/// SecureLink "block and wipe", faster (A3, 7. 11. 2026, as Android): the phone asked /wipe only at the second refused
+	/// sign-in (≥ 20 s, often minutes) and the counter lived in memory. Ask already at the first refusal, when the server
+	/// forbids the registration outright and, at start, for an account the administrator signed out earlier. The server
+	/// answers "wipe" only for an account its administrator asked to wipe (or deleted), so asking is harmless; each
+	/// identity asks at most once a minute. Core queue.
+	private func checkWipe(_ core: Core, _ account: Account, why: String) {
+		guard let address = account.params?.identityAddress else { return }
+		let identity = "\(address.username ?? "")@\(address.domain ?? "")"
+		let now = Date()
+		if let last = lastWipeCheck[identity], now.timeIntervalSince(last) < 60 { return }
+		lastWipeCheck[identity] = now
+		Log.info("[SecureLink] asking the server whether \(identity) is to be wiped (\(why))")
+		let circle = SecureLinkAccounts.circleName(core, account)
+		SecureLinkAccounts.wipeIfAsked(core, account) { wiped in
+			guard wiped else { return }
+			let othersRemain = core.accountList.contains { $0 !== account && $0.params?.registerEnabled == true }
+			DispatchQueue.main.async { SecureLinkAccounts.showWipedNotice(circle: circle, othersRemain: othersRemain) }
+		}
+	}
 	
 	@Published var reloadID = UUID()
 	
@@ -387,6 +408,11 @@ class CoreContext: ObservableObject {
 
 					SecureLinkAccounts.ensureDefaultAccount(core)   // SecureLink: heals default_proxy=-1 left by an older build
 					SecureLinkAdmin.enforceEncryption(core)
+					// SecureLink A3: an account signed out by the administrator does not register any more – ask now whether
+					// it has been switched to "wipe" (or deleted) since
+					for account in core.accountList where account.params?.registerEnabled == false {
+						self.checkWipe(core, account, why: "signed out earlier")
+					}
 					if MagicSearchSingleton.shared.magicSearch == nil {
 						MagicSearchSingleton.shared.recreateMagicSearch(core: core)
 					}
@@ -510,6 +536,7 @@ class CoreContext: ObservableObject {
 					} else {
 						Log.warn("[SecureLink] sign-in of \(identity) refused once, trying again later before signing out")
 						self.firstSignInRefusal[identity] = now
+						self.checkWipe(core, accountFound, why: "first refusal")   // A3: a stolen phone goes at once
 					}
 				}
 			}, onMessagesReceived: { (core: Core, chatRoom: ChatRoom, messages: [ChatMessage]) in
@@ -565,6 +592,10 @@ class CoreContext: ObservableObject {
 					Log.info("[CoreContext][onAccountRegistrationStateChanged] Account \(account.displayName()) registration was cleared.")
 				case .Failed:
 					Log.error("[CoreContext][onAccountRegistrationStateChanged] Account \(account.displayName()) registration failed.")
+					// SecureLink A3: a server that forbids the registration outright (no password challenge) – ask /wipe too
+					if account.params?.registerEnabled == true, [Reason.Forbidden, Reason.Unauthorized].contains(account.error) {
+						self.checkWipe(core, account, why: "registration \(account.error)")
+					}
 				default:
 					break
 				}

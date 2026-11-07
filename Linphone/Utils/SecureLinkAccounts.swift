@@ -409,6 +409,12 @@ enum SecureLinkAccounts {
 					return
 				}
 				Log.warn("[SecureLink Accounts] the administrator blocked \(identity) to be wiped – deleting the account and its data")
+				if core.accountList.count <= 1 {
+					// the last circle: everything goes, as with the emergency PIN – files, logs, settings, PIN; the app looks
+					// freshly installed (Petr 7. 11. 2026: a lost or stolen phone must keep nothing)
+					EmergencyWipe.run { CoreContext.shared.doOnCoreQueue { _ in done(true) } }
+					return
+				}
 				wipeAccount(core, current)
 				done(true)
 			}
