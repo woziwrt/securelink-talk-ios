@@ -696,6 +696,7 @@
 "securelink_about_encryption_always" = "Šifrování nejde vypnout.";
 "securelink_pin_enter" = "Zadejte PIN SecureLink";
 "securelink_pin_wrong" = "Nesprávný PIN";
+"securelink_pin_forgotten" = "Zapomněli jste PIN? Smažte aplikaci, nainstalujte ji znovu a požádejte správce o novou pozvánku.";
 "securelink_pin_row_title" = "Zámek PINem SecureLink";
 "securelink_pin_row_on" = "Zapnuto – appku otevírá váš PIN (nouzový PIN vše smaže)";
 "securelink_pin_row_off" = "Vypnuto – appku otevírá Face ID / kód telefonu";

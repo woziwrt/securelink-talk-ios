@@ -345,6 +345,8 @@ enum SecureLinkAccounts {
 		if wasLastAccount {
 			core.clearAllAuthInfo()
 			SecureLinkAdmin.scheduleZrtpCacheWipe(core)
+			// nothing is left to protect, and the next owner of the phone must not meet somebody else's PIN (A1, 7. 11. 2026)
+			SecureLinkPin.disable()
 			if let cfg = core.config {
 				cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
 				cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")

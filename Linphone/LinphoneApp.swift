@@ -202,6 +202,8 @@ struct LinphoneApp: App {
 #if DEBUG
 		LinphoneApp.applyUITestMDMConfigIfNeeded()
 #endif
+		// SecureLink: before anything reads the PIN – a PIN left in the Keychain by a deleted app must not lock the new one
+		SecureLinkPin.forgetIfLeftByEarlierInstall()
 		if !configAvailable {
 			voipRegistry.delegate = earlyPushDelegate
 			voipRegistry.desiredPushTypes = [.voIP]
@@ -630,6 +632,11 @@ struct AppLockView: View {
 							   error: appLock.pinWrong ? NSLocalizedString("securelink_pin_wrong", comment: "") : nil) { pin in
 						appLock.submitPin(pin)
 					}
+					// the only way out of a forgotten PIN: a reinstall now drops it (A1, 7. 11. 2026)
+					Text("securelink_pin_forgotten")
+						.default_text_style_white(styleSize: 13)
+						.multilineTextAlignment(.center)
+						.padding(.horizontal, 30)
 				} else if appLock.noPasscode {
 					Text("Toto zařízení nemá nastavený kód zámku. Bez něj si vaše konverzace přečte každý, kdo ho vezme do ruky. Kód nastavíte v Nastavení → Face ID a kód (nebo Touch ID a kód).")
 						.default_text_style_white(styleSize: 15)
@@ -856,9 +863,32 @@ enum SecureLinkPin {
 
 	static var isEnabled: Bool { read("normal") != nil }
 
+	/// UserDefaults key written next to the PIN: UserDefaults go with the app, the Keychain does not
+	private static let installedKey = "securelink_pin_install"
+
 	static func set(normal: String, emergency: String) -> Bool {
 		guard normal != emergency, valid(normal), valid(emergency) else { return false }
+		UserDefaults.standard.set(true, forKey: installedKey)
 		return store("normal", hash(normal)) && store("emergency", hash(emergency))
+	}
+
+	/// The Keychain outlives the app on iOS: a PIN set before the app was deleted locked the freshly installed app, and a
+	/// forgotten PIN could not be fixed even by reinstalling (A1, 5. 11. 2026). A PIN whose app left no trace in UserDefaults
+	/// (they are deleted with the app) belongs to an earlier installation and goes. An update keeps the PIN: 1.1 always has
+	/// securelink_* keys (securelink_old_logs_removed at the first start of a release build, the accepted terms – the PIN
+	/// is set up only after them). Before the first unlock after a reboot the PIN cannot be read and UserDefaults may look
+	/// empty – then nothing is decided.
+	static func forgetIfLeftByEarlierInstall() {
+		let defaults = UserDefaults.standard
+		guard !defaults.bool(forKey: installedKey), isEnabled else { return }
+		let ours = (Bundle.main.bundleIdentifier.flatMap { defaults.persistentDomain(forName: $0) } ?? [:]).keys
+			.contains { $0.hasPrefix("securelink_") || $0 == "lastMigrationVersion" }
+		if ours {
+			defaults.set(true, forKey: installedKey)   // an update from 1.1: keep the PIN, do not ask again
+		} else {
+			Log.warn("[AppLock] SecureLink PIN left in the Keychain by a deleted installation – removed")
+			disable()
+		}
 	}
 
 	static func disable() {

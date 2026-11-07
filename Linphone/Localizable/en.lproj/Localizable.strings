@@ -756,6 +756,7 @@
 "securelink_about_encryption_always" = "Encryption cannot be switched off.";
 "securelink_pin_enter" = "Enter your SecureLink PIN";
 "securelink_pin_wrong" = "Wrong PIN";
+"securelink_pin_forgotten" = "Forgot your PIN? Delete the app, install it again and ask your administrator for a new invitation.";
 "securelink_pin_row_title" = "SecureLink PIN lock";
 "securelink_pin_row_on" = "On – your PIN opens the app (the emergency PIN erases everything)";
 "securelink_pin_row_off" = "Off – Face ID or the phone passcode opens the app";
