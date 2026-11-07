@@ -119,9 +119,26 @@ class SecureLinkDirectoryTests: XCTestCase {
 		try addDirectory(dirA, people: ["sip:eva@a.example"])
 		try addDirectory("https://old.example/dir", people: ["sip:vera@old.example"])
 
+		let config = try XCTUnwrap(core.config)
+		config.setString(section: "misc", key: "file_transfer_server_url", value: "https://a.example/files/upload")
+		config.setString(section: "lime", key: "lime_server_url", value: "https://a.example/lime-server/lime-server.php")
+		config.setString(section: "app", key: "admin_uri", value: "sip:1@a.example")
+		config.setString(section: "app", key: "emergency_phone", value: "+420 123")
+		config.setString(section: "app", key: "team_id", value: "TEAM")
+		config.setString(section: "securelink_account", key: "domain", value: "a.example")
+		config.setString(section: "securelink", key: "deletion_requested_100", value: "1")
+		config.setString(section: "securelink", key: "wipe_zrtp_cache_file", value: "/x")
+
 		SecureLinkAccounts.wipeAccount(core, a)
 		XCTAssertTrue(directoryUris.isEmpty)
 		XCTAssertNil(core.findFriend(address: try Factory.Instance.createAddress(addr: "sip:eva@a.example")))
+		// no address of the server the phone used is left; app settings and the scheduled ZRTP wipe stay
+		for (section, key) in [("misc", "file_transfer_server_url"), ("lime", "lime_server_url"), ("app", "admin_uri"),
+							   ("app", "emergency_phone"), ("securelink_account", "domain"), ("securelink", "deletion_requested_100")] {
+			XCTAssertEqual(config.getString(section: section, key: key, defaultString: ""), "", "\(section)/\(key)")
+		}
+		XCTAssertEqual(config.getString(section: "app", key: "team_id", defaultString: ""), "TEAM")
+		XCTAssertNotEqual(config.getString(section: "securelink", key: "wipe_zrtp_cache_file", defaultString: ""), "")
 	}
 
 	// (c) the server moved (same domain, new directory address): the old directory goes, the new one stays

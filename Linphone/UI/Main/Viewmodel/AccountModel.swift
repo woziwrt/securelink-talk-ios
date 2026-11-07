@@ -347,8 +347,9 @@ class AccountModel: ObservableObject {
 					cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
 					cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
 					cfg.cleanSection(section: ContactsManager.rememberedNamesSection)
-					try? cfg.sync()
 				}
+				// and no address of the server this phone used (privacy of a handed-over phone, 7. 11. 2026)
+				SecureLinkAccounts.forgetServer(core)
 				core.friendsLists.forEach { list in
 					if list.type == .VCard4 || list.type == .CardDAV {
 						core.removeFriendList(list: list)

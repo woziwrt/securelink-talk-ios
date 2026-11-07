@@ -435,8 +435,8 @@ enum SecureLinkAccounts {
 				cfg.cleanEntry(section: "misc", key: "contacts-vcard-list")
 				cfg.cleanEntry(section: "misc", key: "fetch_contacts_vcard_list_at_startup")
 				cfg.cleanSection(section: ContactsManager.rememberedNamesSection)
-				try? cfg.sync()
 			}
+			forgetServer(core)
 			core.friendsLists.forEach { list in
 				if list.type == .VCard4 || list.type == .CardDAV {
 					core.removeFriendList(list: list)
@@ -452,6 +452,29 @@ enum SecureLinkAccounts {
 		}
 		SharedMainViewModel.shared.updateUnreadMessagesCount()
 		SharedMainViewModel.shared.updateMissedCallsCount()
+	}
+
+	/// The last circle is gone (signed out and erased, or wiped by its administrator): the phone keeps no trace of the
+	/// server it used – its addresses (uploads, LIME, administrator, policies, requests), the emergency contact, the
+	/// blocked people and deletion requests. App settings ([app] team_id, behaviour) and a scheduled ZRTP cache wipe
+	/// stay. Seen on the simulator 7. 11. 2026: test.securelink.cc left in linphonerc after "Sign out and erase everything".
+	/// Core queue.
+	static func forgetServer(_ core: Core) {
+		guard let cfg = core.config else { return }
+		cfg.cleanSection(section: section)
+		for key in ["admin_uri", "support_email", "privacy_url", "terms_url", "request_url", "allow_other_circles",
+					"emergency_name", "emergency_phone", "emergency_email"] {
+			cfg.cleanEntry(section: "app", key: key)
+		}
+		for key in ["file_transfer_server_url", "contacts-vcard-list", "fetch_contacts_vcard_list_at_startup", "config-uri"] {
+			cfg.cleanEntry(section: "misc", key: key)
+		}
+		cfg.cleanEntry(section: "lime", key: "lime_server_url")
+		for key in cfg.getKeysNamesList(section: "securelink") where key.hasPrefix("deletion_requested_") || key == "blocked_uris" {
+			cfg.cleanEntry(section: "securelink", key: key)
+		}
+		try? cfg.sync()
+		Log.info("[SecureLink Accounts] last circle gone – the server's addresses removed from the configuration")
 	}
 
 	/// the circle's name for the person: the server's org_name, else the domain
