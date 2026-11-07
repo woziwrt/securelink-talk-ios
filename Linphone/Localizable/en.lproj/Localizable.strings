@@ -132,7 +132,7 @@
 "call_dialog_zrtp_validate_trust_remote_code_label" = "Correspondent code:";
 "call_dialog_zrtp_validate_trust_title" = "Validate the device";
 "call_dialog_zrtp_validate_trust_warning_message" = "For your safety, we need to re-authenticate your correspondent device. Please re-exchange your codes:";
-"call_do_zrtp_sas_validation_again" = "Validate ZRTP SAS again";
+"call_do_zrtp_sas_validation_again" = "Verify the security word again";
 "call_history_deleted_toast" = "History has been deleted";
 "call_is_being_recorded" = "Call is being recorded";
 "call_has_been_recorded" = "Call recording has been saved";
@@ -250,7 +250,7 @@
 "conversation_ephemeral_messages_duration_one_minute" = "1 minute";
 "conversation_ephemeral_messages_duration_one_week" = "1 week";
 "conversation_ephemeral_messages_duration_three_days" = "3 days";
-"conversation_ephemeral_messages_subtitle" = "Messages disappear from both phones after they are read, at the latest after 7 days. The time can be shortened, not switched off.\nChoose a duration:";
+"conversation_ephemeral_messages_subtitle" = "Messages disappear from both phones the chosen time after they are read (7 days after reading by default). The time can be shortened, not switched off.\nChoose a duration:";
 "conversation_ephemeral_messages_title" = "Disappearing messages";
 "conversation_event_admin_set" = "%@ is admin";
 "conversation_event_admin_unset" = "%@ is no longer admin";

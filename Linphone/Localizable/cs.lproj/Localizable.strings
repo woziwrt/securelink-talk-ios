@@ -73,7 +73,7 @@
 "call_action_start_new_call" = "Nový hovor";
 "call_audio_device_type_earpiece" = "Sluchátko";
 "call_audio_device_type_headphones" = "Sluchátka";
-"call_audio_device_type_speaker" = "Mluvčí";
+"call_audio_device_type_speaker" = "Reproduktor";
 "call_audio_incoming" = "Příchozí hovor";
 "call_dialog_zrtp_security_alert_message" = "Důvěrnost tohoto hovoru může být narušena!";
 "call_dialog_zrtp_security_alert_title" = "Bezpečnostní upozornění";
@@ -81,7 +81,7 @@
 "call_dialog_zrtp_validate_trust_local_code_label" = "Váš kód:";
 "call_dialog_zrtp_validate_trust_remote_code_label" = "Kód protějšku:";
 "call_dialog_zrtp_validate_trust_title" = "Ověřit zařízení";
-"call_do_zrtp_sas_validation_again" = "Znovu ověřit ZRTP SAS";
+"call_do_zrtp_sas_validation_again" = "Znovu ověřit bezpečnostní slovo";
 "call_history_deleted_toast" = "Historie byla smazána";
 "call_not_encrypted" = "Hovor není šifrován";
 "call_outgoing" = "Odchozí hovor";
@@ -149,7 +149,7 @@
 "conversation_ephemeral_messages_duration_one_minute" = "1 minuta";
 "conversation_ephemeral_messages_duration_one_week" = "1 týden";
 "conversation_ephemeral_messages_duration_three_days" = "3 dny";
-"conversation_ephemeral_messages_subtitle" = "Zprávy zmizí z obou telefonů po přečtení, nejpozději za 7 dní. Dobu lze zkrátit, vypnout ne.\nVyberte dobu:";
+"conversation_ephemeral_messages_subtitle" = "Zprávy zmizí z obou telefonů za zvolenou dobu po přečtení (výchozí je 7 dní po přečtení). Dobu lze zkrátit, vypnout ne.\nVyberte dobu:";
 "conversation_ephemeral_messages_title" = "Mizející zprávy";
 "conversation_event_conference_created" = "Přidal(a) jste se ke skupině";
 "conversation_event_conference_destroyed" = "Opustil(a) jste skupinu";
@@ -175,7 +175,7 @@
 "conversation_message_meeting_updated_label" = "Schůzka byla aktualizována";
 "conversation_text_field_hint" = "Napište něco…";
 "conversations_list_empty" = "Momentálně žádné konverzace…";
-"default_account_disabled" = "Zvolený účet je momentálně zákázán";
+"default_account_disabled" = "Zvolený účet je momentálně zakázán";
 "dialog_call" = "Volat";
 "dialog_cancel" = "Zrušit";
 "dialog_continue" = "Pokračovat";
@@ -300,7 +300,7 @@
 "uri_handler_config_success_toast" = "Konfigurace byla úspěšně použita";
 "username" = "Uživatelské jméno";
 "account_settings_bundle_mode_title" = "Režim seskupení";
-"manage_account_status_cleared_summary" = "Účet byl zakázán, nebudete moci příjímat hovory ani zprávy.";
+"manage_account_status_cleared_summary" = "Účet byl zakázán, nebudete moci přijímat hovory ani zprávy.";
 "manage_account_status_connected_summary" = "Tento účet je online, každý Vám může zavolat.";
 "account_settings_ccmp_server_url_title" = "Adresa URL serveru CCMP";
 "assistant_no_account_yet" = "Ještě nemáte účet?";
