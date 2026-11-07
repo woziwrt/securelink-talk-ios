@@ -49,6 +49,19 @@ struct ContactInnerActionsFragment: View {
 	
 	var actionEditButton: () -> Void
 	
+	/// the security word state (ZRTP cache) and the block of this contact, from the core
+	private func refreshSecurityWord() {
+		let address = contactAvatarModel.address
+		CoreContext.shared.doOnCoreQueue { core in
+			let verified = !address.isEmpty && core.getZrtpStatus(addr: address) == .Valid
+			let blocked = SecureLinkAdmin.isBlocked(core, try? Factory.Instance.createAddress(addr: address))
+			DispatchQueue.main.async {
+				securityWordVerified = verified
+				contactBlocked = blocked
+			}
+		}
+	}
+
 	var body: some View {
 		if !AppServices.corePreferences.hideSipAddresses || (AppServices.corePreferences.hideSipAddresses && !contactAvatarModel.phoneNumbersWithLabel.isEmpty) {
 			HStack(alignment: .center) {
@@ -244,16 +257,11 @@ struct ContactInnerActionsFragment: View {
 		.padding(.vertical, 15)
 		.padding(.horizontal, 16)
 		.background(Color.gray100)
-		.onAppear {
-			let address = contactAvatarModel.address
-			CoreContext.shared.doOnCoreQueue { core in
-				let verified = !address.isEmpty && core.getZrtpStatus(addr: address) == .Valid
-				let blocked = SecureLinkAdmin.isBlocked(core, try? Factory.Instance.createAddress(addr: address))
-				DispatchQueue.main.async {
-					securityWordVerified = verified
-					contactBlocked = blocked
-				}
-			}
+		.onAppear { refreshSecurityWord() }
+		// SecureLink: the card stays open under a call started from it – after "It matches" it kept "not verified yet"
+		// until it was opened again (seen on Android 7. 11. 2026, same structure here): read it again when a call ends
+		.onReceive(TelecomManager.shared.$callInProgress) { inCall in
+			if !inCall { refreshSecurityWord() }
 		}
 		
 		// SecureLink: report to the administrator and block on this phone (App Review guideline 1.2)
