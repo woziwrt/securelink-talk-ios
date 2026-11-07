@@ -263,6 +263,8 @@ struct ConversationInfoFragment: View {
 											
 											Spacer()
 											
+											// SecureLink: no group calls in v1 (C1) – a group has no call button
+											if !(SharedMainViewModel.shared.displayedConversation?.isGroup ?? false) {
 											Button(action: {
 												if SharedMainViewModel.shared.displayedConversation!.isGroup {
 													isShowStartCallGroupPopup.toggle()
@@ -291,6 +293,7 @@ struct ConversationInfoFragment: View {
 											.frame(width: geometry.size.width / 4)
 											
 											Spacer()
+											}
 											
 											if !SharedMainViewModel.shared.disableMeetingFeature {
 												Button(action: {

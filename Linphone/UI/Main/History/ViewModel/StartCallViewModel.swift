@@ -51,7 +51,8 @@ class StartCallViewModel: ObservableObject {
     }
 	
 	func updateGroupCallButtonVisibility(core: Core) {
-		let hideGroupCall = AppServices.corePreferences.disableMeetings ||
+		// SecureLink: no group calls in v1 (C1, SECURELINK-V1-CO-BUDE-A-CO-NE) – the button led to a call that fails
+		let hideGroupCall = true || AppServices.corePreferences.disableMeetings ||
 		!LinphoneUtils.isRemoteConferencingAvailable(core: core) ||
 		core.callsNb > 0
 		DispatchQueue.main.async {

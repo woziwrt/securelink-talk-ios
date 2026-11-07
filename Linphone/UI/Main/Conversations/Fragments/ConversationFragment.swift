@@ -422,7 +422,9 @@ struct ConversationFragment: View {
 							
 							Spacer()
 							
-							if !(SharedMainViewModel.shared.displayedConversation?.isReadOnly ?? cachedConversation!.isReadOnly) {
+							// SecureLink: no group calls in v1 (C1) – a group conversation has no call button
+							if !(SharedMainViewModel.shared.displayedConversation?.isReadOnly ?? cachedConversation!.isReadOnly)
+								&& !(SharedMainViewModel.shared.displayedConversation?.isGroup ?? cachedConversation!.isGroup) {
 								Button {
 									if let displayed = SharedMainViewModel.shared.displayedConversation {
 										if displayed.isGroup {
