@@ -268,6 +268,8 @@ class CoreContext: ObservableObject {
 			}
 			try? cfg.sync()
 			SecureLinkAdmin.wipeZrtpCacheIfScheduled(AppServices.config)
+			// SecureLink: a new identifierForVendor must not make this phone a new device (SecureLinkDeviceIdentity)
+			SecureLinkDeviceIdentity.keep(AppServices.config, appGroup: SharedMainViewModel.appGroupName)
 			self.mCore = try? Factory.Instance.createSharedCoreWithConfig(config: AppServices.config, systemContext: Unmanaged.passUnretained(coreQueue).toOpaque(), appGroupId: SharedMainViewModel.appGroupName, mainCore: true)
 			// SecureLink: core-level push config – liblinphone builds the accounts' pn-param from here at registration
 			if let push = self.mCore.pushNotificationConfig {

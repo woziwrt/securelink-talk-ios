@@ -328,6 +328,8 @@ class NotificationService: UNNotificationServiceExtension {
 
 		let factoryPath = FileUtil.bundleFilePath("linphonerc-factory")!
 		if let config = Config.newForSharedCore(appGroupId: appGroupName, configFilename: "linphonerc", factoryConfigFilename: factoryPath) {
+			// SecureLink: the extension often starts first after an update – it must not make the phone a new device either
+			SecureLinkDeviceIdentity.keep(config, appGroup: appGroupName)
 			lc = try? Factory.Instance.createSharedCoreWithConfig(config: config, systemContext: nil, appGroupId: appGroupName, mainCore: false)
 			return lc != nil
 		} else {
