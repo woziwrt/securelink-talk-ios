@@ -21,6 +21,7 @@
 // It is based on a singleton pattern and adds.
 
 import UIKit
+import Security
 import linphonesw
 
 struct CoreError: Error {
@@ -49,26 +50,67 @@ extension Core {
 /// the push binding and the other phones' trust hang on it). Next to it it stores the identifierForVendor it last saw
 /// (misc/physical_device_identifier); when the two differ at start it takes the configuration for a copy on another
 /// phone and makes a new uuid – a new device for the server and for every conversation. identifierForVendor can change
-/// on the same phone though: the app moved to another developer account (Apple's app transfer), or nil before the first
-/// unlock ("unavailable_identifier"). SecureLink's linphonerc lives in the app group, which every start since 13. 10. 2026
-/// excludes from backups (SecureLinkPrivacy.excludeFromBackup): it cannot come from a backup of another phone, so a
-/// mismatch here means a new identifierForVendor, and the stored one is refreshed – the uuid stays (7. 11. 2026).
-/// Runs before every core starts, in the app and in the notification extension.
+/// on the same phone though: the developer account becomes an organisation or the app is transferred (Apple: the vendor
+/// name changes, identifierForVendor resets with the next update), or it is nil before the first unlock.
+/// Proof that the uuid belongs to THIS phone: a Keychain item ...ThisDeviceOnly holding it – such items never leave the
+/// device (not in backups restored to another phone, not in Quick Start), unlike a file or a file flag in the app group.
+/// The uuid is recorded whenever liblinphone itself accepts it (stored identifier == current one); when the identifiers
+/// differ later, the uuid stays only if the Keychain holds that very uuid, else liblinphone decides as before (a copy on
+/// another phone gets a new identity). A phone that never ran 1.2 has no record yet and is treated the old way.
+/// Runs before every core starts, in the app and in the notification extension (same Keychain group). 7. 11. 2026.
 enum SecureLinkDeviceIdentity {
-	static func keep(_ config: Config, appGroup: String) {
+	private static let service = "cc.securelink.talk.device"
+	private static let account = "sip-instance"
+
+	static func keep(_ config: Config) {
 		let uuid = config.getString(section: "misc", key: "uuid", defaultString: "")
+		guard !uuid.isEmpty, uuid != "0" else { return }   // no identity yet – liblinphone makes one
 		let stored = config.getString(section: "misc", key: "physical_device_identifier", defaultString: "")
-		guard !uuid.isEmpty, uuid != "0", !stored.isEmpty else { return }   // no identity yet – liblinphone makes one
-		// the same value liblinphone reads (IosPlatformHelpers::getPhysicalDeviceIdentifier)
-		let current = UIDevice.current.identifierForVendor?.uuidString ?? "unavailable_identifier"
-		guard stored != current else { return }
-		guard let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup),
-			  (try? container.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup) == true else {
-			Log.warn("[SecureLink] identifierForVendor differs and the app group is not excluded from backup – liblinphone decides")
+		// the same value liblinphone reads (IosPlatformHelpers::getPhysicalDeviceIdentifier); nil before the first unlock
+		let current = UIDevice.current.identifierForVendor?.uuidString
+		var recorded: Data?
+		let status = read(&recorded)
+		guard status == errSecSuccess || status == errSecItemNotFound else { return }   // Keychain locked: decide nothing
+		let mine = recorded == Data(uuid.utf8)
+		if let current = current, stored == current || stored.isEmpty {
+			// liblinphone keeps this uuid on this start: it is this phone's
+			if !mine && !record(uuid) { Log.warn("[SecureLink] device identity could not be recorded in the Keychain") }
 			return
 		}
-		Log.warn("[SecureLink] identifierForVendor changed on this phone – the SIP device identity (misc/uuid) stays")
-		config.setString(section: "misc", key: "physical_device_identifier", value: current)
+		guard mine else {
+			Log.warn("[SecureLink] identifierForVendor differs and the Keychain does not know this uuid – liblinphone decides")
+			return
+		}
+		if let current = current {
+			Log.warn("[SecureLink] identifierForVendor changed on this phone – the SIP device identity (misc/uuid) stays")
+			config.setString(section: "misc", key: "physical_device_identifier", value: current)
+		} else {
+			// liblinphone would compare with "unavailable_identifier" and make a new uuid: nothing to compare with
+			config.cleanEntry(section: "misc", key: "physical_device_identifier")
+		}
 		try? config.sync()
+	}
+
+	/// Tests only: as on a phone where this version never ran.
+	static func forgetRecord() {
+		SecItemDelete([kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account] as CFDictionary)
+	}
+
+	private static func read(_ out: inout Data?) -> OSStatus {
+		let query: [CFString: Any] = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account,
+									  kSecReturnData: true, kSecMatchLimit: kSecMatchLimitOne]
+		var item: CFTypeRef?
+		let status = SecItemCopyMatching(query as CFDictionary, &item)
+		out = item as? Data
+		return status
+	}
+
+	private static func record(_ uuid: String) -> Bool {
+		let query: [CFString: Any] = [kSecClass: kSecClassGenericPassword, kSecAttrService: service, kSecAttrAccount: account]
+		SecItemDelete(query as CFDictionary)
+		var add = query
+		add[kSecValueData] = Data(uuid.utf8)
+		add[kSecAttrAccessible] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+		return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
 	}
 }
