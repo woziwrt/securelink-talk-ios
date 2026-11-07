@@ -703,7 +703,8 @@ struct SecureLinkAccountSection: View {
 				}
 				
 				Button(action: { showLogoutConfirm = true }, label: {
-					Text("Odhlásit a smazat vše")
+					// B8: with more circles the button signs out one of them or all – it used to take all without saying so
+					Text(coreContext.accounts.count > 1 ? "Odhlásit okruh nebo vše" : "Odhlásit a smazat vše")
 						.foregroundStyle(Color.redDanger500)
 						.default_text_style_600(styleSize: 16)
 						.frame(height: 32)
@@ -720,11 +721,26 @@ struct SecureLinkAccountSection: View {
 			.padding(.horizontal, 20)
 			.background(Color.gray100)
 		}
-		.alert("Odhlásit a smazat vše?", isPresented: $showLogoutConfirm) {
+		.alert("Odhlásit a smazat vše?", isPresented: Binding(get: { showLogoutConfirm && coreContext.accounts.count <= 1 },
+															 set: { showLogoutConfirm = $0 })) {
 			Button("Smazat", role: .destructive) { coreContext.accounts.forEach { $0.logout() } }
 			Button("Zrušit", role: .cancel) {}
 		} message: {
 			Text("Účet, zprávy, kontakty i klíče zmizí z tohoto telefonu. Zpátky se dostanete jen novým QR kódem od správce.")
+		}
+		// B8 (7. 11. 2026): more circles – sign out just one of them, or all of them knowingly
+		.confirmationDialog("Co chcete odhlásit?", isPresented: Binding(get: { showLogoutConfirm && coreContext.accounts.count > 1 },
+																		  set: { showLogoutConfirm = $0 }), titleVisibility: .visible) {
+			ForEach(coreContext.accounts.indices, id: \.self) { index in
+				let model = coreContext.accounts[index]
+				Button(String(format: NSLocalizedString("Odhlásit jen okruh %@", comment: ""), circleName(model))) { model.logout() }
+			}
+			Button(String(format: NSLocalizedString("Smazat VŠECHNY okruhy (%d)", comment: ""), coreContext.accounts.count), role: .destructive) {
+				coreContext.accounts.forEach { $0.logout() }
+			}
+			Button("Zrušit", role: .cancel) {}
+		} message: {
+			Text("Odhlášený okruh zmizí z telefonu i se zprávami, kontakty a klíči; zpátky se do něj dostanete jen novou pozvánkou od jeho správce. Ostatní okruhy fungují dál.")
 		}
 	}
 	

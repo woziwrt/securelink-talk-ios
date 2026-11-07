@@ -782,3 +782,8 @@
 "securelink_wiped_circle_message" = "The administrator of the circle %@ removed it from this phone and deleted its messages and contacts. Your other circles go on working.";
 "securelink_wiped_last_message" = "The administrator of the circle %@ wiped this phone. To sign in again, ask the administrator for an invitation.";
 "securelink_deletion_signed_out" = "The request went to the administrator. This circle now signs out of the phone – its messages and contacts leave the phone.";
+"Odhlásit okruh nebo vše" = "Sign out a circle or everything";
+"Co chcete odhlásit?" = "What do you want to sign out?";
+"Odhlásit jen okruh %@" = "Sign out only the circle %@";
+"Smazat VŠECHNY okruhy (%d)" = "Erase ALL circles (%d)";
+"Odhlášený okruh zmizí z telefonu i se zprávami, kontakty a klíči; zpátky se do něj dostanete jen novou pozvánkou od jeho správce. Ostatní okruhy fungují dál." = "A circle you sign out leaves the phone with its messages, contacts and keys; you get back in only with a new invitation from its administrator. The other circles go on working.";
