@@ -324,8 +324,13 @@ class AccountModel: ObservableObject {
 			let directory = SecureLinkAccounts.setting(self.account, "dir_url")
 			core.removeAccountWithData(account: self.account)
 			// SecureLink, two servers: signing out of one company takes its people along, the other stays
-			if !wasLastAccount && !directory.isEmpty {
-				for list in core.friendsLists where list.uri == directory { core.removeFriendList(list: list) }
+			if !wasLastAccount {
+				if !directory.isEmpty {
+					for list in core.friendsLists where list.uri == directory { core.removeFriendList(list: list) }
+				}
+				// also when the account kept its directory in the phone-wide profile (the first circle, signed in by its QR)
+				// – at once, not with the next directory download (A2, 7. 11. 2026)
+				SecureLinkAccounts.pruneOrphanDirectories(core)
 				ContactsManager.shared.refreshCardDavContacts()
 			}
 			// SecureLink: the unregister is authenticated (digest). Credentials removed right away made it fail and the
