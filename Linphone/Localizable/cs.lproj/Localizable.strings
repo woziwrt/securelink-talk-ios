@@ -715,3 +715,9 @@
 "securelink_mic_title" = "Mikrofon pro hovory";
 "securelink_mic_message" = "Aby vám šly hovory, potřebuje SecureLink mikrofon. V dalším okně ho prosím povolte.";
 "securelink_mic_continue" = "Pokračovat";
+"securelink_signed_out_circle_title" = "Odhlášeno z okruhu %@";
+"securelink_signed_out_circle_others" = "Správce okruhu %@ vám poslal novou pozvánku, nebo váš účet zablokoval či zrušil. Ostatní okruhy fungují dál. Pro nové přihlášení do tohoto okruhu otevřete odkaz z nové pozvánky.";
+"securelink_signed_out_circle_last" = "Správce okruhu %@ vám poslal novou pozvánku, nebo váš účet zablokoval či zrušil. Pro nové přihlášení otevřete odkaz z pozvánky nebo naskenujte nový kód; když žádnou nemáte, požádejte o ni správce.";
+"securelink_wiped_circle_title" = "Okruh %@ byl odebrán";
+"securelink_wiped_circle_message" = "Správce okruhu %@ ho z tohoto telefonu odebral a smazal jeho zprávy a kontakty. Ostatní okruhy fungují dál.";
+"securelink_wiped_last_message" = "Správce okruhu %@ tento telefon vymazal. Pro nové přihlášení požádejte správce o pozvánku.";

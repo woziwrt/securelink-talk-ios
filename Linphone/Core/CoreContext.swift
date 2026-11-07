@@ -490,13 +490,19 @@ class CoreContext: ObservableObject {
 							params.registerEnabled = false
 							accountFound.params = params
 							// "block and wipe": only when the server says so for this very account (v2, 1. 11. 2026, as Android)
+							let circle = SecureLinkAccounts.circleName(core, accountFound)
 							SecureLinkAccounts.wipeIfAsked(core, accountFound) { wiped in
+								// B3: the notice names the circle and says whether other circles go on (core queue here)
+								let othersRemain = core.accountList.contains {
+									$0 !== accountFound && $0.params?.registerEnabled == true
+								}
 								DispatchQueue.main.async {
 									if wiped {
 										// the last account gone switches to the assistant at once – an alert above everything
-										SecureLinkAccounts.showWipedNotice()
+										SecureLinkAccounts.showWipedNotice(circle: circle, othersRemain: othersRemain)
 									} else {
-										NotificationCenter.default.post(name: NSNotification.Name("SecureLinkSignedOut"), object: nil)
+										NotificationCenter.default.post(name: NSNotification.Name("SecureLinkSignedOut"), object: nil,
+																		userInfo: ["circle": circle, "othersRemain": othersRemain])
 									}
 								}
 							}

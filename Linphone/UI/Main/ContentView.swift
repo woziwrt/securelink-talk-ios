@@ -92,6 +92,8 @@ struct ContentView: View {
 	
 	@State var isShowUpdatePasswordPopup: Bool = false
 	@State var isShowSignedOutPopup: Bool = false   // SecureLink: the server refused this phone twice
+	@State var signedOutCircle: String = ""          // B3: which circle, and whether others go on
+	@State var signedOutOthersRemain: Bool = false
 	@State var passwordUpdateAddress: String = ""
 	
 	@State var showLeaveConversationPopup: Bool = false
@@ -1967,8 +1969,11 @@ struct ContentView: View {
 					if isShowSignedOutPopup {
 						PopupView(
 							isShowPopup: $isShowSignedOutPopup,
-							title: Text("securelink_signed_out_title"),
-							content: Text("securelink_signed_out_message"),
+							title: signedOutCircle.isEmpty ? Text("securelink_signed_out_title")
+								: Text(String(format: NSLocalizedString("securelink_signed_out_circle_title", comment: ""), signedOutCircle)),
+							content: signedOutCircle.isEmpty ? Text("securelink_signed_out_message")
+								: Text(String(format: NSLocalizedString(signedOutOthersRemain ? "securelink_signed_out_circle_others" : "securelink_signed_out_circle_last",
+																		comment: ""), signedOutCircle)),
 							titleFirstButton: nil,
 							actionFirstButton: {},
 							titleSecondButton: Text("securelink_signed_out_ok"),
@@ -2090,7 +2095,9 @@ struct ContentView: View {
                     meetingsListViewModel = MeetingsListViewModel()
 				}
 			}
-			.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SecureLinkSignedOut"))) { _ in
+			.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SecureLinkSignedOut"))) { notification in
+				signedOutCircle = notification.userInfo?["circle"] as? String ?? ""
+				signedOutOthersRemain = notification.userInfo?["othersRemain"] as? Bool ?? false
 				isShowSignedOutPopup = true
 			}
 			.onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("PasswordUpdate")).compactMap { $0.userInfo?["address"] as? String }) { address in

@@ -452,10 +452,34 @@ enum SecureLinkAccounts {
 		SharedMainViewModel.shared.updateMissedCallsCount()
 	}
 
-	/// "This phone was wiped" – told once, above whatever screen the app switched to (the assistant when no account is left)
-	static func showWipedNotice() {
-		let alert = UIAlertController(title: NSLocalizedString("securelink_wiped_title", comment: ""),
-									  message: NSLocalizedString("securelink_wiped_message", comment: ""), preferredStyle: .alert)
+	/// the circle's name for the person: the server's org_name, else the domain
+	static func circleName(_ core: Core, _ account: Account) -> String {
+		let own = setting(account, "org_name")
+		if !own.isEmpty { return own }
+		let domain = account.params?.identityAddress?.domain ?? ""
+		if let config = core.config, config.getString(section: section, key: "domain", defaultString: "") == domain {
+			let phoneWide = config.getString(section: section, key: "org_name", defaultString: "")
+			if !phoneWide.isEmpty { return phoneWide }
+		}
+		return domain
+	}
+
+	/// "This phone was wiped" – told once, above whatever screen the app switched to (the assistant when no account is left).
+	/// It names the circle and says when the other circles go on: "this phone was wiped" read as the whole phone, while
+	/// only one of two circles had gone (B3, Petr 5. 11. 2026)
+	static func showWipedNotice(circle: String, othersRemain: Bool) {
+		let title: String, message: String
+		if circle.isEmpty {
+			title = NSLocalizedString("securelink_wiped_title", comment: "")
+			message = NSLocalizedString("securelink_wiped_message", comment: "")
+		} else if othersRemain {
+			title = String(format: NSLocalizedString("securelink_wiped_circle_title", comment: ""), circle)
+			message = String(format: NSLocalizedString("securelink_wiped_circle_message", comment: ""), circle)
+		} else {
+			title = NSLocalizedString("securelink_wiped_title", comment: "")
+			message = String(format: NSLocalizedString("securelink_wiped_last_message", comment: ""), circle)
+		}
+		let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
 		alert.addAction(UIAlertAction(title: NSLocalizedString("securelink_signed_out_ok", comment: ""), style: .default))
 		// the view switch may still be on its way – present once it has settled
 		DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

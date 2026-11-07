@@ -775,3 +775,9 @@
 "securelink_mic_title" = "Microphone for calls";
 "securelink_mic_message" = "SecureLink needs the microphone for your calls. Please allow it in the next window.";
 "securelink_mic_continue" = "Continue";
+"securelink_signed_out_circle_title" = "Signed out of the circle %@";
+"securelink_signed_out_circle_others" = "The administrator of the circle %@ sent you a new invitation, or blocked or closed your account. Your other circles go on working. To sign in to this circle again, open the link from the new invitation.";
+"securelink_signed_out_circle_last" = "The administrator of the circle %@ sent you a new invitation, or blocked or closed your account. To sign in again, open the link from the invitation or scan the new code; if you have none, ask the administrator for one.";
+"securelink_wiped_circle_title" = "The circle %@ was removed";
+"securelink_wiped_circle_message" = "The administrator of the circle %@ removed it from this phone and deleted its messages and contacts. Your other circles go on working.";
+"securelink_wiped_last_message" = "The administrator of the circle %@ wiped this phone. To sign in again, ask the administrator for an invitation.";
