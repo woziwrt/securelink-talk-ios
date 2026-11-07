@@ -666,7 +666,7 @@
 "securelink_contact_is_blocked_toast" = "This contact is blocked. To call or write to them, unblock them on their contact card.";
 "securelink_deletion_requested_toast" = "Request sent – the account will be deleted within 7 days";
 "securelink_request_deletion" = "Request account deletion";
-"securelink_request_deletion_message" = "The deletion request goes to the administrator, who deletes your account, your keys and your messages stored on the server within 7 days and lets you know.";
+"securelink_request_deletion_message" = "The deletion request goes to the administrator, who deletes your account, your keys and your messages stored on the server within 7 days and lets you know. This circle then signs out of the phone at once.";
 "securelink_request_deletion_draft" = "Please delete my SecureLink account.";
 "securelink_privacy_policy" = "Privacy policy";
 "securelink_pick_circle" = "Which circle?";
@@ -781,3 +781,4 @@
 "securelink_wiped_circle_title" = "The circle %@ was removed";
 "securelink_wiped_circle_message" = "The administrator of the circle %@ removed it from this phone and deleted its messages and contacts. Your other circles go on working.";
 "securelink_wiped_last_message" = "The administrator of the circle %@ wiped this phone. To sign in again, ask the administrator for an invitation.";
+"securelink_deletion_signed_out" = "The request went to the administrator. This circle now signs out of the phone – its messages and contacts leave the phone.";

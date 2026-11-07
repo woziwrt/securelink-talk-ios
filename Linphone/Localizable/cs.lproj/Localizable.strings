@@ -658,7 +658,7 @@
 "securelink_contact_is_blocked_toast" = "Kontakt je zablokovaný. Chcete-li mu volat nebo psát, odblokujte ho v jeho kartě.";
 "securelink_deletion_requested_toast" = "Žádost odeslána – účet bude smazán do 7 dnů";
 "securelink_request_deletion" = "Požádat o smazání účtu";
-"securelink_request_deletion_message" = "Žádost o smazání účtu odejde správci. Do 7 dnů smaže váš účet, vaše klíče a zprávy uložené na serveru a dá vám vědět.";
+"securelink_request_deletion_message" = "Žádost o smazání účtu odejde správci. Do 7 dnů smaže váš účet, vaše klíče a zprávy uložené na serveru a dá vám vědět. Tento okruh se pak hned z telefonu odhlásí.";
 "securelink_request_deletion_draft" = "Prosím o smazání mého účtu SecureLink.";
 "securelink_privacy_policy" = "Zásady ochrany osobních údajů";
 "securelink_pick_circle" = "Který okruh?";
@@ -721,3 +721,4 @@
 "securelink_wiped_circle_title" = "Okruh %@ byl odebrán";
 "securelink_wiped_circle_message" = "Správce okruhu %@ ho z tohoto telefonu odebral a smazal jeho zprávy a kontakty. Ostatní okruhy fungují dál.";
 "securelink_wiped_last_message" = "Správce okruhu %@ tento telefon vymazal. Pro nové přihlášení požádejte správce o pozvánku.";
+"securelink_deletion_signed_out" = "Žádost odešla správci. Tento okruh se teď z telefonu odhlásí – jeho zprávy a kontakty z telefonu zmizí.";

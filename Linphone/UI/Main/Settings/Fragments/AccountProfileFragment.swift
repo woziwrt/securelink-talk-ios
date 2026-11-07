@@ -763,9 +763,22 @@ struct AccountProfileFragment: View {
 				// the request itself is on the server; the administrator also learns about it on the phone – after the
 				// confirmation, as this opens the administrator's conversation
 				if sent {
+					// B7 (7. 11. 2026): the app used to go on as if nothing happened – now the circle signs out, once the
+					// notice to the administrator has left (the sign-out removes the account's conversations)
+					let account = profileAccount
+					isShowAccountProfileFragment = false
 					SecureLinkAdmin.openConversation(draft: NSLocalizedString("securelink_deletion_notice_to_admin", comment: ""), sendNow: true,
-													 about: profileAccount?.params?.identityAddress?.asStringUriOnly())
+													 about: account?.params?.identityAddress?.asStringUriOnly()) {
+						if let model = CoreContext.shared.accounts.first(where: { $0.account === account }) {
+							Log.info("[SecureLink] deletion requested – signing this circle out")
+							model.logout()
+						}
+					}
 				}
+			}
+		} message: {
+			if deletionResult == true {
+				Text("securelink_deletion_signed_out")
 			}
 		}
 	}

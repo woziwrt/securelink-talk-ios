@@ -259,6 +259,7 @@ enum SecureLinkAdmin {
 		}
 	}
 	private static var creationDelegate: ChatRoomDelegateStub?
+	private static var messageDelegate: ChatMessageDelegateStub?
 
 	/// ZRTP remembers whose security word was confirmed. After "sign out and delete everything" a new account on this
 	/// phone must not inherit that – the cache file (open while the core runs) goes before the next core is created (as Android)
@@ -328,7 +329,18 @@ enum SecureLinkAdmin {
 	/// opens (or creates) the encrypted conversation with the administrator, the draft is pre-filled;
 	/// with sendNow the text is sent at once and the user stays where they are (e.g. after an account deletion request)
 	/// [about]: the person or message it concerns – with two servers the administrator of that server gets it
-	static func openConversation(draft: String, sendNow: Bool = false, about: String? = nil) {
+	/// [settled] (with sendNow, main queue, once): the message reached the server or failed, or 20 s passed – B7 signs
+	/// the circle out only then, so the notice to the administrator is not removed with the account before it leaves
+	static func openConversation(draft: String, sendNow: Bool = false, about: String? = nil, settled: (() -> Void)? = nil) {
+		var done = false
+		let settle: () -> Void = {
+			DispatchQueue.main.async {
+				guard !done else { return }
+				done = true
+				settled?()
+			}
+		}
+		if settled != nil { DispatchQueue.main.asyncAfter(deadline: .now() + 20) { settle() } }
 		CoreContext.shared.doOnCoreQueue { core in
 			let account = SecureLinkAccounts.accountFor(core, about.flatMap { try? Factory.Instance.createAddress(addr: $0) })
 			let uri = setting(core, "admin_uri", account)
@@ -336,6 +348,7 @@ enum SecureLinkAdmin {
 				  let account = account, let params = try? core.createConferenceParams(conference: nil) else {
 				Log.error("[SecureLink] no administrator address in the profile – cannot open the conversation")
 				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
+				settle()
 				return
 			}
 			// chat parameters exist only once chat is enabled on the conference parameters
@@ -343,6 +356,7 @@ enum SecureLinkAdmin {
 			guard let chatParams = params.chatParams else {
 				Log.error("[SecureLink] no chat parameters – cannot open the administrator conversation")
 				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
+				settle()
 				return
 			}
 			params.groupEnabled = false
@@ -354,8 +368,20 @@ enum SecureLinkAdmin {
 			let ready: (ChatRoom) -> Void = { room in
 				if sendNow {
 					if let message = try? room.createMessageFromUtf8(message: draft) {
+						if settled != nil {
+							let watch = ChatMessageDelegateStub(onMsgStateChanged: { (message: ChatMessage, state: ChatMessage.State) in
+								guard [.Delivered, .DeliveredToUser, .Displayed, .NotDelivered].contains(state) else { return }
+								Log.info("[SecureLink] message to the administrator: \(state)")
+								if let d = messageDelegate { message.removeDelegate(delegate: d); messageDelegate = nil }
+								settle()
+							})
+							messageDelegate = watch
+							message.addDelegate(delegate: watch)
+						}
 						message.send()
 						Log.info("[SecureLink] message sent to the administrator")
+					} else {
+						settle()
 					}
 				} else {
 					pendingDraftConversationId = LinphoneUtils.getChatRoomId(room: room)
@@ -378,6 +404,7 @@ enum SecureLinkAdmin {
 					if state == ChatRoom.State.CreationFailed {
 						if let d = creationDelegate { room.removeDelegate(delegate: d); creationDelegate = nil }
 						DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
+						settle()
 					}
 				}, onConferenceJoined: { (room: ChatRoom, _: EventLog) in
 					if room.state == ChatRoom.State.Created {
@@ -390,6 +417,7 @@ enum SecureLinkAdmin {
 			} catch {
 				Log.error("[SecureLink] cannot create the administrator conversation: \(error)")
 				DispatchQueue.main.async { ToastViewModel.shared.show("Failed_to_create_conversation_error", duration: 4.0) }
+				settle()
 			}
 		}
 	}
