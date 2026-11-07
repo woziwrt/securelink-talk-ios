@@ -834,6 +834,8 @@ final class ContactsManager: ObservableObject {
 
 	func refreshCardDavContacts() {
 		self.coreContext.doOnCoreQueue { core in
+			// SecureLink: a signed-out circle's or a moved server's old directory must not stay (A2)
+			SecureLinkAccounts.pruneOrphanDirectories(core)
 			if SecureLinkAccounts.isMultiServer(core) { // two servers: each directory with its own account's password
 				SecureLinkAccounts.refreshDirectories(core)
 				return

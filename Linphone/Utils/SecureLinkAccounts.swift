@@ -284,8 +284,59 @@ enum SecureLinkAccounts {
 		Log.info("[SecureLink Accounts] the account \(account.params?.identityAddress?.asStringUriOnly() ?? "") keeps its server values itself")
 	}
 
+	/// Server directories no signed-in account owns any more go, with the contacts copied from them (A2, 7. 11. 2026):
+	/// after signing out of one of two circles, or after a server moved (new directory address), the old people stayed –
+	/// only a list with the same address was ever replaced. A list is kept when its address is the directory of any
+	/// account by any record (the account's own value, the phone-wide profile, liblinphone's vCard list). An account
+	/// whose directory is not known at all stops the clean-up – better a stale person than a missing directory.
+	/// Core queue.
+	static func pruneOrphanDirectories(_ core: Core) {
+		let accounts = core.accountList
+		guard !accounts.isEmpty, let config = core.config else { return }
+		let phoneWideDomain = config.getString(section: section, key: "domain", defaultString: "")
+		let phoneWideDir = config.getString(section: section, key: "dir_url", defaultString: "")
+		let vcardList = config.getString(section: "misc", key: "contacts-vcard-list", defaultString: "")
+		var owned = Set<String>()
+		if !vcardList.isEmpty { owned.insert(vcardList) }
+		for account in accounts {
+			let domain = account.params?.identityAddress?.domain ?? ""
+			var known = [setting(account, "dir_url")]
+			if !phoneWideDomain.isEmpty && phoneWideDomain == domain { known.append(phoneWideDir) }
+			if accounts.count == 1 { known.append(vcardList) }
+			known = known.filter { !$0.isEmpty }
+			if known.isEmpty {
+				Log.warn("[SecureLink Accounts] directory of \(account.params?.identityAddress?.asStringUriOnly() ?? "") unknown – no clean-up")
+				return
+			}
+			owned.formUnion(known)
+		}
+		var removed = false
+		for list in core.friendsLists where list.type == .VCard4 || list.type == .CardDAV {
+			guard let uri = list.uri, !uri.isEmpty, !owned.contains(uri) else { continue }
+			Log.warn("[SecureLink Accounts] directory \(list.displayName ?? "") belongs to no account – removed")
+			core.removeFriendList(list: list)
+			removed = true
+		}
+		// the contacts the app copied from directories (ContactsManager.onDirectorySynchronized): a server no account
+		// signs in to any more has nobody here
+		let domains = Set(accounts.compactMap { $0.params?.identityAddress?.domain })
+		if let copies = ContactsManager.shared.tempRemoteFriendList {
+			for friend in copies.friends {
+				if let domain = friend.address?.domain, !domains.contains(domain) {
+					_ = copies.removeFriend(linphoneFriend: friend)
+					removed = true
+				}
+			}
+		}
+		if removed {
+			MagicSearchSingleton.shared.magicSearch?.resetSearchCache()
+			MagicSearchSingleton.shared.searchForContacts()
+		}
+	}
+
 	/// downloads every server's directory with that account's own login and puts it into the account's contact list
 	static func refreshDirectories(_ core: Core) {
+		pruneOrphanDirectories(core)
 		for account in core.accountList {
 			let link = setting(account, "dir_url")
 			guard !link.isEmpty, let url = secureURL(link), let auth = account.findAuthInfo() else { continue }
