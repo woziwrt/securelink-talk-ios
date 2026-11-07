@@ -111,6 +111,11 @@ class CallViewModel: ObservableObject {
 			self.resetCallView()
 		}
 
+		// SecureLink (#28): the directory came in during the call – the caller's name instead of the number
+		NotificationCenter.default.addObserver(forName: Notification.Name("SecureLinkCallNamesChanged"), object: nil, queue: nil) { [weak self] _ in
+			self?.refreshCallerName()
+		}
+
 		NotificationCenter.default.addObserver(forName: Notification.Name("CallMicMutedChanged"), object: nil, queue: .main) { notification in
 			self.micMutted = notification.object as? Bool ?? self.micMutted
 		}
@@ -287,6 +292,25 @@ class CallViewModel: ObservableObject {
 		)
 	}
 	
+	/// SecureLink (#28): the name (and avatar) of the other side again, after the directory loaded; one-to-one calls only
+	func refreshCallerName() {
+		coreContext.doOnCoreQueue { _ in
+			guard let call = self.currentCall, call.conference == nil, let remote = call.remoteAddress,
+				  call.callLog?.wasConference() != true else { return }
+			TelecomManager.shared.incomingDisplayName(call: call) { name in
+				ContactAvatarModel.getAvatarModelFromAddress(address: remote) { avatar in
+					DispatchQueue.main.async {
+						guard self.currentCall === call else { return }
+						let oldModel = self.avatarModel
+						self.displayName = name
+						self.avatarModel = avatar
+						CoreContext.shared.doOnCoreQueue { _ in _ = oldModel }
+					}
+				}
+			}
+		}
+	}
+
 	func resetCallView() {
 		cancelEarpieceNotification()
 		audioMutedByEarpieceEnforcement = false
@@ -372,6 +396,8 @@ class CallViewModel: ObservableObject {
 						displayNameTmp = friend!.address!.displayName!
 					}  else if friend != nil && friend?.name != nil {
 						displayNameTmp = friend?.name ?? "No name"
+					}  else if let remembered = ContactsManager.shared.rememberedName(self.currentCall!.remoteAddress) {
+						displayNameTmp = remembered   // SecureLink: as CallKit (TelecomManager.incomingDisplayName), not the number
 					}  else {
 						if self.currentCall!.remoteAddress!.displayName != nil {
 							displayNameTmp = self.currentCall!.remoteAddress!.displayName!

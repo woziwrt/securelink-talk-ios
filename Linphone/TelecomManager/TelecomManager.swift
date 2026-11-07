@@ -420,13 +420,18 @@ class TelecomManager: ObservableObject {
 	// shows as a bare username. Once the directory syncs, rename the calls still ringing.
 	func refreshIncomingCallNames() {
 		CoreContext.shared.doOnCoreQueue { core in
-			for call in core.calls where call.state == .IncomingReceived || call.state == .PushIncomingReceived {
+			// also a call already answered (#28: the directory may come in only after the user picked up)
+			for call in core.calls where call.dir == .Incoming && call.state != .End && call.state != .Released && call.state != .Error {
 				guard let callId = call.callLog?.callId, let addr = call.remoteAddress,
 					  let uuid = self.providerDelegate.uuids[callId] else { continue }
 				self.incomingDisplayName(call: call) { displayName in
 					Log.info("[SecureLink] incoming call \(callId) renamed after the directory loaded")
 					self.providerDelegate.updateCall(uuid: uuid, handle: addr.asStringUriOnly(), hasVideo: call.remoteParams?.videoEnabled ?? false, displayName: displayName)
 				}
+			}
+			// the call screen takes the name too (CallViewModel)
+			if !core.calls.isEmpty {
+				NotificationCenter.default.post(name: Notification.Name("SecureLinkCallNamesChanged"), object: nil)
 			}
 		}
 	}
@@ -610,6 +615,14 @@ class TelecomManager: ObservableObject {
 			switch cstate {
 			case .IncomingReceived:
 				let addr = call.remoteAddress
+				// SecureLink (#28): a caller who joined the circle after the last directory download (every 5 min) rang as a
+				// bare number. Load the directory now – once it is in, refreshIncomingCallNames renames CallKit and the call
+				// screen (7. 11. 2026)
+				let known = ContactsManager.shared.getFriendWithAddress(address: addr)?.name.map { !$0.isEmpty && !$0.lowercased().hasPrefix("sip") } ?? false
+				if !known && call.callLog?.wasConference() != true {
+					Log.info("[SecureLink] incoming call from somebody not in the contacts – loading the directory")
+					ContactsManager.shared.refreshCardDavContacts()
+				}
 				incomingDisplayName(call: call) { displayNameResult in
 					let displayName = displayNameResult
 	#if targetEnvironment(simulator)
