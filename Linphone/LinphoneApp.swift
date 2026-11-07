@@ -348,8 +348,9 @@ extension AppView {
 		guard coreContext.loggedIn else { return }
 		PermissionManager.shared.pushNotificationRequestPermission {
 			Log.info("[SecureLink] notification permission asked")
+			// one question at a time: asked together, iOS dropped the microphone question (7. 11. 2026)
+			PermissionManager.shared.explainAndRequestMicrophone()
 		}
-		PermissionManager.shared.microphoneRequestPermission()
 	}
 }
 

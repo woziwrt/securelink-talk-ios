@@ -712,3 +712,6 @@
 "securelink_pin_same" = "Nouzový PIN musí být jiný než běžný";
 "securelink_wiped_title" = "Tento telefon byl vymazán";
 "securelink_wiped_message" = "Správce tento telefon zablokoval a nechal vymazat: tento účet, jeho konverzace a kontakty z něj byly smazány.";
+"securelink_mic_title" = "Mikrofon pro hovory";
+"securelink_mic_message" = "Aby vám šly hovory, potřebuje SecureLink mikrofon. V dalším okně ho prosím povolte.";
+"securelink_mic_continue" = "Pokračovat";

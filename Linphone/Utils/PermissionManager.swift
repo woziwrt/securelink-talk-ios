@@ -23,6 +23,7 @@ import Contacts
 import UserNotifications
 import SwiftUI
 import Network
+import AVFoundation
 
 class PermissionManager: ObservableObject {
 	
@@ -74,6 +75,33 @@ class PermissionManager: ObservableObject {
 		})
 	}
 	
+	/// SecureLink: asked together with the notifications, iOS dropped the microphone question – it came only at the first
+	/// call, so "Check the connection" reported "microphone not allowed" right after sign-in and a first call answered on a
+	/// locked phone could go without sound (simulator, 7. 11. 2026). Now asked after the notification answer, with a word
+	/// why (as Android's "Microphone and notifications"); the first call still asks if this is dismissed.
+	private var microphoneExplained = false
+
+	func explainAndRequestMicrophone() {
+		DispatchQueue.main.async {
+			guard AVAudioSession.sharedInstance().recordPermission == .undetermined else {
+				self.microphoneRequestPermission()   // answered already: only refresh the flag
+				return
+			}
+			guard !self.microphoneExplained else { return }
+			self.microphoneExplained = true
+			let alert = UIAlertController(title: NSLocalizedString("securelink_mic_title", comment: ""),
+										  message: NSLocalizedString("securelink_mic_message", comment: ""), preferredStyle: .alert)
+			alert.addAction(UIAlertAction(title: NSLocalizedString("securelink_mic_continue", comment: ""), style: .default) { _ in
+				self.microphoneRequestPermission()
+			})
+			guard let top = UIApplication.getTopMostViewController() else {
+				self.microphoneRequestPermission()
+				return
+			}
+			top.present(alert, animated: true)
+		}
+	}
+
 	func photoLibraryRequestPermission() {
 		PHPhotoLibrary.requestAuthorization(for: .readWrite, handler: {status in
 			DispatchQueue.main.async {

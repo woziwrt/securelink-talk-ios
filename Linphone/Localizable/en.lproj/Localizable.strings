@@ -772,3 +772,6 @@
 "securelink_pin_same" = "The emergency PIN must differ from the normal one";
 "securelink_wiped_title" = "This phone was wiped";
 "securelink_wiped_message" = "Your administrator blocked this phone and asked for it to be wiped: this account, its conversations and contacts have been deleted from it.";
+"securelink_mic_title" = "Microphone for calls";
+"securelink_mic_message" = "SecureLink needs the microphone for your calls. Please allow it in the next window.";
+"securelink_mic_continue" = "Continue";
