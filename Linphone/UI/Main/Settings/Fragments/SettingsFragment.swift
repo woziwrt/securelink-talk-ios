@@ -82,6 +82,11 @@ struct SettingsFragment: View {
 					ScrollView {
 						VStack(spacing: 0) {
 							SecureLinkAccountSection()   // SecureLink: my account, state now, connection check, sign out
+							// SecureLink PIN lock (optional): own PIN instead of Face ID + emergency PIN (Petr 2. 11. 2026);
+							// here since 10. 11. 2026 – it was in Help, where nobody looks for a setting
+							PinLockRow()
+								.padding(.horizontal, 20)
+								.padding(.vertical, 15)
 							// TODO: Wait for VFS fix
 							/*
 							HStack(alignment: .center) {

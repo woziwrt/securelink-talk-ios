@@ -50,7 +50,10 @@ class HelpViewModel: ObservableObject {
 			sdkGitBranch = String(sdkGitBranch.dropFirst("remotes/origin/".count))
 		}
 		
-		self.appVersion = appGitTag
+		// SecureLink: "1.2 (32)" – the release and build as iOS shows them everywhere, not the git tag "build-32" (10. 11. 2026)
+		let short = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+		let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "?"
+		self.appVersion = "\(short) (\(build))"
 		self.version = appGitTag + "-" + appGitVersion + "\n(\(appGitBranch))"
 		
 		self.sdkVersion = sdkGitVersion + "\n(\(sdkGitBranch))"
