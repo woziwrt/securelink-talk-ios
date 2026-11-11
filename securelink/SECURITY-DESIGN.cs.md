@@ -1,7 +1,6 @@
 # Jak SecureLink Talk chrání hovory a zprávy
 
-Co SecureLink Talk šifruje, co vidí server a kde jsou hranice ochrany. Stav k 2. 11. 2026 (iOS 1.1 build 31 – ke schválení, Android v2; **verze 1.0 v App Storu tyto změny ještě nemá**,
-instalátor serveru v2; zákaznické servery se na v2 právě převádějí). Anglická verze:
+Co SecureLink Talk šifruje, co vidí server a kde jsou hranice ochrany. Stav k 11. 11. 2026 (verze 1.2: iOS build 32 v App Storu, Android 6.2.8.106; instalátor serveru v2 na všech serverech). Anglická verze:
 [`SECURITY-DESIGN.md`](SECURITY-DESIGN.md).
 
 SecureLink neprošel nezávislým auditem. Všechno je ale veřejné (GPL v3), takže si každé tvrzení může technik ověřit sám:
@@ -24,7 +23,8 @@ a instalátor serveru (github.com/woziwrt/securelink-server).
 ## 2. Hovory
 
 - Spojení se serverem: SIP přes **TLS 1.3**; certifikát serveru musí být podepsaný certifikační autoritou SecureLink,
-  kterou má aplikace v sobě (jedna pro všechny okruhy; její klíč převádíme mimo server, offline).
+  kterou má aplikace v sobě (jedna pro všechny okruhy). Její klíč **není na žádném serveru**: dodavatel ho drží zašifrovaný mimo servery a podepisuje
+  jím jen certifikáty serverů. Kdo ovládne jeden server, nevydá se za jiný.
 - Domluva klíče: **ZRTP** přímo mezi oběma telefony, **hybridní X448 + ML-KEM-1024** (postkvantová). Server se domluvy
   klíče neúčastní. Ověřeno i na síti (ZRTP Commit `S512/AES3/GCM/X3M3/B32`).
 - Hlas: SRTP s **AES-256-GCM**. Server hovor jen přeposílá v zašifrované podobě.
@@ -57,6 +57,9 @@ a instalátor serveru (github.com/woziwrt/securelink-server).
 | velikost a čas šifrovaných zpráv | |
 
 Co držíme co nejmenší:
+- **Registrace telefonů** (poslední adresa, push token, platnost) drží server jen jako aktuální stav: přepisovaný snímek
+  bez historie, aby registrace přežily restart serveru. **Nedoručené zprávy** jsou jen v paměti – restart serveru je zahodí
+  (odesílatel uvidí jednu fajfku).
 - **Nástroj na úklid** (`securelink-metadata-cleanup`) najde na chatovém serveru konverzace smazaných účtů a zbytky záznamů.
   Každou noc je jen vypíše do logu serveru; smaže je podpora na pokyn (chatový server se na pár sekund zastaví).
   Živé konverzace zůstávají (jejich smazání by v současném Linphone SDK rozbilo doručování).
@@ -93,7 +96,8 @@ Co držíme co nejmenší:
 - Podpora se na server dostane jen **SSH klíči vyrobenými pro tohoto zákazníka** (každý pod svým jménem, v záznamu přihlášení je vidět, kdo to byl).
   Univerzální klíč ke všem zákazníkům neexistuje. Zákazník může **přístup podpory kdykoli vypnout** ve webu správy.
 - Zálohy serveru jsou šifrované (age) klíčem podpory a na přání i vlastním klíčem zákazníka.
-- Správce může účet okamžitě zablokovat na serveru (heslo i klíče pro zprávy přestanou platit) a **vzdáleně ho
+- Správce může účet okamžitě zablokovat na serveru (heslo přestane platit a telefon se nepřihlásí; po odblokování
+  zprávy fungují hned, klíče pro zprávy blokace nemaže) a **vzdáleně ho
   vymazat**: telefon účet i s daty smaže, jakmile se připojí.
 
 ## 7. Před čím SecureLink nechrání

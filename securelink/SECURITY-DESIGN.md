@@ -1,7 +1,7 @@
 # How SecureLink Talk protects calls and messages
 
 How SecureLink Talk protects calls and messages, what the server can and cannot see, and where the limits are.
-State of 2 November 2026 (iOS 1.1 build 31 – submitted for review; **version 1.0 in the App Store does not have these changes yet**; Android `67b29a3ca`, server installer v2 – customer servers are being moved to v2). Czech version: [`SECURITY-DESIGN.cs.md`](SECURITY-DESIGN.cs.md). Components and versions: [`SBOM.md`](SBOM.md).
+State of 11 November 2026 (version 1.2: iOS build 32 in the App Store, Android 6.2.8.106; server installer v2 on every server). Czech version: [`SECURITY-DESIGN.cs.md`](SECURITY-DESIGN.cs.md). Components and versions: [`SBOM.md`](SBOM.md).
 Reporting vulnerabilities: [`../SECURITY.md`](../SECURITY.md). Every App Store build is tagged `build-N` in this
 repository and can be rebuilt with [`BUILD.md`](BUILD.md).
 
@@ -25,7 +25,8 @@ and the server installer (github.com/woziwrt/securelink-server).
 ## 2. Calls
 
 - Signalling: SIP over **TLS 1.3** (Mbed TLS 3.6.7) to the customer's server; the server certificate must be signed by
-  the SecureLink CA built into the app (one CA for all circles; its key is being moved offline).
+  the SecureLink CA built into the app (one CA for all circles). Its private key is on **no server**: the supplier keeps it
+  encrypted offline and signs only server certificates with it, so taking over one server does not let anyone pose as another.
 - Key agreement: **ZRTP** between the two phones with a **hybrid X448 + ML-KEM-1024** key exchange (ZRTP key agreement
   `X3M3`; seen on the wire in the ZRTP Commit as `S512/AES3/GCM/X3M3/B32`). The server is not part of the key agreement.
 - Voice: SRTP with **AES-256-GCM**. The media relay on the server forwards encrypted packets only.
@@ -62,6 +63,9 @@ and the server installer (github.com/woziwrt/securelink-server).
 | sizes and times of encrypted messages | |
 
 Limits we keep small:
+- **Phone registrations** (last address, push token, expiry) are kept by the server as the current state only: a snapshot
+  that is overwritten, without history, so registrations survive a server restart. **Undelivered messages** live in memory
+  only; a restart drops them (the sender sees a single tick).
 - A **cleanup tool** (`securelink-metadata-cleanup`) finds conversations of deleted accounts and leftover records on the
   chat server. Every night it only lists them in the server log; support deletes them on command (the chat server stops
   for a few seconds). Live conversations stay: removing them breaks message delivery in the current Linphone SDK.
@@ -103,7 +107,8 @@ Limits we keep small:
   There is no universal key for all customers. The customer can **switch support access off** in the web console at any time.
 - Server backups are encrypted with **age** for the support partner's backup key and, when the customer wants it, also for
   the customer's own key.
-- The administrator can block an account at once on the server (its password and message keys stop working) and **wipe it
+- The administrator can block an account at once on the server (its password stops working and the phone cannot sign in;
+  blocking keeps the message keys, so messages work again as soon as the account is unblocked) and **wipe it
   remotely**: the phone deletes the account and its data when it next connects.
 
 ## 7. What SecureLink does not protect against
